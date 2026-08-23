@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Add Fabric</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/admin">ADMIN</a>
+    </nav>
+
+</header>
+
+
+<section class="add-fabric-page">
+
+    <div class="add-fabric-container">
+
+        <div class="add-fabric-heading">
+
+            <p>ASEBE FABRICS</p>
+
+            <h1>ADD NEW FABRIC</h1>
+
+            <span>
+                Add a new fabric to your shop.
+            </span>
+
+        </div>
+
+
+        <form
+            action="/admin/add"
+            method="POST"
+            enctype="multipart/form-data"
+            class="fabric-form">
+
+
+            <div class="form-group">
+
+                <label>
+                    Fabric Name
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Example: Premium Ankara"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    rows="4"
+                    placeholder="Describe the fabric..."
+                    required></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Price (₦)
+                </label>
+
+                <input
+                    type="number"
+                    name="price"
+                    placeholder="25000"
+                    min="0"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Quantity Available
+                </label>
+
+                <input
+                    type="number"
+                    name="quantity"
+                    placeholder="10"
+                    min="1"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Fabric Picture
+                </label>
+
+                <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    required>
+
+                <small>
+                    Upload a clear picture of the fabric.
+                </small>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="save-fabric-button">
+
+                SAVE FABRIC
+
+            </button>
+
+
+        </form>
+
+
+        <a
+            href="/admin"
+            class="back-admin">
+
+            ← BACK TO ADMIN
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+</footer>
+
+</body>
+
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Checkout</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+
+        <a href="/">HOME</a>
+
+        <a href="/shop">SHOP</a>
+
+        <a href="/cart">CART 🛒</a>
+
+        <a href="/payment">PAYMENT</a>
+
+    </nav>
+
+</header>
+
+
+<section class="checkout-page">
+
+    <div class="checkout-container">
+
+
+        <div class="checkout-heading">
+
+            <p>ASEBE FABRICS</p>
+
+            <h1>CHECKOUT</h1>
+
+            <span>
+                Please provide your information
+                to complete your order.
+            </span>
+
+        </div>
+
+
+        <form
+            id="checkoutForm"
+            class="checkout-form">
+
+
+            <div class="form-group">
+
+                <label>
+                    Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="customerName"
+                    placeholder="Enter your full name"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Phone Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="customerPhone"
+                    placeholder="Enter your phone number"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Delivery Address
+                </label>
+
+                <textarea
+                    id="customerAddress"
+                    placeholder="Enter your complete delivery address"
+                    rows="4"
+                    required></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Additional Note
+                </label>
+
+                <textarea
+                    id="customerNote"
+                    placeholder="Any additional information? (Optional)"
+                    rows="3"></textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="checkout-submit">
+
+                CONTINUE TO PAYMENT →
+
+            </button>
+
+
+        </form>
+
+
+    </div>
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+</footer>
+
+
+<script>
+
+document
+    .getElementById("checkoutForm")
+    .addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+
+        const name =
+            document.getElementById("customerName").value;
+
+        const phone =
+            document.getElementById("customerPhone").value;
+
+        const address =
+            document.getElementById("customerAddress").value;
+
+        const note =
+            document.getElementById("customerNote").value;
+
+
+        const customer = {
+
+            name: name,
+
+            phone: phone,
+
+            address: address,
+
+            note: note
+
+        };
+
+
+        localStorage.setItem(
+            "asebeCustomer",
+            JSON.stringify(customer)
+        );
+
+
+        window.location.href = "/payment";
+
+    });
+
+</script>
+
+
+</body>
+
+</html>

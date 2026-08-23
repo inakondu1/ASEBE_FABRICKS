@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Cart</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/cart">CART 🛒</a>
+        <a href="/payment">PAYMENT</a>
+    </nav>
+
+</header>
+
+
+<section class="cart-page">
+
+    <div class="cart-container">
+
+        <div class="cart-heading">
+
+            <p>ASEBE FABRICS</p>
+
+            <h1>YOUR CART</h1>
+
+            <span>
+                Review your selected fabrics before checkout.
+            </span>
+
+        </div>
+
+
+        <div id="cart-items">
+
+            <!-- Cart items will appear here -->
+
+        </div>
+
+
+        <div class="cart-total">
+
+            <span>
+                TOTAL
+            </span>
+
+            <strong id="cart-total">
+                ₦0
+            </strong>
+
+        </div>
+
+
+        <div class="cart-buttons">
+
+            <a href="/shop"
+               class="continue-shopping">
+
+                ← CONTINUE SHOPPING
+
+            </a>
+
+            <a href="/checkout"
+               class="checkout-button">
+
+                PROCEED TO CHECKOUT →
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+</footer>
+
+
+<script>
+
+    let cart =
+        JSON.parse(localStorage.getItem("asebeCart")) || [];
+
+    const cartItems =
+        document.getElementById("cart-items");
+
+    const cartTotal =
+        document.getElementById("cart-total");
+
+
+    function displayCart() {
+
+        cartItems.innerHTML = "";
+
+        let total = 0;
+
+
+        if (cart.length === 0) {
+
+            cartItems.innerHTML = `
+                <div class="empty-cart">
+
+                    <h2>Your cart is empty</h2>
+
+                    <p>
+                        You have not selected any fabrics yet.
+                    </p>
+
+                    <a href="/shop">
+                        SHOP FABRICS
+                    </a>
+
+                </div>
+            `;
+
+            cartTotal.textContent = "₦0";
+
+            return;
+        }
+
+
+        cart.forEach((item, index) => {
+
+            let subtotal =
+                item.price * item.quantity;
+
+            total += subtotal;
+
+
+            cartItems.innerHTML += `
+
+                <div class="cart-item">
+
+                    <div>
+
+                        <h2>
+                            ${item.name}
+                        </h2>
+
+                        <p>
+                            ₦${item.price.toLocaleString()}
+                        </p>
+
+                    </div>
+
+
+                    <div class="quantity">
+
+                        <button
+                            onclick="changeQuantity(${index}, -1)">
+                            −
+                        </button>
+
+                        <span>
+                            ${item.quantity}
+                        </span>
+
+                        <button
+                            onclick="changeQuantity(${index}, 1)">
+                            +
+                        </button>
+
+                    </div>
+
+
+                    <strong>
+                        ₦${subtotal.toLocaleString()}
+                    </strong>
+
+
+                    <button
+                        class="remove-button"
+                        onclick="removeItem(${index})">
+
+                        REMOVE
+
+                    </button>
+
+                </div>
+
+            `;
+
+        });
+
+
+        cartTotal.textContent =
+            "₦" + total.toLocaleString();
+
+    }
+
+
+    function changeQuantity(index, amount) {
+
+        cart[index].quantity += amount;
+
+
+        if (cart[index].quantity <= 0) {
+
+            cart.splice(index, 1);
+
+        }
+
+
+        localStorage.setItem(
+            "asebeCart",
+            JSON.stringify(cart)
+        );
+
+
+        displayCart();
+
+    }
+
+
+    function removeItem(index) {
+
+        cart.splice(index, 1);
+
+
+        localStorage.setItem(
+            "asebeCart",
+            JSON.stringify(cart)
+        );
+
+
+        displayCart();
+
+    }
+
+
+    displayCart();
+
+</script>
+
+
+</body>
+
+</html>

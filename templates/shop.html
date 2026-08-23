@@ -24,8 +24,15 @@
     </div>
 
     <nav>
-        <a href="/">Home</a>
-        <a href="/shop">Shop</a>
+
+        <a href="/">HOME</a>
+
+        <a href="/shop">SHOP</a>
+
+        <a href="/cart">CART 🛒</a>
+
+        <a href="/payment">PAYMENT</a>
+
     </nav>
 
 </header>
@@ -38,7 +45,7 @@
     <h1>OUR FABRICS</h1>
 
     <span>
-        Discover beautiful fabrics for every occasion.
+        Choose your fabrics and add them to your cart.
     </span>
 
 </section>
@@ -46,140 +53,89 @@
 
 <section class="products">
 
-    <div class="product-card">
+    {{if .}}
 
-        <div class="product-image">
-            <div class="image-placeholder">
-                FABRIC IMAGE
-            </div>
-        </div>
+        {{range .}}
 
-        <div class="product-info">
+        <div class="product-card">
 
-            <h2>Royal Ankara</h2>
+            {{if .Image}}
 
-            <p>
-                Beautiful premium Ankara fabric
-                with an elegant design.
-            </p>
+                <img
+                    src="{{.Image}}"
+                    alt="{{.Name}}">
 
-            <div class="product-bottom">
+            {{else}}
+
+                <div class="no-image">
+                    NO IMAGE
+                </div>
+
+            {{end}}
+
+
+            <div class="product-info">
+
+                <h2>
+                    {{.Name}}
+                </h2>
+
+
+                <p>
+                    {{.Description}}
+                </p>
+
 
                 <strong>
-                    ₦25,000
+                    ₦{{printf "%.0f" .Price}}
                 </strong>
 
-                <button class="order-button">
-                    ORDER
-                </button>
+
+                {{if gt .Quantity 0}}
+
+                    <button
+                        class="order-button"
+                        data-name="{{.Name}}"
+                        data-price="{{.Price}}">
+
+                        ADD TO CART 🛒
+
+                    </button>
+
+                {{else}}
+
+                    <button
+                        class="order-button"
+                        disabled>
+
+                        OUT OF STOCK
+
+                    </button>
+
+                {{end}}
 
             </div>
 
         </div>
 
-    </div>
+        {{end}}
 
+    {{else}}
 
-    <div class="product-card">
+        <div class="empty-shop">
 
-        <div class="product-image">
-            <div class="image-placeholder">
-                FABRIC IMAGE
-            </div>
-        </div>
-
-        <div class="product-info">
-
-            <h2>Luxury Lace</h2>
+            <h2>
+                No fabrics available yet.
+            </h2>
 
             <p>
-                Elegant lace material suitable
-                for special occasions.
+                New fabrics will appear here
+                when they are added.
             </p>
 
-            <div class="product-bottom">
-
-                <strong>
-                    ₦35,000
-                </strong>
-
-                <button class="order-button">
-                    ORDER
-                </button>
-
-            </div>
-
         </div>
 
-    </div>
-
-
-    <div class="product-card">
-
-        <div class="product-image">
-            <div class="image-placeholder">
-                FABRIC IMAGE
-            </div>
-        </div>
-
-        <div class="product-info">
-
-            <h2>Classic Senator</h2>
-
-            <p>
-                Quality material for beautiful
-                traditional outfits.
-            </p>
-
-            <div class="product-bottom">
-
-                <strong>
-                    ₦30,000
-                </strong>
-
-                <button class="order-button">
-                    ORDER
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="product-card">
-
-        <div class="product-image">
-            <div class="image-placeholder">
-                FABRIC IMAGE
-            </div>
-        </div>
-
-        <div class="product-info">
-
-            <h2>Premium Silk</h2>
-
-            <p>
-                Smooth and beautiful material
-                for elegant outfits.
-            </p>
-
-            <div class="product-bottom">
-
-                <strong>
-                    ₦40,000
-                </strong>
-
-                <button class="order-button">
-                    ORDER
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
+    {{end}}
 
 </section>
 
@@ -196,6 +152,80 @@
 
 </footer>
 
+
+<script>
+
+document
+    .querySelectorAll(".order-button")
+    .forEach(function(button) {
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                const name =
+                    this.dataset.name;
+
+                const price =
+                    parseFloat(
+                        this.dataset.price
+                    );
+
+
+                let cart =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "asebeCart"
+                        )
+                    ) || [];
+
+
+                let existing =
+                    cart.find(
+                        function(item) {
+                            return item.name === name;
+                        }
+                    );
+
+
+                if (existing) {
+
+                    existing.quantity++;
+
+                } else {
+
+                    cart.push({
+
+                        name: name,
+
+                        price: price,
+
+                        quantity: 1
+
+                    });
+
+                }
+
+
+                localStorage.setItem(
+                    "asebeCart",
+                    JSON.stringify(cart)
+                );
+
+
+                alert(
+                    name +
+                    " has been added to your cart!"
+                );
+
+            }
+        );
+
+    });
+
+</script>
+
+
 </body>
 
-</html>code static/css/style.css
+</html>

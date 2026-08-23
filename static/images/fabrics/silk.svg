@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="900">
+<defs>
+<linearGradient id="fabric" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#050505"/>
+<stop offset="35%" stop-color="#e50914"/>
+<stop offset="60%" stop-color="#111111"/>
+<stop offset="100%" stop-color="#e50914"/>
+</linearGradient>
+</defs>
+<rect width="800" height="900" fill="url(#fabric)"/>
+<path d="M0 180 Q200 60 400 180 T800 180" fill="none" stroke="#ffffff" stroke-opacity=".3" stroke-width="20"/>
+<path d="M0 500 Q200 380 400 500 T800 500" fill="none" stroke="#ffffff" stroke-opacity=".3" stroke-width="20"/>
+<path d="M0 820 Q200 700 400 820 T800 820" fill="none" stroke="#ffffff" stroke-opacity=".3" stroke-width="20"/>
+</svg>
