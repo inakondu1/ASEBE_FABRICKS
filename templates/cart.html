@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -12,7 +11,6 @@
 
     <link rel="stylesheet"
           href="/static/css/style.css">
-
 </head>
 
 <body>
@@ -24,239 +22,13 @@
     </div>
 
     <nav>
-
         <a href="/">HOME</a>
-
         <a href="/shop">SHOP</a>
-
-        <a href="/cart">CART 🛒</a>
-
-        <a href="/payment">PAYMENT</a>
-
-    </nav>
-
-</header>
-
-
-<section class="shop-header">
-
-    <p>ASEBE FABRICS</p>
-
-    <h1>YOUR CART</h1>
-
-    <span>
-        Review your selected fabrics.
-    </span>
-
-</section>
-
-
-<section class="products" id="cart-container">
-
-</section>
-
-
-<footer>
-
-    <div class="footer-logo">
-        ASEBE <span>FABRICS</span>
-    </div>
-
-    <p>
-        Quality Fabrics • Beautiful Designs • Great Prices
-    </p>
-
-</footer>
-
-
-<script>
-
-function loadCart() {
-
-    const container =
-        document.getElementById("cart-container");
-
-    let cart =
-        JSON.parse(
-            localStorage.getItem("asebeCart")
-        ) || [];
-
-
-    if (cart.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="empty-shop">
-
-                <h2>Your cart is empty 🛒</h2>
-
-                <p>
-                    Go to the shop and choose your fabrics.
-                </p>
-
-                <a href="/shop"
-                   class="order-button"
-                   style="text-decoration:none; display:inline-block;">
-
-                    GO TO SHOP
-
-                </a>
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-
-    let total = 0;
-
-    let html = "";
-
-
-    cart.forEach(function(item, index) {
-
-        const itemTotal =
-            item.price * item.quantity;
-
-        total += itemTotal;
-
-
-        html += `
-
-            <div class="product-card">
-
-                <div class="product-info">
-
-                    <h2>
-                        ${item.name}
-                    </h2>
-
-                    <p>
-                        Price: ₦${item.price.toLocaleString()}
-                    </p>
-
-                    <p>
-                        Quantity: ${item.quantity}
-                    </p>
-
-                    <strong>
-                        ₦${itemTotal.toLocaleString()}
-                    </strong>
-
-                    <br><br>
-
-                    <button
-                        class="order-button"
-                        onclick="removeItem(${index})">
-
-                        REMOVE
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        `;
-
-    });
-
-
-    html += `
-
-        <div class="empty-shop">
-
-            <h2>
-                Total: ₦${total.toLocaleString()}
-            </h2>
-
-            <br>
-
-            <a href="/checkout"
-               class="order-button"
-               style="text-decoration:none; display:inline-block;">
-
-                PROCEED TO CHECKOUT
-
-            </a>
-
-        </div>
-
-    `;
-
-
-    container.innerHTML = html;
-}
-
-
-function removeItem(index) {
-
-    let cart =
-        JSON.parse(
-            localStorage.getItem("asebeCart")
-        ) || [];
-
-
-    cart.splice(index, 1);
-
-
-    localStorage.setItem(
-        "asebeCart",
-        JSON.stringify(cart)
-    );
-
-
-    loadCart();
-}
-
-
-loadCart();
-
-</script>
-
-
-</body>
-
-</html><!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>ASEBE FABRICS | Cart</title>
-
-    <link rel="stylesheet"
-          href="/static/css/style.css">
-
-</head>
-
-<body>
-
-<header class="navbar">
-
-    <div class="logo">
-        <span>ASEBE</span> FABRICS
-    </div>
-
-    <nav>
-
-        <a href="/">HOME</a>
-
-        <a href="/shop">SHOP</a>
-
         <a href="/cart">
-            CART 🛒
-            <span id="cart-count"></span>
+            CART 🛒 <span id="cart-count"></span>
         </a>
-
+        <a href="/order">ORDER</a>
         <a href="/payment">PAYMENT</a>
-
     </nav>
 
 </header>
@@ -269,7 +41,7 @@ loadCart();
     <h1>YOUR CART</h1>
 
     <span>
-        Review your selected fabrics before checkout.
+        Review your selected fabrics before placing your order.
     </span>
 
 </section>
@@ -324,14 +96,10 @@ function updateCartCount(cart) {
     let count = 0;
 
     cart.forEach(function(item) {
-
         count += item.quantity;
-
     });
 
-    document.getElementById(
-        "cart-count"
-    ).innerText =
+    document.getElementById("cart-count").innerText =
         count > 0 ? "(" + count + ")" : "";
 
 }
@@ -340,13 +108,9 @@ function updateCartCount(cart) {
 function renderCart() {
 
     const container =
-        document.getElementById(
-            "cart-container"
-        );
-
+        document.getElementById("cart-container");
 
     const cart = getCart();
-
 
     updateCartCount(cart);
 
@@ -397,7 +161,6 @@ function renderCart() {
         const itemTotal =
             item.price * item.quantity;
 
-
         total += itemTotal;
 
         totalItems += item.quantity;
@@ -415,12 +178,10 @@ function renderCart() {
                         ${item.name}
                     </h2>
 
-
                     <p>
                         Price:
                         ₦${item.price.toLocaleString()}
                     </p>
-
 
                     <p>
                         Quantity:
@@ -437,7 +198,8 @@ function renderCart() {
 
                         <button
                             onclick="decreaseQuantity(${index})"
-                            class="order-button">
+                            class="order-button"
+                            style="width:auto; padding:10px 18px;">
 
                             −
 
@@ -454,7 +216,8 @@ function renderCart() {
 
                         <button
                             onclick="increaseQuantity(${index})"
-                            class="order-button">
+                            class="order-button"
+                            style="width:auto; padding:10px 18px;">
 
                             +
 
@@ -467,11 +230,9 @@ function renderCart() {
                         Subtotal:
                     </p>
 
-
                     <strong>
                         ₦${itemTotal.toLocaleString()}
                     </strong>
-
 
                     <br><br>
 
@@ -517,7 +278,8 @@ function renderCart() {
                 href="/shop"
                 class="order-button"
                 style="text-decoration:none;
-                       display:inline-block;">
+                       display:inline-block;
+                       margin:5px;">
 
                 CONTINUE SHOPPING
 
@@ -525,25 +287,13 @@ function renderCart() {
 
 
             <a
-                href="/payment"
+                href="/order"
                 class="order-button"
                 style="text-decoration:none;
                        display:inline-block;
-                       margin-left:10px;">
+                       margin:5px;">
 
-                PAYMENT
-
-            </a>
-
-
-            <a
-                href="/checkout"
-                class="order-button"
-                style="text-decoration:none;
-                       display:inline-block;
-                       margin-left:10px;">
-
-                CHECKOUT
+                PLACE ORDER
 
             </a>
 
@@ -561,12 +311,9 @@ function increaseQuantity(index) {
 
     const cart = getCart();
 
-
     cart[index].quantity++;
 
-
     saveCart(cart);
-
 
     renderCart();
 
@@ -576,7 +323,6 @@ function increaseQuantity(index) {
 function decreaseQuantity(index) {
 
     const cart = getCart();
-
 
     if (cart[index].quantity > 1) {
 
@@ -588,9 +334,7 @@ function decreaseQuantity(index) {
 
     }
 
-
     saveCart(cart);
-
 
     renderCart();
 
@@ -601,12 +345,9 @@ function removeItem(index) {
 
     const cart = getCart();
 
-
     cart.splice(index, 1);
 
-
     saveCart(cart);
-
 
     renderCart();
 
@@ -620,4 +361,3 @@ renderCart();
 </body>
 
 </html>
-EOF

@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -11,6 +12,7 @@
 
     <link rel="stylesheet"
           href="/static/css/style.css">
+
 </head>
 
 <body>
@@ -24,134 +26,87 @@
     <nav>
         <a href="/">HOME</a>
         <a href="/shop">SHOP</a>
-        <a href="/admin">ADMIN</a>
+        <a href="/payment">PAYMENT</a>
     </nav>
 
 </header>
 
 
-<section class="shop-header">
+<section class="admin-page">
 
-    <p>ASEBE FABRICS</p>
+    <div class="admin-container">
 
-    <h1>ADMIN PANEL</h1>
+        <div class="admin-heading">
 
-    <span>
-        Manage your fabrics.
-    </span>
+            <p>ASEBE FABRICS</p>
 
-</section>
+            <h1>ADMIN DASHBOARD</h1>
 
+            <span>
+                Manage your fabrics and products.
+            </span>
 
-<div style="text-align:center; margin:30px;">
-
-    <a href="/admin/add-fabric"
-       class="order-button"
-       style="text-decoration:none; display:inline-block;">
-
-        + ADD NEW FABRIC
-
-    </a>
-
-</div>
+        </div>
 
 
-<section class="products">
+        <div class="admin-actions">
 
-    {{if .}}
+            <a href="/admin/add"
+               class="admin-card">
 
-        {{range .}}
-
-        <div class="product-card">
-
-            {{if .Image}}
-
-                <img src="{{.Image}}"
-                     alt="{{.Name}}">
-
-            {{else}}
-
-                <div class="no-image">
-                    NO IMAGE
+                <div class="admin-icon">
+                    +
                 </div>
 
-            {{end}}
-
-
-            <div class="product-info">
-
                 <h2>
-                    {{.Name}}
+                    ADD FABRIC
                 </h2>
 
-
                 <p>
-                    {{.Description}}
+                    Add a new fabric to your collection.
                 </p>
 
+            </a>
 
-                <strong>
-                    ₦{{printf "%.0f" .Price}}
-                </strong>
 
+            <a href="/shop"
+               class="admin-card">
+
+                <div class="admin-icon">
+                    🛍️
+                </div>
+
+                <h2>
+                    VIEW SHOP
+                </h2>
 
                 <p>
-                    Stock: {{.Quantity}}
+                    See how your fabrics appear to customers.
                 </p>
 
-
-                <!-- EDIT BUTTON -->
-
-                <a href="/admin/edit-fabric?id={{.ID}}"
-                   class="order-button"
-                   style="text-decoration:none; display:inline-block;">
-
-                    EDIT
-
-                </a>
+            </a>
 
 
-                <!-- DELETE BUTTON -->
+            <a href="/"
+               class="admin-card">
 
-                <form method="POST"
-                      action="/admin/delete-fabric"
-                      onsubmit="return confirm('Delete this fabric?');"
-                      style="display:inline-block;">
+                <div class="admin-icon">
+                    🏠
+                </div>
 
-                    <input type="hidden"
-                           name="id"
-                           value="{{.ID}}">
+                <h2>
+                    HOME PAGE
+                </h2>
 
-                    <button type="submit"
-                            class="order-button">
+                <p>
+                    Return to the main website.
+                </p>
 
-                        DELETE
-
-                    </button>
-
-                </form>
-
-            </div>
+            </a>
 
         </div>
 
-        {{end}}
-
-    {{else}}
-
-        <div class="empty-shop">
-
-            <h2>
-                No fabrics added yet.
-            </h2>
-
-            <p>
-                Click the button above to add your first fabric.
-            </p>
-
-        </div>
-
-    {{end}}
+    </div>
 
 </section>
 
@@ -163,7 +118,7 @@
     </div>
 
     <p>
-        Admin Panel
+        Admin Area • Manage Your Fabrics
     </p>
 
 </footer>

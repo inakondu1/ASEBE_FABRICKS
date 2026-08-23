@@ -577,6 +577,38 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		http.StatusSeeOther,
 	)
 }
+func orderHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodGet {
+		renderTemplate(w, "templates/order.html", nil)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Could not process order", http.StatusBadRequest)
+		return
+	}
+
+	name := r.FormValue("name")
+	phone := r.FormValue("phone")
+	address := r.FormValue("address")
+	note := r.FormValue("note")
+
+	log.Println("========== NEW ORDER ==========")
+	log.Println("Name:", name)
+	log.Println("Phone:", phone)
+	log.Println("Address:", address)
+	log.Println("Note:", note)
+	log.Println("===============================")
+
+	http.Redirect(w, r, "/payment", http.StatusSeeOther)
+}
 func main() {
 
 	// Connect to database
@@ -606,6 +638,7 @@ func main() {
 	http.HandleFunc("/cart", cartHandler)
 	http.HandleFunc("/payment", paymentHandler)
 	http.HandleFunc("/checkout", checkoutHandler)
+	http.HandleFunc("/order", orderHandler)
 
 	// Admin
 	// Admin

@@ -2,17 +2,15 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>ASEBE FABRICS | Place Order</title>
+    <title>ASEBE FABRICS | Order</title>
 
     <link rel="stylesheet"
           href="/static/css/style.css">
-
 </head>
 
 <body>
@@ -24,118 +22,133 @@
     </div>
 
     <nav>
-        <a href="/">Home</a>
-        <a href="/shop">Shop</a>
-    </nav>
+        
+    <a href="/">HOME</a>
+    <a href="/shop">SHOP</a>
+    <a href="/cart">CART 🛒</a>
+    <a href="/order">ORDER</a>
+    
+    <a href="/payment">PAYMENT</a>
+</nav>
 
 </header>
 
 
-<section class="order-page">
+<section class="shop-header">
 
-    <div class="order-container">
+    <p>ASEBE FABRICS</p>
 
-        <div class="order-heading">
+    <h1>PLACE YOUR ORDER</h1>
 
-            <p>ASEBE FABRICS</p>
+    <span>
+        Complete your information below.
+    </span>
 
-            <h1>PLACE YOUR ORDER</h1>
+</section>
 
-            <span>
-                Fill in your details and we'll receive
-                your order directly on WhatsApp.
-            </span>
+
+<section class="add-fabric-page">
+
+    <div class="add-fabric-card">
+
+        <div class="form-heading">
+
+            <h1>Customer Information</h1>
+
+            <p>
+                Please provide your details so we can process your order.
+            </p>
 
         </div>
 
 
         <form
-            action="/order"
+            class="fabric-form"
             method="POST"
-            class="order-form">
+            action="/order">
 
 
-            <label>
-                Full Name
-            </label>
+            <div class="form-group">
 
-            <input
-                type="text"
-                name="name"
-                placeholder="Enter your full name"
-                required>
+                <label for="name">
+                    Full Name
+                </label>
 
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Enter your full name"
+                    required>
 
-            <label>
-                Phone Number
-            </label>
-
-            <input
-                type="tel"
-                name="phone"
-                placeholder="08012345678"
-                required>
+            </div>
 
 
-            <label>
-                Select Fabric
-            </label>
+            <div class="form-group">
 
-            <select name="fabric" required>
+                <label for="phone">
+                    Phone Number
+                </label>
 
-                <option value="">
-                    -- Select a fabric --
-                </option>
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="08012345678"
+                    required>
 
-                <option value="Royal Ankara">
-                    Royal Ankara - ₦25,000
-                </option>
-
-                <option value="Luxury Lace">
-                    Luxury Lace - ₦35,000
-                </option>
-
-                <option value="Classic Senator">
-                    Classic Senator - ₦30,000
-                </option>
-
-                <option value="Premium Silk">
-                    Premium Silk - ₦40,000
-                </option>
-
-            </select>
+            </div>
 
 
-            <label>
-                Quantity
-            </label>
+            <div class="form-group">
 
-            <input
-                type="number"
-                name="quantity"
-                min="1"
-                value="1"
-                required>
+                <label for="address">
+                    Delivery Address
+                </label>
 
+                <textarea
+                    id="address"
+                    name="address"
+                    placeholder="Enter your delivery address"
+                    required></textarea>
 
-            <label>
-                Delivery Address
-            </label>
-
-            <textarea
-                name="address"
-                rows="5"
-                placeholder="Enter your delivery address"
-                required></textarea>
+            </div>
 
 
-            <button
-                type="submit"
-                class="submit-order">
+            <div class="form-group">
 
-                CONTINUE TO WHATSAPP
+                <label for="note">
+                    Additional Note
+                </label>
 
-            </button>
+                <textarea
+                    id="note"
+                    name="note"
+                    placeholder="Any additional information about your order"></textarea>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <a
+                    href="/cart"
+                    class="cancel-button">
+
+                    BACK TO CART
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="save-button">
+
+                    CONTINUE ORDER
+
+                </button>
+
+            </div>
 
         </form>
 
@@ -155,6 +168,7 @@
     </p>
 
 </footer>
+
 
 </body>
 
