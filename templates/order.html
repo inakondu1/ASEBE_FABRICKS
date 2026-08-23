@@ -114,6 +114,11 @@
                     placeholder="08012345678"
                     required>
 
+            <input
+                    type="hidden"
+                    id="cart-data"
+                    name="cart">
+
             </div>
 
 
@@ -357,9 +362,6 @@ document
         "submit",
         function(event) {
 
-            event.preventDefault();
-
-
             const cart = getCart();
 
 
@@ -387,6 +389,9 @@ document
 
             const note =
                 document.getElementById("note").value;
+
+            document.getElementById("cart-data").value =
+                JSON.stringify(cart);
 
 
             let total = 0;
@@ -467,7 +472,7 @@ document
              */
 
             const whatsappNumber =
-                "2348000000000";
+                "2348101228840";
 
 
             const whatsappURL =

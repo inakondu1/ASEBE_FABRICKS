@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -602,160 +601,15 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	phone := r.FormValue("phone")
 	address := r.FormValue("address")
 	note := r.FormValue("note")
-	cartJSON := r.FormValue("cart")
-
-	if name == "" || phone == "" {
-		http.Error(w, "Name and phone number are required", http.StatusBadRequest)
-		return
-	}
-
-	if cartJSON == "" {
-		http.Error(w, "Your cart is empty", http.StatusBadRequest)
-		return
-	}
-
-	var cart []struct {
-		ID       int     `json:"id"`
-		Name     string  `json:"name"`
-		Price    float64 `json:"price"`
-		Quantity int     `json:"quantity"`
-	}
-
-	err = json.Unmarshal([]byte(cartJSON), &cart)
-	if err != nil {
-		http.Error(w, "Could not read your cart", http.StatusBadRequest)
-		return
-	}
-
-	if len(cart) == 0 {
-		http.Error(w, "Your cart is empty", http.StatusBadRequest)
-		return
-	}
-
-	// Find the registered customer.
-	var customerID int
-
-	err = db.QueryRow(`
-		SELECT id
-		FROM customers
-		WHERE phone = ?
-	`, phone).Scan(&customerID)
-
-	if err == sql.ErrNoRows {
-
-		http.Error(
-			w,
-			"Please register before placing an order.",
-			http.StatusBadRequest,
-		)
-
-		return
-	}
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not find customer: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Calculate order total.
-	var total float64
-
-	for _, item := range cart {
-
-		if item.Quantity <= 0 || item.Price < 0 {
-			http.Error(
-				w,
-				"Invalid item in cart",
-				http.StatusBadRequest,
-			)
-			return
-		}
-
-		total += item.Price * float64(item.Quantity)
-	}
-
-	if total <= 0 {
-		http.Error(w, "Order total must be greater than zero", http.StatusBadRequest)
-		return
-	}
-
-	// Create the order.
-	result, err := db.Exec(`
-		INSERT INTO orders
-		(customer_id, total_amount, amount_paid, payment_status)
-		VALUES (?, ?, 0, 'UNPAID')
-	`,
-		customerID,
-		total,
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not create order: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	orderID, err := result.LastInsertId()
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not get order ID: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Save every fabric in the order.
-	for _, item := range cart {
-
-		subtotal := item.Price * float64(item.Quantity)
-
-		_, err = db.Exec(`
-			INSERT INTO order_items
-			(order_id, product_id, product_name, price, quantity, subtotal)
-			VALUES (?, ?, ?, ?, ?, ?)
-		`,
-			orderID,
-			item.ID,
-			item.Name,
-			item.Price,
-			item.Quantity,
-			subtotal,
-		)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not save order item: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	}
 
 	log.Println("========== NEW ORDER ==========")
-	log.Println("Order ID:", orderID)
-	log.Println("Customer:", name)
+	log.Println("Name:", name)
 	log.Println("Phone:", phone)
 	log.Println("Address:", address)
 	log.Println("Note:", note)
-	log.Println("Total:", total)
 	log.Println("===============================")
 
-	http.Redirect(
-		w,
-		r,
-		"/payment?order="+strconv.FormatInt(orderID, 10),
-		http.StatusSeeOther,
-	)
+	http.Redirect(w, r, "/payment", http.StatusSeeOther)
 }
 
 // =========================
