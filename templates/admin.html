@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Admin</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/admin">ADMIN</a>
+    </nav>
+
+</header>
+
+
+<section class="shop-header">
+
+    <p>ASEBE FABRICS</p>
+
+    <h1>ADMIN PANEL</h1>
+
+    <span>
+        Manage your fabrics.
+    </span>
+
+</section>
+
+
+<div style="text-align:center; margin:30px;">
+
+    <a href="/admin/add-fabric"
+       class="order-button"
+       style="text-decoration:none; display:inline-block;">
+
+        + ADD NEW FABRIC
+
+    </a>
+
+</div>
+
+
+<section class="products">
+
+    {{if .}}
+
+        {{range .}}
+
+        <div class="product-card">
+
+            {{if .Image}}
+
+                <img src="{{.Image}}"
+                     alt="{{.Name}}">
+
+            {{else}}
+
+                <div class="no-image">
+                    NO IMAGE
+                </div>
+
+            {{end}}
+
+            <div class="product-info">
+
+                <h2>{{.Name}}</h2>
+
+                <p>{{.Description}}</p>
+
+                <strong>
+                    ₦{{printf "%.0f" .Price}}
+                </strong>
+
+                <p>
+                    Stock: {{.Quantity}}
+                </p>
+
+                <form method="POST"
+                      action="/admin/delete-fabric"
+                      onsubmit="return confirm('Delete this fabric?');">
+
+                    <input type="hidden"
+                           name="id"
+                           value="{{.ID}}">
+
+                    <button type="submit"
+                            class="order-button">
+
+                        DELETE
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {{end}}
+
+    {{else}}
+
+        <div class="empty-shop">
+
+            <h2>No fabrics added yet.</h2>
+
+            <p>
+                Click the button above to add your first fabric.
+            </p>
+
+        </div>
+
+    {{end}}
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Admin Panel
+    </p>
+
+</footer>
+
+</body>
+
+</html>

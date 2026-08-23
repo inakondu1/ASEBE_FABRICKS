@@ -24,94 +24,110 @@
     </div>
 
     <nav>
-        <a href="/">Home</a>
-        <a href="/shop">Shop</a>
+
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/cart">CART 🛒</a>
+        <a href="/payment">PAYMENT</a>
+
     </nav>
 
 </header>
 
 
-<section class="payment-page">
+<section class="shop-header">
 
-    <div class="payment-container">
+    <p>ASEBE FABRICS</p>
 
-        <div class="payment-heading">
+    <h1>PAYMENT</h1>
 
-            <p>ASEBE FABRICS</p>
+    <span>
+        Make your payment using the details below.
+    </span>
 
-            <h1>MAKE PAYMENT</h1>
-
-            <span>
-                Please transfer your payment to the account below.
-            </span>
-
-        </div>
+</section>
 
 
-        <div class="account-box">
+<section style="max-width:600px; margin:40px auto; padding:20px;">
 
-            <div class="account-item">
+    <div class="product-card">
 
-                <span>Bank Name</span>
+        <div class="product-info">
 
-                <strong>
-                    YOUR BANK NAME
-                </strong>
-
-            </div>
-
-
-            <div class="account-item">
-
-                <span>Account Name</span>
-
-                <strong>
-                    ASEBE FABRICS
-                </strong>
-
-            </div>
-
-
-            <div class="account-item">
-
-                <span>Account Number</span>
-
-                <strong class="account-number">
-                    0000000000
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="payment-warning">
-
-            <strong>IMPORTANT</strong>
+            <h2>
+                BANK TRANSFER
+            </h2>
 
             <p>
-                Please confirm that the account name and
-                account number are correct before making payment.
+                Please transfer your payment to the
+                account below.
             </p>
+
+
+            <hr>
+
+
+            <p>
+                <strong>ACCOUNT NAME</strong>
+            </p>
+
+            <h3>
+                ASEBE FABRICS
+            </h3>
+
+
+            <p>
+                <strong>ACCOUNT NUMBER</strong>
+            </p>
+
+            <h3 id="account-number">
+                0000000000
+            </h3>
+
+
+            <p>
+                <strong>BANK</strong>
+            </p>
+
+            <h3>
+                YOUR BANK NAME
+            </h3>
+
+
+            <button
+                onclick="copyAccount()"
+                class="order-button">
+
+                COPY ACCOUNT NUMBER
+
+            </button>
 
         </div>
 
-
-        <a
-            href="https://wa.me/2348101228840?text=Hello%20ASEBE%20FABRICS,%20I%20have%20made%20payment.%20I%20will%20send%20my%20payment%20receipt%20here."
-            target="_blank"
-            class="payment-whatsapp">
-
-            I HAVE PAID — SEND RECEIPT ON WHATSAPP
-
-        </a>
+    </div>
 
 
-        <a
-            href="/shop"
-            class="back-shop">
+    <div class="empty-shop">
 
-            ← BACK TO SHOP
+        <h2>
+            Important
+        </h2>
+
+        <p>
+            Please confirm your payment before
+            completing your order.
+        </p>
+
+        <p>
+            After payment, send your order through
+            WhatsApp so we can confirm it.
+        </p>
+
+        <a href="/checkout"
+           class="order-button"
+           style="text-decoration:none; display:inline-block;">
+
+            CONTINUE TO CHECKOUT
 
         </a>
 
@@ -132,6 +148,29 @@
 
 </footer>
 
+
+<script>
+
+function copyAccount() {
+
+    const account =
+        document.getElementById(
+            "account-number"
+        ).innerText;
+
+
+    navigator.clipboard.writeText(account);
+
+
+    alert(
+        "Account number copied!"
+    );
+
+}
+
+</script>
+
 </body>
 
 </html>
+EOF

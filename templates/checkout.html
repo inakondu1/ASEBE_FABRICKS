@@ -26,11 +26,8 @@
     <nav>
 
         <a href="/">HOME</a>
-
         <a href="/shop">SHOP</a>
-
         <a href="/cart">CART 🛒</a>
-
         <a href="/payment">PAYMENT</a>
 
     </nav>
@@ -38,102 +35,76 @@
 </header>
 
 
-<section class="checkout-page">
+<section class="shop-header">
 
-    <div class="checkout-container">
+    <p>ASEBE FABRICS</p>
+
+    <h1>CHECKOUT</h1>
+
+    <span>
+        Complete your order.
+    </span>
+
+</section>
 
 
-        <div class="checkout-heading">
+<section style="max-width:600px; margin:40px auto; padding:20px;">
 
-            <p>ASEBE FABRICS</p>
+    <form id="checkout-form">
 
-            <h1>CHECKOUT</h1>
+        <label>
+            Full Name
+        </label>
 
-            <span>
-                Please provide your information
-                to complete your order.
-            </span>
+        <input
+            type="text"
+            id="customer-name"
+            placeholder="Enter your full name"
+            required
+            style="width:100%; padding:14px; margin:10px 0 20px;"
+        >
 
+
+        <label>
+            Phone Number
+        </label>
+
+        <input
+            type="tel"
+            id="customer-phone"
+            placeholder="08012345678"
+            required
+            style="width:100%; padding:14px; margin:10px 0 20px;"
+        >
+
+
+        <label>
+            Delivery Address
+        </label>
+
+        <textarea
+            id="customer-address"
+            placeholder="Enter your delivery address"
+            required
+            style="width:100%; padding:14px; margin:10px 0 20px; min-height:120px;"
+        ></textarea>
+
+
+        <div id="order-summary"
+             style="margin:25px 0;">
         </div>
 
 
-        <form
-            id="checkoutForm"
-            class="checkout-form">
+        <button
+            type="submit"
+            class="order-button"
+            style="width:100%;">
 
+            ORDER VIA WHATSAPP 📱
 
-            <div class="form-group">
+        </button>
 
-                <label>
-                    Full Name
-                </label>
-
-                <input
-                    type="text"
-                    id="customerName"
-                    placeholder="Enter your full name"
-                    required>
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Phone Number
-                </label>
-
-                <input
-                    type="tel"
-                    id="customerPhone"
-                    placeholder="Enter your phone number"
-                    required>
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Delivery Address
-                </label>
-
-                <textarea
-                    id="customerAddress"
-                    placeholder="Enter your complete delivery address"
-                    rows="4"
-                    required></textarea>
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Additional Note
-                </label>
-
-                <textarea
-                    id="customerNote"
-                    placeholder="Any additional information? (Optional)"
-                    rows="3"></textarea>
-
-            </div>
-
-
-            <button
-                type="submit"
-                class="checkout-submit">
-
-                CONTINUE TO PAYMENT →
-
-            </button>
-
-
-        </form>
-
-
-    </div>
+    </form>
 
 </section>
 
@@ -153,52 +124,206 @@
 
 <script>
 
-document
-    .getElementById("checkoutForm")
-    .addEventListener("submit", function(event) {
+const form =
+    document.getElementById("checkout-form");
+
+const summary =
+    document.getElementById("order-summary");
+
+
+let cart =
+    JSON.parse(
+        localStorage.getItem("asebeCart")
+    ) || [];
+
+
+if (cart.length === 0) {
+
+    summary.innerHTML = `
+
+        <div class="empty-shop">
+
+            <h2>Your cart is empty.</h2>
+
+            <a href="/shop"
+               class="order-button"
+               style="text-decoration:none; display:inline-block;">
+
+                GO TO SHOP
+
+            </a>
+
+        </div>
+
+    `;
+
+    form.style.display = "none";
+
+} else {
+
+    let total = 0;
+
+    let html = "<h2>Order Summary</h2>";
+
+
+    cart.forEach(function(item) {
+
+        const itemTotal =
+            item.price * item.quantity;
+
+        total += itemTotal;
+
+
+        html += `
+
+            <p>
+                <strong>${item.name}</strong>
+                × ${item.quantity}
+                — ₦${itemTotal.toLocaleString()}
+            </p>
+
+        `;
+
+    });
+
+
+    html += `
+
+        <hr>
+
+        <h2>
+            Total: ₦${total.toLocaleString()}
+        </h2>
+
+    `;
+
+
+    summary.innerHTML = html;
+}
+
+
+form.addEventListener(
+    "submit",
+    function(event) {
 
         event.preventDefault();
 
 
+        if (cart.length === 0) {
+
+            alert("Your cart is empty.");
+
+            return;
+        }
+
+
         const name =
-            document.getElementById("customerName").value;
+            document.getElementById(
+                "customer-name"
+            ).value.trim();
+
 
         const phone =
-            document.getElementById("customerPhone").value;
+            document.getElementById(
+                "customer-phone"
+            ).value.trim();
+
 
         const address =
-            document.getElementById("customerAddress").value;
-
-        const note =
-            document.getElementById("customerNote").value;
-
-
-        const customer = {
-
-            name: name,
-
-            phone: phone,
-
-            address: address,
-
-            note: note
-
-        };
+            document.getElementById(
+                "customer-address"
+            ).value.trim();
 
 
-        localStorage.setItem(
-            "asebeCustomer",
-            JSON.stringify(customer)
+        let message =
+            "🛍️ *NEW ASEBE FABRICS ORDER*%0A%0A";
+
+
+        message +=
+            "*Customer:* " +
+            encodeURIComponent(name) +
+            "%0A";
+
+
+        message +=
+            "*Phone:* " +
+            encodeURIComponent(phone) +
+            "%0A";
+
+
+        message +=
+            "*Address:* " +
+            encodeURIComponent(address) +
+            "%0A%0A";
+
+
+        message +=
+            "*ORDER DETAILS*%0A";
+
+
+        let total = 0;
+
+
+        cart.forEach(function(item) {
+
+            const itemTotal =
+                item.price * item.quantity;
+
+            total += itemTotal;
+
+
+            message +=
+                encodeURIComponent(
+                    item.name
+                ) +
+                " × " +
+                item.quantity +
+                " — ₦" +
+                itemTotal.toLocaleString() +
+                "%0A";
+
+        });
+
+
+        message +=
+            "%0A*TOTAL: ₦" +
+            total.toLocaleString() +
+            "*";
+
+
+        /*
+           REPLACE THIS NUMBER WITH
+           ASEBE FABRICS' WHATSAPP NUMBER.
+
+           Nigerian format:
+           2348012345678
+
+           Do NOT include +
+           Do NOT include spaces.
+        */
+
+        const whatsappNumber =
+            "2348012345678";
+
+
+        const whatsappURL =
+            "https://wa.me/" +
+            whatsappNumber +
+            "?text=" +
+            message;
+
+
+        window.open(
+            whatsappURL,
+            "_blank"
         );
 
-
-        window.location.href = "/payment";
-
-    });
+    }
+);
 
 </script>
-
 
 </body>
 
 </html>
+EOF

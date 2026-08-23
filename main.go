@@ -112,20 +112,28 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 // =========================
 
 func adminHandler(w http.ResponseWriter, r *http.Request) {
+
 	rows, err := db.Query(`
 		SELECT id, name, description, price, quantity, image
 		FROM products
 		ORDER BY id DESC
 	`)
+
 	if err != nil {
-		http.Error(w, "Could not load fabrics: "+err.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Could not load fabrics: "+err.Error(),
+			http.StatusInternalServerError,
+		)
 		return
 	}
+
 	defer rows.Close()
 
 	var products []Product
 
 	for rows.Next() {
+
 		var product Product
 
 		err := rows.Scan(
@@ -138,16 +146,50 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		)
 
 		if err != nil {
-			http.Error(w, "Could not read fabrics: "+err.Error(), http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Could not read fabrics: "+err.Error(),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
 		products = append(products, product)
 	}
 
-	renderTemplate(w, "templates/admin.html", products)
-}
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read fabrics: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
 
+	tmpl, err := template.ParseFiles(
+		"templates/admin.html",
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Template error: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	err = tmpl.Execute(w, products)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Page error: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+}
 // =========================
 // ADD FABRIC
 // =========================
