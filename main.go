@@ -609,6 +609,104 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/payment", http.StatusSeeOther)
 }
+
+// =========================
+// CUSTOMER REGISTRATION
+// =========================
+
+// =========================
+// CUSTOMER REGISTRATION
+// =========================
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodGet {
+		renderTemplate(w, "templates/register.html", nil)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	err := r.ParseForm()
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not process registration",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	name := r.FormValue("name")
+	phone := r.FormValue("phone")
+
+	if name == "" || phone == "" {
+
+		http.Error(
+			w,
+			"Full name and phone number are required",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	// Check if phone number already exists
+	var existingID int
+
+	err = db.QueryRow(
+		"SELECT id FROM customers WHERE phone = ?",
+		phone,
+	).Scan(&existingID)
+
+	if err == nil {
+
+		http.Error(
+			w,
+			"An account with this phone number already exists",
+			http.StatusConflict,
+		)
+
+		return
+	}
+
+	// Create customer
+	_, err = db.Exec(`
+        INSERT INTO customers
+        (full_name, phone)
+        VALUES (?, ?)
+    `,
+		name,
+		phone,
+	)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"Could not create account: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+
+		return
+	}
+
+	// Registration successful
+	http.Redirect(
+		w,
+		r,
+		"/login",
+		http.StatusSeeOther,
+	)
+}
 func main() {
 
 	// Connect to database
@@ -639,6 +737,7 @@ func main() {
 	http.HandleFunc("/payment", paymentHandler)
 	http.HandleFunc("/checkout", checkoutHandler)
 	http.HandleFunc("/order", orderHandler)
+	http.HandleFunc("/register", registerHandler)
 
 	// Admin
 	// Admin
