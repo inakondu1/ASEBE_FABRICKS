@@ -2,18 +2,21 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>ASEBE FABRICS | Order</title>
+    <title>ASEBE FABRICS | Place Order</title>
 
     <link rel="stylesheet"
           href="/static/css/style.css">
+
 </head>
 
 <body>
+
 
 <header class="navbar">
 
@@ -22,16 +25,21 @@
     </div>
 
     <nav>
-        
-    <a href="/">HOME</a>
-    <a href="/shop">SHOP</a>
-    <a href="/cart">CART 🛒</a>
-    <a href="/order">ORDER</a>
-    
-    <a href="/payment">PAYMENT</a>
-</nav>
+
+        <a href="/">HOME</a>
+
+        <a href="/shop">SHOP</a>
+
+        <a href="/cart">CART 🛒</a>
+
+        <a href="/order">ORDER</a>
+
+        <a href="/payment">PAYMENT</a>
+
+    </nav>
 
 </header>
+
 
 
 <section class="shop-header">
@@ -41,31 +49,39 @@
     <h1>PLACE YOUR ORDER</h1>
 
     <span>
-        Complete your information below.
+        Complete your details and review your fabrics.
     </span>
 
 </section>
+
 
 
 <section class="add-fabric-page">
 
     <div class="add-fabric-card">
 
+
+        <!-- CUSTOMER INFORMATION -->
+
         <div class="form-heading">
+
+            <div class="form-icon">
+                🛍️
+            </div>
 
             <h1>Customer Information</h1>
 
             <p>
-                Please provide your details so we can process your order.
+                Tell us where to deliver your fabrics.
             </p>
 
         </div>
 
 
+
         <form
             class="fabric-form"
-            method="POST"
-            action="/order">
+            id="order-form">
 
 
             <div class="form-group">
@@ -84,10 +100,11 @@
             </div>
 
 
+
             <div class="form-group">
 
                 <label for="phone">
-                    Phone Number
+                    WhatsApp Phone Number
                 </label>
 
                 <input
@@ -100,6 +117,7 @@
             </div>
 
 
+
             <div class="form-group">
 
                 <label for="address">
@@ -109,10 +127,12 @@
                 <textarea
                     id="address"
                     name="address"
+                    rows="4"
                     placeholder="Enter your delivery address"
                     required></textarea>
 
             </div>
+
 
 
             <div class="form-group">
@@ -124,10 +144,42 @@
                 <textarea
                     id="note"
                     name="note"
-                    placeholder="Any additional information about your order"></textarea>
+                    rows="3"
+                    placeholder="Any additional information?"></textarea>
 
             </div>
 
+
+
+            <!-- ORDER SUMMARY -->
+
+            <div class="order-summary">
+
+                <h2>
+                    🛒 Your Order
+                </h2>
+
+                <div id="order-items">
+
+                </div>
+
+                <div class="order-total">
+
+                    <span>
+                        TOTAL
+                    </span>
+
+                    <strong id="order-total">
+                        ₦0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- BUTTONS -->
 
             <div class="form-actions">
 
@@ -144,17 +196,19 @@
                     type="submit"
                     class="save-button">
 
-                    CONTINUE ORDER
+                    ORDER ON WHATSAPP 📱
 
                 </button>
 
             </div>
+
 
         </form>
 
     </div>
 
 </section>
+
 
 
 <footer>
@@ -167,7 +221,280 @@
         Quality Fabrics • Beautiful Designs • Great Prices
     </p>
 
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
 </footer>
+
+
+
+<script>
+
+
+/* =========================
+   GET CART
+========================= */
+
+function getCart() {
+
+    return JSON.parse(
+        localStorage.getItem("asebeCart")
+    ) || [];
+
+}
+
+
+
+/* =========================
+   DISPLAY ORDER
+========================= */
+
+function displayOrder() {
+
+    const cart = getCart();
+
+    const container =
+        document.getElementById("order-items");
+
+    const totalElement =
+        document.getElementById("order-total");
+
+
+    if (cart.length === 0) {
+
+        container.innerHTML = `
+
+            <p style="
+                text-align:center;
+                color:#888;
+                padding:20px;
+            ">
+
+                Your cart is empty.
+
+                <br><br>
+
+                <a href="/shop"
+                   style="color:#c62828;">
+
+                    Go to Shop
+
+                </a>
+
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    let total = 0;
+
+    let html = "";
+
+
+    cart.forEach(function(item) {
+
+        const subtotal =
+            item.price * item.quantity;
+
+
+        total += subtotal;
+
+
+        html += `
+
+            <div class="order-item">
+
+                <div>
+
+                    <strong>
+                        ${item.name}
+                    </strong>
+
+                    <p>
+                        ₦${item.price.toLocaleString()}
+                        ×
+                        ${item.quantity}
+                    </p>
+
+                </div>
+
+
+                <strong>
+
+                    ₦${subtotal.toLocaleString()}
+
+                </strong>
+
+            </div>
+
+        `;
+
+    });
+
+
+    container.innerHTML = html;
+
+
+    totalElement.innerText =
+        "₦" + total.toLocaleString();
+
+}
+
+
+
+/* =========================
+   SEND ORDER TO WHATSAPP
+========================= */
+
+document
+    .getElementById("order-form")
+    .addEventListener(
+        "submit",
+        function(event) {
+
+            event.preventDefault();
+
+
+            const cart = getCart();
+
+
+            if (cart.length === 0) {
+
+                alert(
+                    "Your cart is empty. Please select a fabric first."
+                );
+
+                window.location.href = "/shop";
+
+                return;
+
+            }
+
+
+            const name =
+                document.getElementById("name").value;
+
+            const phone =
+                document.getElementById("phone").value;
+
+            const address =
+                document.getElementById("address").value;
+
+            const note =
+                document.getElementById("note").value;
+
+
+            let total = 0;
+
+            let message =
+                "Hello ASEBE FABRICS! 👋%0A%0A";
+
+            message +=
+                "*NEW FABRIC ORDER*%0A%0A";
+
+
+            message +=
+                "*Customer:* " +
+                encodeURIComponent(name) +
+                "%0A";
+
+
+            message +=
+                "*Phone:* " +
+                encodeURIComponent(phone) +
+                "%0A";
+
+
+            message +=
+                "*Delivery Address:*%0A" +
+                encodeURIComponent(address) +
+                "%0A%0A";
+
+
+            message +=
+                "*ORDER DETAILS*%0A";
+
+
+            cart.forEach(function(item) {
+
+                const subtotal =
+                    item.price * item.quantity;
+
+
+                total += subtotal;
+
+
+                message +=
+                    "- " +
+                    encodeURIComponent(item.name) +
+                    " × " +
+                    item.quantity +
+                    " = ₦" +
+                    subtotal.toLocaleString() +
+                    "%0A";
+
+            });
+
+
+            message += "%0A";
+
+
+            message +=
+                "*TOTAL: ₦" +
+                total.toLocaleString() +
+                "*%0A";
+
+
+            if (note.trim() !== "") {
+
+                message +=
+                    "%0A*Additional Note:*%0A" +
+                    encodeURIComponent(note);
+
+            }
+
+
+            /*
+             * IMPORTANT:
+             * We will replace this number
+             * with the real ASEBE FABRICS
+             * WhatsApp number later.
+             */
+
+            const whatsappNumber =
+                "2348000000000";
+
+
+            const whatsappURL =
+                "https://wa.me/" +
+                whatsappNumber +
+                "?text=" +
+                message;
+
+
+            window.open(
+                whatsappURL,
+                "_blank"
+            );
+
+        }
+    );
+
+
+
+/* =========================
+   LOAD ORDER
+========================= */
+
+displayOrder();
+
+
+</script>
 
 
 </body>

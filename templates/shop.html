@@ -24,16 +24,11 @@
     </div>
 
     <nav>
-
         <a href="/">HOME</a>
-
         <a href="/shop">SHOP</a>
-
         <a href="/cart">CART 🛒</a>
-         <a href="/order">ORDER</a>
-
+        <a href="/order">ORDER</a>
         <a href="/payment">PAYMENT</a>
-
     </nav>
 
 </header>
@@ -46,7 +41,7 @@
     <h1>OUR FABRICS</h1>
 
     <span>
-        Choose your fabrics and add them to your cart.
+        Discover beautiful fabrics for every occasion.
     </span>
 
 </section>
@@ -60,6 +55,8 @@
 
         <div class="product-card">
 
+            <!-- FABRIC IMAGE -->
+
             {{if .Image}}
 
                 <img
@@ -69,11 +66,17 @@
             {{else}}
 
                 <div class="no-image">
-                    NO IMAGE
+
+                    <span>🧵</span>
+
+                    <p>Fabric Image</p>
+
                 </div>
 
             {{end}}
 
+
+            <!-- FABRIC INFORMATION -->
 
             <div class="product-info">
 
@@ -87,9 +90,28 @@
                 </p>
 
 
-                <strong>
+                <div class="fabric-price">
                     ₦{{printf "%.0f" .Price}}
-                </strong>
+                </div>
+
+
+                <div class="stock">
+
+                    {{if gt .Quantity 0}}
+
+                        <span class="available">
+                            ● In Stock
+                        </span>
+
+                    {{else}}
+
+                        <span class="sold-out">
+                            ● Out of Stock
+                        </span>
+
+                    {{end}}
+
+                </div>
 
 
                 {{if gt .Quantity 0}}
@@ -151,6 +173,10 @@
         Quality Fabrics • Beautiful Designs • Great Prices
     </p>
 
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
 </footer>
 
 
@@ -184,7 +210,9 @@ document
                 let existing =
                     cart.find(
                         function(item) {
+
                             return item.name === name;
+
                         }
                     );
 
