@@ -334,7 +334,11 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 
 		if id == "" {
-			http.Error(w, "Fabric ID is required", http.StatusBadRequest)
+			http.Error(
+				w,
+				"Fabric ID is missing",
+				http.StatusBadRequest,
+			)
 			return
 		}
 
@@ -354,7 +358,11 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		)
 
 		if err != nil {
-			http.Error(w, "Fabric not found", http.StatusNotFound)
+			http.Error(
+				w,
+				"Fabric not found: "+err.Error(),
+				http.StatusNotFound,
+			)
 			return
 		}
 
@@ -376,7 +384,7 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(
 				w,
-				"Page error: "+err.Error(),
+				"Could not display edit page: "+err.Error(),
 				http.StatusInternalServerError,
 			)
 		}
@@ -384,69 +392,189 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodPost {
+	if r.Method != http.MethodPost {
 
-		id := r.FormValue("id")
-		name := r.FormValue("name")
-		description := r.FormValue("description")
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
 
-		price, err := strconv.ParseFloat(
-			r.FormValue("price"),
-			64,
+		return
+	}
+
+	err := r.ParseMultipartForm(10 << 20)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"Could not process form",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	id := r.FormValue("id")
+	name := r.FormValue("name")
+	description := r.FormValue("description")
+
+	price, err := strconv.ParseFloat(
+		r.FormValue("price"),
+		64,
+	)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"Invalid price",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	quantity, err := strconv.Atoi(
+		r.FormValue("quantity"),
+	)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"Invalid quantity",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	// Keep the existing image
+	var oldImage string
+
+	err = db.QueryRow(
+		"SELECT image FROM products WHERE id = ?",
+		id,
+	).Scan(&oldImage)
+
+	if err != nil {
+
+		http.Error(
+			w,
+			"Fabric not found",
+			http.StatusNotFound,
+		)
+
+		return
+	}
+
+	imagePath := oldImage
+
+	// Check if a new image was uploaded
+	file, header, err := r.FormFile("image")
+
+	if err == nil {
+
+		defer file.Close()
+
+		err = os.MkdirAll(
+			"uploads/fabrics",
+			0755,
 		)
 
 		if err != nil {
-			http.Error(w, "Invalid price", http.StatusBadRequest)
-			return
-		}
 
-		quantity, err := strconv.Atoi(
-			r.FormValue("quantity"),
-		)
-
-		if err != nil {
-			http.Error(w, "Invalid quantity", http.StatusBadRequest)
-			return
-		}
-
-		_, err = db.Exec(`
-			UPDATE products
-			SET name = ?,
-			    description = ?,
-			    price = ?,
-			    quantity = ?
-			WHERE id = ?
-		`,
-			name,
-			description,
-			price,
-			quantity,
-			id,
-		)
-
-		if err != nil {
 			http.Error(
 				w,
-				"Could not update fabric: "+err.Error(),
+				"Could not create upload folder",
 				http.StatusInternalServerError,
 			)
+
 			return
 		}
 
-		http.Redirect(
+		extension := filepath.Ext(
+			header.Filename,
+		)
+
+		filename := strconv.FormatInt(
+			time.Now().UnixNano(),
+			10,
+		) + extension
+
+		savePath := filepath.Join(
+			"uploads/fabrics",
+			filename,
+		)
+
+		destination, err := os.Create(savePath)
+
+		if err != nil {
+
+			http.Error(
+				w,
+				"Could not save new picture",
+				http.StatusInternalServerError,
+			)
+
+			return
+		}
+
+		defer destination.Close()
+
+		_, err = destination.ReadFrom(file)
+
+		if err != nil {
+
+			http.Error(
+				w,
+				"Could not save new picture",
+				http.StatusInternalServerError,
+			)
+
+			return
+		}
+
+		imagePath = "/uploads/fabrics/" + filename
+	}
+
+	// Update fabric
+	_, err = db.Exec(`
+		UPDATE products
+		SET name = ?,
+		    description = ?,
+		    price = ?,
+		    quantity = ?,
+		    image = ?
+		WHERE id = ?
+	`,
+		name,
+		description,
+		price,
+		quantity,
+		imagePath,
+		id,
+	)
+
+	if err != nil {
+
+		http.Error(
 			w,
-			r,
-			"/admin",
-			http.StatusSeeOther,
+			"Could not update fabric: "+err.Error(),
+			http.StatusInternalServerError,
 		)
 
 		return
 	}
 
-	http.Error(
+	// Back to admin
+	http.Redirect(
 		w,
-		"Method not allowed",
-		http.StatusMethodNotAllowed,
+		r,
+		"/admin",
+		http.StatusSeeOther,
 	)
 }
 func main() {
@@ -480,11 +608,11 @@ func main() {
 	http.HandleFunc("/checkout", checkoutHandler)
 
 	// Admin
+	// Admin
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
-	http.HandleFunc("/admin/delete-fabric", deleteFabricHandler)
 	http.HandleFunc("/admin/edit-fabric", editFabricHandler)
-
+	http.HandleFunc("/admin/delete-fabric", deleteFabricHandler)
 	log.Println("======================================")
 	log.Println("🔥 ASEBE FABRICS")
 	log.Println("🚀 Server running on http://localhost:8080")

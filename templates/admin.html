@@ -80,32 +80,38 @@
 
             <div class="product-info">
 
-                <h2>{{.Name}}</h2>
+                <h2>
+                    {{.Name}}
+                </h2>
 
-                <p>{{.Description}}</p>
+
+                <p>
+                    {{.Description}}
+                </p>
+
 
                 <strong>
                     ₦{{printf "%.0f" .Price}}
                 </strong>
+
 
                 <p>
                     Stock: {{.Quantity}}
                 </p>
 
 
-                <!-- EDIT -->
+                <!-- EDIT BUTTON -->
 
                 <a href="/admin/edit-fabric?id={{.ID}}"
                    class="order-button"
-                   style="text-decoration:none;
-                          display:inline-block;">
+                   style="text-decoration:none; display:inline-block;">
 
                     EDIT
 
                 </a>
 
 
-                <!-- DELETE -->
+                <!-- DELETE BUTTON -->
 
                 <form method="POST"
                       action="/admin/delete-fabric"
@@ -135,7 +141,9 @@
 
         <div class="empty-shop">
 
-            <h2>No fabrics added yet.</h2>
+            <h2>
+                No fabrics added yet.
+            </h2>
 
             <p>
                 Click the button above to add your first fabric.
@@ -163,4 +171,3 @@
 </body>
 
 </html>
-EOF
