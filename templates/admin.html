@@ -77,6 +77,7 @@
 
             {{end}}
 
+
             <div class="product-info">
 
                 <h2>{{.Name}}</h2>
@@ -91,9 +92,25 @@
                     Stock: {{.Quantity}}
                 </p>
 
+
+                <!-- EDIT -->
+
+                <a href="/admin/edit-fabric?id={{.ID}}"
+                   class="order-button"
+                   style="text-decoration:none;
+                          display:inline-block;">
+
+                    EDIT
+
+                </a>
+
+
+                <!-- DELETE -->
+
                 <form method="POST"
                       action="/admin/delete-fabric"
-                      onsubmit="return confirm('Delete this fabric?');">
+                      onsubmit="return confirm('Delete this fabric?');"
+                      style="display:inline-block;">
 
                     <input type="hidden"
                            name="id"
@@ -146,3 +163,4 @@
 </body>
 
 </html>
+EOF

@@ -190,6 +190,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 // =========================
 // ADD FABRIC
 // =========================
@@ -322,6 +323,132 @@ func deleteFabricHandler(w http.ResponseWriter, r *http.Request) {
 // MAIN
 // =========================
 
+// =========================
+// EDIT FABRIC
+// =========================
+
+func editFabricHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodGet {
+
+		id := r.URL.Query().Get("id")
+
+		if id == "" {
+			http.Error(w, "Fabric ID is required", http.StatusBadRequest)
+			return
+		}
+
+		var product Product
+
+		err := db.QueryRow(`
+			SELECT id, name, description, price, quantity, image
+			FROM products
+			WHERE id = ?
+		`, id).Scan(
+			&product.ID,
+			&product.Name,
+			&product.Description,
+			&product.Price,
+			&product.Quantity,
+			&product.Image,
+		)
+
+		if err != nil {
+			http.Error(w, "Fabric not found", http.StatusNotFound)
+			return
+		}
+
+		tmpl, err := template.ParseFiles(
+			"templates/edit_fabric.html",
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Template error: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		err = tmpl.Execute(w, product)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Page error: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+		}
+
+		return
+	}
+
+	if r.Method == http.MethodPost {
+
+		id := r.FormValue("id")
+		name := r.FormValue("name")
+		description := r.FormValue("description")
+
+		price, err := strconv.ParseFloat(
+			r.FormValue("price"),
+			64,
+		)
+
+		if err != nil {
+			http.Error(w, "Invalid price", http.StatusBadRequest)
+			return
+		}
+
+		quantity, err := strconv.Atoi(
+			r.FormValue("quantity"),
+		)
+
+		if err != nil {
+			http.Error(w, "Invalid quantity", http.StatusBadRequest)
+			return
+		}
+
+		_, err = db.Exec(`
+			UPDATE products
+			SET name = ?,
+			    description = ?,
+			    price = ?,
+			    quantity = ?
+			WHERE id = ?
+		`,
+			name,
+			description,
+			price,
+			quantity,
+			id,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not update fabric: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		http.Redirect(
+			w,
+			r,
+			"/admin",
+			http.StatusSeeOther,
+		)
+
+		return
+	}
+
+	http.Error(
+		w,
+		"Method not allowed",
+		http.StatusMethodNotAllowed,
+	)
+}
 func main() {
 
 	// Connect to database
@@ -356,6 +483,7 @@ func main() {
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
 	http.HandleFunc("/admin/delete-fabric", deleteFabricHandler)
+	http.HandleFunc("/admin/edit-fabric", editFabricHandler)
 
 	log.Println("======================================")
 	log.Println("🔥 ASEBE FABRICS")
