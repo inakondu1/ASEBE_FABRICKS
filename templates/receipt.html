@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Receipt</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/customer">MY ACCOUNT</a>
+    </nav>
+
+</header>
+
+
+<section class="shop-header">
+
+    <p>ASEBE FABRICS</p>
+
+    <h1>ORDER RECEIPT</h1>
+
+    <span>
+        Thank you for shopping with us.
+    </span>
+
+</section>
+
+
+<section style="
+    max-width:800px;
+    margin:40px auto;
+    padding:20px;
+">
+
+    <div class="product-card">
+
+        <div class="product-info">
+
+            <h2>
+                ASEBE FABRICS
+            </h2>
+
+            <p>
+                <strong>Order Number:</strong>
+                #{{.OrderID}}
+            </p>
+
+            <p>
+                <strong>Date:</strong>
+                {{.Date}}
+            </p>
+
+            <hr>
+
+
+            <h3>
+                CUSTOMER
+            </h3>
+
+            <p>
+                <strong>Name:</strong>
+                {{.CustomerName}}
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                {{.Phone}}
+            </p>
+
+
+            <hr>
+
+
+            <h3>
+                ORDER ITEMS
+            </h3>
+
+            {{range .Items}}
+
+            <div style="
+                padding:15px 0;
+                border-bottom:1px solid #ddd;
+            ">
+
+                <strong>
+                    {{.ProductName}}
+                </strong>
+
+                <p>
+                    ₦{{.Price}} × {{.Quantity}}
+                </p>
+
+                <strong>
+                    ₦{{.Subtotal}}
+                </strong>
+
+            </div>
+
+            {{end}}
+
+
+            <br>
+
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                font-size:22px;
+            ">
+
+                <strong>
+                    TOTAL
+                </strong>
+
+                <strong>
+                    ₦{{.Total}}
+                </strong>
+
+            </div>
+
+
+            <br>
+
+
+            <div style="
+                padding:20px;
+                background:#f5f5f5;
+            ">
+
+                <p>
+                    <strong>
+                        Amount Paid:
+                    </strong>
+
+                    ₦{{.AmountPaid}}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Balance Remaining:
+                    </strong>
+
+                    ₦{{.Balance}}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Payment Status:
+                    </strong>
+
+                    {{.PaymentStatus}}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Last Payment:
+                    </strong>
+
+                    {{.LastPayment}}
+                </p>
+
+            </div>
+
+
+            <br>
+
+
+            <p style="
+                text-align:center;
+                font-size:18px;
+            ">
+
+                Thank you for choosing
+                <strong>ASEBE FABRICS</strong> ❤️
+
+            </p>
+
+
+            <div style="
+                text-align:center;
+                margin-top:20px;
+            ">
+
+                <button
+                    onclick="window.print()"
+                    class="order-button">
+
+                    PRINT RECEIPT 🖨️
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
+</footer>
+
+</body>
+
+</html>
