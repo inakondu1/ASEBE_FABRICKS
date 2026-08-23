@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -777,7 +778,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(
 		w,
 		r,
-		"/customer",
+		"/customer?phone="+url.QueryEscape(phone),
 		http.StatusSeeOther,
 	)
 }
