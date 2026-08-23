@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
@@ -707,6 +708,149 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.StatusSeeOther,
 	)
 }
+
+// =========================
+// CUSTOMER LOGIN
+// =========================
+
+// =========================
+// CUSTOMER LOGIN
+// =========================
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodGet {
+		renderTemplate(w, "templates/login.html", nil)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Could not process login", http.StatusBadRequest)
+		return
+	}
+
+	phone := r.FormValue("phone")
+
+	if phone == "" {
+		http.Error(w, "Phone number is required", http.StatusBadRequest)
+		return
+	}
+
+	var customerID int
+	var customerName string
+
+	err = db.QueryRow(`
+		SELECT id, full_name
+		FROM customers
+		WHERE phone = ?
+	`, phone).Scan(
+		&customerID,
+		&customerName,
+	)
+
+	if err == sql.ErrNoRows {
+		http.Error(
+			w,
+			"No account found with this phone number. Please register first.",
+			http.StatusNotFound,
+		)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not login: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	log.Println("Customer logged in:", customerName)
+
+	http.Redirect(
+		w,
+		r,
+		"/customer",
+		http.StatusSeeOther,
+	)
+}
+
+// =========================
+// CUSTOMER DASHBOARD
+// =========================
+
+func customerHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	phone := r.URL.Query().Get("phone")
+
+	if phone == "" {
+		http.Redirect(
+			w,
+			r,
+			"/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	var customer struct {
+		ID    int
+		Name  string
+		Phone string
+	}
+
+	err := db.QueryRow(`
+		SELECT id, full_name, phone
+		FROM customers
+		WHERE phone = ?
+	`, phone).Scan(
+		&customer.ID,
+		&customer.Name,
+		&customer.Phone,
+	)
+
+	if err == sql.ErrNoRows {
+		http.Redirect(
+			w,
+			r,
+			"/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load customer: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	renderTemplate(
+		w,
+		"templates/customer.html",
+		customer,
+	)
+}
+
 func main() {
 
 	// Connect to database
@@ -738,6 +882,8 @@ func main() {
 	http.HandleFunc("/checkout", checkoutHandler)
 	http.HandleFunc("/order", orderHandler)
 	http.HandleFunc("/register", registerHandler)
+	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/customer", customerHandler)
 
 	// Admin
 	// Admin

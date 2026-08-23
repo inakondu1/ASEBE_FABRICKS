@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Customer Dashboard</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/cart">CART 🛒</a>
+        <a href="/order">ORDER</a>
+        <a href="/payment">PAYMENT</a>
+        <a href="/customer">MY ACCOUNT</a>
+        <a href="/logout">LOGOUT</a>
+
+    </nav>
+
+</header>
+
+
+<section class="shop-header">
+
+    <p>ASEBE FABRICS</p>
+
+    <h1>MY CUSTOMER DASHBOARD</h1>
+
+    <span>
+        Welcome back, {{.Name}} ❤️
+    </span>
+
+</section>
+
+
+<section style="max-width:1000px; margin:40px auto; padding:20px;">
+
+    <div class="products">
+
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>MY ACCOUNT</h2>
+
+                <p>
+                    <strong>Name:</strong>
+                    {{.Name}}
+                </p>
+
+                <p>
+                    <strong>Phone:</strong>
+                    {{.Phone}}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>MY ORDERS</h2>
+
+                <p>
+                    Your orders and purchase history
+                    will appear here.
+                </p>
+
+                <a
+                    href="/order-history"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
+
+                    VIEW ORDER HISTORY
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>PAYMENT STATUS</h2>
+
+                <p>
+                    Your payment information will
+                    appear here.
+                </p>
+
+                <p>
+                    Amount Paid:
+                    <strong>₦0</strong>
+                </p>
+
+                <p>
+                    Balance:
+                    <strong>₦0</strong>
+                </p>
+
+                <p>
+                    Last Payment:
+                    <strong>Not available</strong>
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>💬 CUSTOMER SERVICE</h2>
+
+                <p>
+                    Need help with your order?
+                    Our customer service team is
+                    here to assist you.
+                </p>
+
+                <a
+                    href="/chat"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
+
+                    CHAT WITH US
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>❤️ THANK YOU</h2>
+
+                <p>
+                    Thank you for choosing
+                    ASEBE FABRICS.
+                </p>
+
+                <p>
+                    We truly appreciate your
+                    business and look forward
+                    to serving you again.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
+</footer>
+
+</body>
+
+</html>

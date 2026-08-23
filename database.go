@@ -112,23 +112,21 @@ func initDatabase() {
 		log.Println("Starter fabrics added successfully")
 	}
 
-	        // Create customers table
-        _, err = db.Exec(`
-                CREATE TABLE IF NOT EXISTS customers (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        full_name TEXT NOT NULL,
-                        phone TEXT NOT NULL UNIQUE,
-                        password TEXT NOT NULL,
-                        address TEXT,
-                        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-                )
-        `)
+	// Create customers table
+	_, err = db.Exec(`
+    CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT NOT NULL,
+        phone TEXT NOT NULL UNIQUE,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`)
 
-        if err != nil {
-                log.Fatal("Could not create customers table:", err)
-        }
+	if err != nil {
+		log.Fatal("Could not create customers table:", err)
+	}
 
-        log.Println("Customers table ready")
+	log.Println("Customers table ready")
 
 	log.Println("ASEBE FABRICS database connected")
 	log.Println("Products table ready")
