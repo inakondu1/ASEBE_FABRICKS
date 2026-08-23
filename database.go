@@ -130,4 +130,42 @@ func initDatabase() {
 
 	log.Println("ASEBE FABRICS database connected")
 	log.Println("Products table ready")
+
+        // Create orders table
+        _, err = db.Exec(`
+                CREATE TABLE IF NOT EXISTS orders (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        customer_id INTEGER NOT NULL,
+                        total_amount REAL NOT NULL DEFAULT 0,
+                        amount_paid REAL NOT NULL DEFAULT 0,
+                        payment_status TEXT NOT NULL DEFAULT 'UNPAID',
+                        last_payment_date DATETIME,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+        `)
+
+        if err != nil {
+                log.Fatal("Could not create orders table:", err)
+        }
+
+        // Create order items table
+        _, err = db.Exec(`
+                CREATE TABLE IF NOT EXISTS order_items (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        order_id INTEGER NOT NULL,
+                        product_id INTEGER,
+                        product_name TEXT NOT NULL,
+                        price REAL NOT NULL,
+                        quantity INTEGER NOT NULL,
+                        subtotal REAL NOT NULL
+                )
+        `)
+
+        if err != nil {
+                log.Fatal("Could not create order items table:", err)
+        }
+
+        log.Println("Orders table ready")
+        log.Println("Order items table ready")
+
 }
