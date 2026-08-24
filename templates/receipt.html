@@ -209,6 +209,32 @@
 
                 </button>
 
+                {{if eq .PaymentStatus "PAID"}}
+
+                <button
+                    onclick="forwardToWhatsApp()"
+                    class="order-button"
+                    style="margin-left:10px;">
+
+                    FORWARD TO WHATSAPP 📱
+
+                </button>
+
+                {{else}}
+
+                <p style="
+                    margin-top:15px;
+                    color:#c62828;
+                    font-weight:bold;
+                ">
+
+                    WhatsApp forwarding is available
+                    after full payment.
+
+                </p>
+
+                {{end}}
+
             </div>
 
         </div>
@@ -233,6 +259,42 @@
     </p>
 
 </footer>
+
+
+<script>
+
+function forwardToWhatsApp() {
+
+    const phone = "{{.Phone}}";
+
+    const message =
+        "Hello ASEBE FABRICS! 👋\n\n" +
+        "*PAID ORDER RECEIPT*\n\n" +
+        "*Order Number:* #{{.OrderID}}\n" +
+        "*Customer:* {{.CustomerName}}\n" +
+        "*Phone:* {{.Phone}}\n\n" +
+        "*ORDER ITEMS*\n" +
+        "{{range .Items}}- {{.ProductName}} × {{.Quantity}} = ₦{{.Subtotal}}\n{{end}}" +
+        "\n*TOTAL:* ₦{{.Total}}\n" +
+        "*AMOUNT PAID:* ₦{{.AmountPaid}}\n" +
+        "*PAYMENT STATUS:* {{.PaymentStatus}}\n\n" +
+        "Please confirm my paid order. Thank you.";
+
+    const whatsappNumber = "2348101228840";
+
+    const whatsappURL =
+        "https://wa.me/" +
+        whatsappNumber +
+        "?text=" +
+        encodeURIComponent(message);
+
+    window.open(
+        whatsappURL,
+        "_blank"
+    );
+}
+
+</script>
 
 </body>
 
