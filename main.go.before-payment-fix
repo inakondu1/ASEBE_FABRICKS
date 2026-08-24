@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -124,10 +123,10 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	var total float64
 
 	err := db.QueryRow(`
-                SELECT total_amount
-                FROM orders
-                WHERE id = ?
-        `, orderID).Scan(&total)
+		SELECT total_amount
+		FROM orders
+		WHERE id = ?
+	`, orderID).Scan(&total)
 
 	if err == sql.ErrNoRows {
 		http.Error(
@@ -229,7 +228,7 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		64,
 	)
 
-	if err != nil || amountPaid <= 0 {
+	if err != nil || amountPaid < 0 {
 		http.Error(
 			w,
 			"Invalid payment amount",
@@ -238,18 +237,13 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load the order's total and previous payments.
 	var total float64
-	var currentAmountPaid float64
 
 	err = db.QueryRow(`
-                SELECT total_amount, amount_paid
-                FROM orders
-                WHERE id = ?
-        `, orderID).Scan(
-		&total,
-		&currentAmountPaid,
-	)
+		SELECT total_amount
+		FROM orders
+		WHERE id = ?
+	`, orderID).Scan(&total)
 
 	if err == sql.ErrNoRows {
 		http.Error(
@@ -269,19 +263,10 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// The amount entered is the NEW payment.
-	// Add it to all previous payments.
-	newTotalPaid := currentAmountPaid + amountPaid
-
-	if newTotalPaid > total {
-		remaining := total - currentAmountPaid
-
+	if amountPaid > total {
 		http.Error(
 			w,
-			fmt.Sprintf(
-				"Payment is greater than the remaining balance of ₦%.2f",
-				remaining,
-			),
+			"Amount paid cannot be greater than order total",
 			http.StatusBadRequest,
 		)
 		return
@@ -289,23 +274,23 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	paymentStatus := "UNPAID"
 
-	if newTotalPaid > 0 && newTotalPaid < total {
+	if amountPaid > 0 && amountPaid < total {
 		paymentStatus = "PART PAYMENT"
 	}
 
-	if newTotalPaid == total {
+	if amountPaid == total {
 		paymentStatus = "PAID"
 	}
 
 	_, err = db.Exec(`
-                UPDATE orders
-                SET
-                        amount_paid = ?,
-                        payment_status = ?,
-                        last_payment_date = CURRENT_TIMESTAMP
-                WHERE id = ?
-        `,
-		newTotalPaid,
+		UPDATE orders
+		SET
+			amount_paid = ?,
+			payment_status = ?,
+			last_payment_date = CURRENT_TIMESTAMP
+		WHERE id = ?
+	`,
+		amountPaid,
 		paymentStatus,
 		orderID,
 	)

@@ -148,9 +148,6 @@ func initDatabase() {
 		log.Fatal("Could not create orders table:", err)
 	}
 
-	// Add debt tracking fields
-	addDebtColumns()
-
 	// Create order items table
 	_, err = db.Exec(`
                 CREATE TABLE IF NOT EXISTS order_items (
@@ -171,36 +168,4 @@ func initDatabase() {
 	log.Println("Orders table ready")
 	log.Println("Order items table ready")
 
-}
-
-func addDebtColumns() {
-
-	_, err := db.Exec(`
-                ALTER TABLE orders
-                ADD COLUMN previous_balance REAL NOT NULL DEFAULT 0
-        `)
-
-	if err != nil && err.Error() != "duplicate column name: previous_balance" {
-		log.Fatal("Could not add previous_balance column:", err)
-	}
-
-	_, err = db.Exec(`
-                ALTER TABLE orders
-                ADD COLUMN previous_balance_order_id INTEGER
-        `)
-
-	if err != nil && err.Error() != "duplicate column name: previous_balance_order_id" {
-		log.Fatal("Could not add previous_balance_order_id column:", err)
-	}
-
-	_, err = db.Exec(`
-                ALTER TABLE orders
-                ADD COLUMN carried_forward_to_order_id INTEGER
-        `)
-
-	if err != nil && err.Error() != "duplicate column name: carried_forward_to_order_id" {
-		log.Fatal("Could not add carried_forward_to_order_id column:", err)
-	}
-
-	log.Println("Debt tracking fields ready")
 }

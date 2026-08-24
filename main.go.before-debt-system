@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -124,10 +123,10 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	var total float64
 
 	err := db.QueryRow(`
-                SELECT total_amount
-                FROM orders
-                WHERE id = ?
-        `, orderID).Scan(&total)
+		SELECT total_amount
+		FROM orders
+		WHERE id = ?
+	`, orderID).Scan(&total)
 
 	if err == sql.ErrNoRows {
 		http.Error(
@@ -229,7 +228,7 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		64,
 	)
 
-	if err != nil || amountPaid <= 0 {
+	if err != nil || amountPaid < 0 {
 		http.Error(
 			w,
 			"Invalid payment amount",
@@ -238,18 +237,13 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load the order's total and previous payments.
 	var total float64
-	var currentAmountPaid float64
 
 	err = db.QueryRow(`
-                SELECT total_amount, amount_paid
-                FROM orders
-                WHERE id = ?
-        `, orderID).Scan(
-		&total,
-		&currentAmountPaid,
-	)
+		SELECT total_amount
+		FROM orders
+		WHERE id = ?
+	`, orderID).Scan(&total)
 
 	if err == sql.ErrNoRows {
 		http.Error(
@@ -269,19 +263,10 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// The amount entered is the NEW payment.
-	// Add it to all previous payments.
-	newTotalPaid := currentAmountPaid + amountPaid
-
-	if newTotalPaid > total {
-		remaining := total - currentAmountPaid
-
+	if amountPaid > total {
 		http.Error(
 			w,
-			fmt.Sprintf(
-				"Payment is greater than the remaining balance of ₦%.2f",
-				remaining,
-			),
+			"Amount paid cannot be greater than order total",
 			http.StatusBadRequest,
 		)
 		return
@@ -289,23 +274,23 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	paymentStatus := "UNPAID"
 
-	if newTotalPaid > 0 && newTotalPaid < total {
+	if amountPaid > 0 && amountPaid < total {
 		paymentStatus = "PART PAYMENT"
 	}
 
-	if newTotalPaid == total {
+	if amountPaid == total {
 		paymentStatus = "PAID"
 	}
 
 	_, err = db.Exec(`
-                UPDATE orders
-                SET
-                        amount_paid = ?,
-                        payment_status = ?,
-                        last_payment_date = CURRENT_TIMESTAMP
-                WHERE id = ?
-        `,
-		newTotalPaid,
+		UPDATE orders
+		SET
+			amount_paid = ?,
+			payment_status = ?,
+			last_payment_date = CURRENT_TIMESTAMP
+		WHERE id = ?
+	`,
+		amountPaid,
 		paymentStatus,
 		orderID,
 	)
@@ -900,50 +885,14 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check for an outstanding balance from a previous order.
-	var previousBalance float64
-	var previousBalanceOrderID int64
-
-	err = db.QueryRow(`
-                SELECT
-                        total_amount - amount_paid,
-                        id
-                FROM orders
-                WHERE customer_id = ?
-                  AND amount_paid < total_amount
-                  AND carried_forward_to_order_id IS NULL
-                ORDER BY id ASC
-                LIMIT 1
-        `, customerID).Scan(
-		&previousBalance,
-		&previousBalanceOrderID,
-	)
-
-	if err == sql.ErrNoRows {
-		previousBalance = 0
-		previousBalanceOrderID = 0
-	} else if err != nil {
-		http.Error(
-			w,
-			"Could not check previous balance: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Add the previous outstanding balance to the new order.
-	totalWithBalance := total + previousBalance
-
 	// Create the order.
 	result, err := db.Exec(`
 		INSERT INTO orders
-		(customer_id, total_amount, amount_paid, payment_status, previous_balance, previous_balance_order_id)
-		VALUES (?, ?, 0, 'UNPAID', ?, ?)
+		(customer_id, total_amount, amount_paid, payment_status)
+		VALUES (?, ?, 0, 'UNPAID')
 	`,
 		customerID,
-		totalWithBalance,
-		previousBalance,
-		previousBalanceOrderID,
+		total,
 	)
 
 	if err != nil {
@@ -964,27 +913,6 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError,
 		)
 		return
-	}
-
-	// Mark the previous outstanding order as carried forward.
-	if previousBalanceOrderID > 0 {
-		_, err = db.Exec(`
-                        UPDATE orders
-                        SET carried_forward_to_order_id = ?
-                        WHERE id = ?
-                `,
-			orderID,
-			previousBalanceOrderID,
-		)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not link previous balance: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
 	}
 
 	// Save every fabric in the order.
@@ -1058,18 +986,16 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Receipt struct {
-		OrderID                int64
-		Date                   string
-		CustomerName           string
-		Phone                  string
-		Items                  []ReceiptItem
-		Total                  float64
-		AmountPaid             float64
-		Balance                float64
-		PaymentStatus          string
-		PreviousBalance        float64
-		PreviousBalanceOrderID int64
-		LastPayment            string
+		OrderID       int64
+		Date          string
+		CustomerName  string
+		Phone         string
+		Items         []ReceiptItem
+		Total         float64
+		AmountPaid    float64
+		Balance       float64
+		PaymentStatus string
+		LastPayment   string
 	}
 
 	var receipt Receipt
@@ -1083,8 +1009,6 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 			o.total_amount,
 			o.amount_paid,
 			o.payment_status,
-                        o.previous_balance,
-                        COALESCE(o.previous_balance_order_id, 0),
 			COALESCE(o.last_payment_date, '')
 		FROM orders o
 		JOIN customers c ON c.id = o.customer_id
@@ -1097,8 +1021,6 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 		&receipt.Total,
 		&receipt.AmountPaid,
 		&receipt.PaymentStatus,
-		&receipt.PreviousBalance,
-		&receipt.PreviousBalanceOrderID,
 		&receipt.LastPayment,
 	)
 
@@ -1485,14 +1407,12 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type OrderHistoryItem struct {
-		ID                     int64
-		Date                   string
-		Total                  float64
-		AmountPaid             float64
-		Balance                float64
-		PaymentStatus          string
-		PreviousBalance        float64
-		PreviousBalanceOrderID int64
+		ID            int64
+		Date          string
+		Total         float64
+		AmountPaid    float64
+		Balance       float64
+		PaymentStatus string
 	}
 
 	type OrderHistoryPage struct {
