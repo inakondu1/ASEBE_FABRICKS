@@ -81,7 +81,9 @@
 
         <form
             class="fabric-form"
-            id="order-form">
+            id="order-form"
+            action="/order"
+            method="POST">
 
 
             <div class="form-group">
@@ -201,7 +203,7 @@
                     type="submit"
                     class="save-button">
 
-                    ORDER ON WHATSAPP 📱
+                    PLACE ORDER → PAYMENT
 
                 </button>
 
@@ -353,7 +355,7 @@ function displayOrder() {
 
 
 /* =========================
-   SEND ORDER TO WHATSAPP
+   SUBMIT ORDER
 ========================= */
 
 document
@@ -364,8 +366,9 @@ document
 
             const cart = getCart();
 
-
             if (cart.length === 0) {
+
+                event.preventDefault();
 
                 alert(
                     "Your cart is empty. Please select a fabric first."
@@ -374,122 +377,19 @@ document
                 window.location.href = "/shop";
 
                 return;
-
             }
 
-
-            const name =
-                document.getElementById("name").value;
-
-            const phone =
-                document.getElementById("phone").value;
-
-            const address =
-                document.getElementById("address").value;
-
-            const note =
-                document.getElementById("note").value;
+            /*
+             * Put the cart into the hidden form field.
+             * The form will then POST directly to /order.
+             * Go will create the order and send the customer
+             * to the payment page.
+             */
 
             document.getElementById("cart-data").value =
                 JSON.stringify(cart);
-
-
-            let total = 0;
-
-            let message =
-                "Hello ASEBE FABRICS! 👋%0A%0A";
-
-            message +=
-                "*NEW FABRIC ORDER*%0A%0A";
-
-
-            message +=
-                "*Customer:* " +
-                encodeURIComponent(name) +
-                "%0A";
-
-
-            message +=
-                "*Phone:* " +
-                encodeURIComponent(phone) +
-                "%0A";
-
-
-            message +=
-                "*Delivery Address:*%0A" +
-                encodeURIComponent(address) +
-                "%0A%0A";
-
-
-            message +=
-                "*ORDER DETAILS*%0A";
-
-
-            cart.forEach(function(item) {
-
-                const subtotal =
-                    item.price * item.quantity;
-
-
-                total += subtotal;
-
-
-                message +=
-                    "- " +
-                    encodeURIComponent(item.name) +
-                    " × " +
-                    item.quantity +
-                    " = ₦" +
-                    subtotal.toLocaleString() +
-                    "%0A";
-
-            });
-
-
-            message += "%0A";
-
-
-            message +=
-                "*TOTAL: ₦" +
-                total.toLocaleString() +
-                "*%0A";
-
-
-            if (note.trim() !== "") {
-
-                message +=
-                    "%0A*Additional Note:*%0A" +
-                    encodeURIComponent(note);
-
-            }
-
-
-            /*
-             * IMPORTANT:
-             * We will replace this number
-             * with the real ASEBE FABRICS
-             * WhatsApp number later.
-             */
-
-            const whatsappNumber =
-                "2348101228840";
-
-
-            const whatsappURL =
-                "https://wa.me/" +
-                whatsappNumber +
-                "?text=" +
-                message;
-
-
-            window.open(
-                whatsappURL,
-                "_blank"
-            );
-
         }
     );
-
 
 
 /* =========================

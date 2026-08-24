@@ -120,10 +120,46 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var total float64
+
+	err := db.QueryRow(`
+		SELECT total_amount
+		FROM orders
+		WHERE id = ?
+	`, orderID).Scan(&total)
+
+	if err == sql.ErrNoRows {
+		http.Error(
+			w,
+			"Order not found",
+			http.StatusNotFound,
+		)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	type PaymentPage struct {
+		OrderID string
+		Total   float64
+	}
+
+	data := PaymentPage{
+		OrderID: orderID,
+		Total:   total,
+	}
+
 	renderTemplate(
 		w,
 		"templates/payment.html",
-		orderID,
+		data,
 	)
 }
 
@@ -133,7 +169,29 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 
 func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodGet {
+	if r.Method == http.MethodGet {
+
+		orderID := r.URL.Query().Get("order")
+
+		if orderID == "" {
+			http.Error(
+				w,
+				"Order number is required",
+				http.StatusBadRequest,
+			)
+			return
+		}
+
+		renderTemplate(
+			w,
+			"templates/checkout.html",
+			orderID,
+		)
+
+		return
+	}
+
+	if r.Method != http.MethodPost {
 		http.Error(
 			w,
 			"Method not allowed",
@@ -142,13 +200,106 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderID := r.URL.Query().Get("order")
+	err := r.ParseForm()
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not process payment",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	orderID := r.FormValue("order")
+	amountPaidText := r.FormValue("amount_paid")
 
 	if orderID == "" {
 		http.Error(
 			w,
 			"Order number is required",
 			http.StatusBadRequest,
+		)
+		return
+	}
+
+	amountPaid, err := strconv.ParseFloat(
+		amountPaidText,
+		64,
+	)
+
+	if err != nil || amountPaid < 0 {
+		http.Error(
+			w,
+			"Invalid payment amount",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	var total float64
+
+	err = db.QueryRow(`
+		SELECT total_amount
+		FROM orders
+		WHERE id = ?
+	`, orderID).Scan(&total)
+
+	if err == sql.ErrNoRows {
+		http.Error(
+			w,
+			"Order not found",
+			http.StatusNotFound,
+		)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	if amountPaid > total {
+		http.Error(
+			w,
+			"Amount paid cannot be greater than order total",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	paymentStatus := "UNPAID"
+
+	if amountPaid > 0 && amountPaid < total {
+		paymentStatus = "PART PAYMENT"
+	}
+
+	if amountPaid == total {
+		paymentStatus = "PAID"
+	}
+
+	_, err = db.Exec(`
+		UPDATE orders
+		SET
+			amount_paid = ?,
+			payment_status = ?,
+			last_payment_date = CURRENT_TIMESTAMP
+		WHERE id = ?
+	`,
+		amountPaid,
+		paymentStatus,
+		orderID,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not save payment: "+err.Error(),
+			http.StatusInternalServerError,
 		)
 		return
 	}

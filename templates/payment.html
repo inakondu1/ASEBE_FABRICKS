@@ -28,9 +28,7 @@
         <a href="/">HOME</a>
         <a href="/shop">SHOP</a>
         <a href="/cart">CART 🛒</a>
-         <a href="/order">ORDER</a>
-        <a href="/payment">PAYMENT</a>
-
+        <a href="/order">ORDER</a>
     </nav>
 
 </header>
@@ -43,7 +41,7 @@
     <h1>PAYMENT</h1>
 
     <span>
-        Make your payment using the details below.
+        Complete your payment before sending your order.
     </span>
 
 </section>
@@ -55,17 +53,23 @@
 
         <div class="product-info">
 
-            <h2>
-                BANK TRANSFER
-            </h2>
+            <h2>ORDER #{{.OrderID}}</h2>
 
             <p>
-                Please transfer your payment to the
-                account below.
+                <strong>ORDER TOTAL</strong>
             </p>
 
+            <h1 style="margin-bottom:25px;">
+                ₦{{.Total}}
+            </h1>
 
             <hr>
+
+            <h2>BANK TRANSFER</h2>
+
+            <p>
+                Make your payment to the account below.
+            </p>
 
 
             <p>
@@ -85,17 +89,8 @@
                 0000000000
             </h3>
 
-
-            <p>
-                <strong>BANK</strong>
-            </p>
-
-            <h3>
-                YOUR BANK NAME
-            </h3>
-
-
             <button
+                type="button"
                 onclick="copyAccount()"
                 class="order-button">
 
@@ -103,35 +98,109 @@
 
             </button>
 
+
+            <p style="margin-top:25px;">
+                <strong>BANK</strong>
+            </p>
+
+            <h3>
+                YOUR BANK NAME
+            </h3>
+
         </div>
 
     </div>
 
 
-    <div class="empty-shop">
+    <div class="empty-shop" style="margin-top:25px;">
 
         <h2>
-            Important
+            PAYMENT DETAILS
         </h2>
 
-        <p>
-            Please confirm your payment before
-            completing your order.
-        </p>
+        <form
+            action="/checkout"
+            method="POST"
+            onsubmit="return validatePayment()">
 
-        <p>
-            After payment, send your order through
-            WhatsApp so we can confirm it.
-        </p>
+            <input
+                type="hidden"
+                name="order"
+                value="{{.OrderID}}">
 
-        <a id="checkout-link"
-           href="#"
-           class="order-button"
-           style="text-decoration:none; display:inline-block;">
 
-            CONTINUE TO CHECKOUT
+            <label>
+                Payment Type
+            </label>
 
-        </a>
+            <select
+                id="payment-type"
+                name="payment_type"
+                onchange="setPaymentAmount()"
+                required
+                style="width:100%; padding:14px; margin:10px 0 20px;">
+
+                <option value="">
+                    Select payment type
+                </option>
+
+                <option value="full">
+                    Full Payment
+                </option>
+
+                <option value="part">
+                    Part Payment
+                </option>
+
+            </select>
+
+
+            <label>
+                Amount Paid
+            </label>
+
+            <input
+                type="number"
+                id="amount-paid"
+                name="amount_paid"
+                min="0"
+                step="0.01"
+                placeholder="Enter amount paid"
+                required
+                style="width:100%; padding:14px; margin:10px 0 20px;">
+
+
+            <label style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                margin:20px 0;
+                text-align:left;
+            ">
+
+                <input
+                    type="checkbox"
+                    id="payment-confirmed"
+                    name="payment_confirmed"
+                    value="yes"
+                    required
+                    style="width:20px; height:20px;">
+
+                I confirm that I have made this payment.
+
+            </label>
+
+
+            <button
+                type="submit"
+                class="order-button"
+                style="width:100%;">
+
+                CONTINUE TO RECEIPT
+
+            </button>
+
+        </form>
 
     </div>
 
@@ -148,15 +217,17 @@
         Quality Fabrics • Beautiful Designs • Great Prices
     </p>
 
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
 </footer>
 
 
 <script>
 
-const orderID = "{{.}}";
-
-document.getElementById("checkout-link").href =
-    "/checkout?order=" + encodeURIComponent(orderID);
+const orderTotal =
+    Number("{{.Total}}");
 
 
 function copyAccount() {
@@ -164,16 +235,104 @@ function copyAccount() {
     const account =
         document.getElementById(
             "account-number"
-        ).innerText;
-
+        ).innerText.trim();
 
     navigator.clipboard.writeText(account);
-
 
     alert(
         "Account number copied!"
     );
+}
 
+
+function setPaymentAmount() {
+
+    const type =
+        document.getElementById(
+            "payment-type"
+        ).value;
+
+    const amount =
+        document.getElementById(
+            "amount-paid"
+        );
+
+    if (type === "full") {
+
+        amount.value =
+            orderTotal;
+
+        amount.readOnly = true;
+
+    } else {
+
+        amount.value = "";
+
+        amount.readOnly = false;
+
+    }
+}
+
+
+function validatePayment() {
+
+    const amount =
+        Number(
+            document.getElementById(
+                "amount-paid"
+            ).value
+        );
+
+    const type =
+        document.getElementById(
+            "payment-type"
+        ).value;
+
+
+    if (!type) {
+
+        alert(
+            "Please select a payment type."
+        );
+
+        return false;
+    }
+
+
+    if (amount <= 0) {
+
+        alert(
+            "Please enter the amount you paid."
+        );
+
+        return false;
+    }
+
+
+    if (amount > orderTotal) {
+
+        alert(
+            "Amount paid cannot be greater than the order total."
+        );
+
+        return false;
+    }
+
+
+    if (
+        type === "full" &&
+        amount !== orderTotal
+    ) {
+
+        alert(
+            "Full payment must equal the order total."
+        );
+
+        return false;
+    }
+
+
+    return true;
 }
 
 </script>
@@ -181,4 +340,3 @@ function copyAccount() {
 </body>
 
 </html>
-EOF

@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -12,7 +11,6 @@
 
     <link rel="stylesheet"
           href="/static/css/style.css">
-
 </head>
 
 <body>
@@ -24,12 +22,10 @@
     </div>
 
     <nav>
-
         <a href="/">HOME</a>
         <a href="/shop">SHOP</a>
         <a href="/cart">CART 🛒</a>
         <a href="/payment">PAYMENT</a>
-
     </nav>
 
 </header>
@@ -42,65 +38,85 @@
     <h1>CHECKOUT</h1>
 
     <span>
-        Complete your order.
+        Enter your details before making payment.
     </span>
 
 </section>
 
 
-<section style="max-width:600px; margin:40px auto; padding:20px;">
+<section style="max-width:650px; margin:40px auto; padding:20px;">
 
     <form id="checkout-form">
 
-        <label>
-            Full Name
-        </label>
+        <div class="product-card">
 
-        <input
-            type="text"
-            id="customer-name"
-            placeholder="Enter your full name"
-            required
-            style="width:100%; padding:14px; margin:10px 0 20px;"
-        >
+            <div class="product-info">
 
+                <h2>CUSTOMER DETAILS</h2>
 
-        <label>
-            Phone Number
-        </label>
+                <div class="form-group">
 
-        <input
-            type="tel"
-            id="customer-phone"
-            placeholder="08012345678"
-            required
-            style="width:100%; padding:14px; margin:10px 0 20px;"
-        >
+                    <label for="customer-name">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customer-name"
+                        placeholder="Enter your full name"
+                        required
+                    >
+
+                </div>
 
 
-        <label>
-            Delivery Address
-        </label>
+                <div class="form-group">
 
-        <textarea
-            id="customer-address"
-            placeholder="Enter your delivery address"
-            required
-            style="width:100%; padding:14px; margin:10px 0 20px; min-height:120px;"
-        ></textarea>
+                    <label for="customer-phone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="customer-phone"
+                        placeholder="08012345678"
+                        required
+                    >
+
+                </div>
 
 
-        <div id="order-summary"
-             style="margin:25px 0;">
+                <div class="form-group">
+
+                    <label for="customer-address">
+                        Delivery Address
+                    </label>
+
+                    <textarea
+                        id="customer-address"
+                        placeholder="Enter your delivery address"
+                        required
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="order-summary"
+            class="order-summary">
         </div>
 
 
         <button
             type="submit"
             class="order-button"
-            style="width:100%;">
+            style="margin-top:20px;">
 
-            ORDER VIA WHATSAPP 📱
+            CONTINUE TO PAYMENT 💳
 
         </button>
 
@@ -117,6 +133,10 @@
 
     <p>
         Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+    <p>
+        © 2026 ASEBE FABRICS
     </p>
 
 </footer>
@@ -141,17 +161,24 @@ if (cart.length === 0) {
 
     summary.innerHTML = `
 
-        <div class="empty-shop">
+        <div class="product-card">
 
-            <h2>Your cart is empty.</h2>
+            <div class="product-info">
 
-            <a href="/shop"
-               class="order-button"
-               style="text-decoration:none; display:inline-block;">
+                <h2>
+                    Your cart is empty.
+                </h2>
 
-                GO TO SHOP
+                <a
+                    href="/shop"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
 
-            </a>
+                    GO TO SHOP
+
+                </a>
+
+            </div>
 
         </div>
 
@@ -163,7 +190,9 @@ if (cart.length === 0) {
 
     let total = 0;
 
-    let html = "<h2>Order Summary</h2>";
+    let html = `
+        <h2>ORDER SUMMARY</h2>
+    `;
 
 
     cart.forEach(function(item) {
@@ -176,11 +205,26 @@ if (cart.length === 0) {
 
         html += `
 
-            <p>
-                <strong>${item.name}</strong>
-                × ${item.quantity}
-                — ₦${itemTotal.toLocaleString()}
-            </p>
+            <div class="order-item">
+
+                <div>
+
+                    <strong>
+                        ${item.name}
+                    </strong>
+
+                    <p>
+                        ₦${item.price.toLocaleString()}
+                        × ${item.quantity}
+                    </p>
+
+                </div>
+
+                <strong>
+                    ₦${itemTotal.toLocaleString()}
+                </strong>
+
+            </div>
 
         `;
 
@@ -189,11 +233,17 @@ if (cart.length === 0) {
 
     html += `
 
-        <hr>
+        <div class="order-total">
 
-        <h2>
-            Total: ₦${total.toLocaleString()}
-        </h2>
+            <span>
+                TOTAL
+            </span>
+
+            <strong>
+                ₦${total.toLocaleString()}
+            </strong>
+
+        </div>
 
     `;
 
@@ -235,88 +285,65 @@ form.addEventListener(
             ).value.trim();
 
 
-        let message =
-            "🛍️ *NEW ASEBE FABRICS ORDER*%0A%0A";
+        if (!name || !phone || !address) {
 
+            alert(
+                "Please complete all customer details."
+            );
 
-        message +=
-            "*Customer:* " +
-            encodeURIComponent(name) +
-            "%0A";
-
-
-        message +=
-            "*Phone:* " +
-            encodeURIComponent(phone) +
-            "%0A";
-
-
-        message +=
-            "*Address:* " +
-            encodeURIComponent(address) +
-            "%0A%0A";
-
-
-        message +=
-            "*ORDER DETAILS*%0A";
-
-
-        let total = 0;
-
-
-        cart.forEach(function(item) {
-
-            const itemTotal =
-                item.price * item.quantity;
-
-            total += itemTotal;
-
-
-            message +=
-                encodeURIComponent(
-                    item.name
-                ) +
-                " × " +
-                item.quantity +
-                " — ₦" +
-                itemTotal.toLocaleString() +
-                "%0A";
-
-        });
-
-
-        message +=
-            "%0A*TOTAL: ₦" +
-            total.toLocaleString() +
-            "*";
+            return;
+        }
 
 
         /*
-           REPLACE THIS NUMBER WITH
-           ASEBE FABRICS' WHATSAPP NUMBER.
+           Save customer details temporarily.
 
-           Nigerian format:
-           2348012345678
-
-           Do NOT include +
-           Do NOT include spaces.
+           Payment will be the next step.
         */
 
-        const whatsappNumber =
-            "2348012345678";
+        const customerDetails = {
+
+            name: name,
+
+            phone: phone,
+
+            address: address
+
+        };
 
 
-        const whatsappURL =
-            "https://wa.me/" +
-            whatsappNumber +
-            "?text=" +
-            message;
-
-
-        window.open(
-            whatsappURL,
-            "_blank"
+        localStorage.setItem(
+            "asebeCustomer",
+            JSON.stringify(customerDetails)
         );
+
+
+        /*
+           Continue to payment.
+
+           The payment page will receive
+           the order ID from the URL.
+        */
+
+        const orderID =
+            new URLSearchParams(
+                window.location.search
+            ).get("order");
+
+
+        if (!orderID) {
+
+            alert(
+                "Order number is missing."
+            );
+
+            return;
+        }
+
+
+        window.location.href =
+            "/payment?order=" +
+            encodeURIComponent(orderID);
 
     }
 );
@@ -326,4 +353,3 @@ form.addEventListener(
 </body>
 
 </html>
-EOF
