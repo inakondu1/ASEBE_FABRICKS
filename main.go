@@ -99,7 +99,32 @@ func cartHandler(w http.ResponseWriter, r *http.Request) {
 // =========================
 
 func paymentHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "templates/payment.html", nil)
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	orderID := r.URL.Query().Get("order")
+
+	if orderID == "" {
+		http.Error(
+			w,
+			"Order number is required",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	renderTemplate(
+		w,
+		"templates/payment.html",
+		orderID,
+	)
 }
 
 // =========================
@@ -107,7 +132,33 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 // =========================
 
 func checkoutHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "templates/checkout.html", nil)
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	orderID := r.URL.Query().Get("order")
+
+	if orderID == "" {
+		http.Error(
+			w,
+			"Order number is required",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	http.Redirect(
+		w,
+		r,
+		"/receipt?order="+url.QueryEscape(orderID),
+		http.StatusSeeOther,
+	)
 }
 
 // =========================
@@ -759,6 +810,158 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // =========================
+// ORDER RECEIPT
+// =========================
+
+func receiptHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	orderID := r.URL.Query().Get("order")
+
+	if orderID == "" {
+		http.Error(w, "Order number is required", http.StatusBadRequest)
+		return
+	}
+
+	type ReceiptItem struct {
+		ProductName string
+		Price       float64
+		Quantity    int
+		Subtotal    float64
+	}
+
+	type Receipt struct {
+		OrderID       int64
+		Date          string
+		CustomerName  string
+		Phone         string
+		Items         []ReceiptItem
+		Total         float64
+		AmountPaid    float64
+		Balance       float64
+		PaymentStatus string
+		LastPayment   string
+	}
+
+	var receipt Receipt
+
+	err := db.QueryRow(`
+		SELECT
+			o.id,
+			o.created_at,
+			c.full_name,
+			c.phone,
+			o.total_amount,
+			o.amount_paid,
+			o.payment_status,
+			COALESCE(o.last_payment_date, '')
+		FROM orders o
+		JOIN customers c ON c.id = o.customer_id
+		WHERE o.id = ?
+	`, orderID).Scan(
+		&receipt.OrderID,
+		&receipt.Date,
+		&receipt.CustomerName,
+		&receipt.Phone,
+		&receipt.Total,
+		&receipt.AmountPaid,
+		&receipt.PaymentStatus,
+		&receipt.LastPayment,
+	)
+
+	if err == sql.ErrNoRows {
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load receipt: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	receipt.Balance = receipt.Total - receipt.AmountPaid
+
+	err = db.QueryRow(`
+		SELECT COUNT(*)
+		FROM order_items
+		WHERE order_id = ?
+	`, orderID).Scan(new(int))
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not check order items: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	rows, err := db.Query(`
+		SELECT product_name, price, quantity, subtotal
+		FROM order_items
+		WHERE order_id = ?
+		ORDER BY id ASC
+	`, orderID)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load order items: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var item ReceiptItem
+
+		err := rows.Scan(
+			&item.ProductName,
+			&item.Price,
+			&item.Quantity,
+			&item.Subtotal,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read order items: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		receipt.Items = append(receipt.Items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read order items: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	renderTemplate(
+		w,
+		"templates/receipt.html",
+		receipt,
+	)
+}
+
+// =========================
 // CUSTOMER REGISTRATION
 // =========================
 
@@ -1028,6 +1231,7 @@ func main() {
 	http.HandleFunc("/payment", paymentHandler)
 	http.HandleFunc("/checkout", checkoutHandler)
 	http.HandleFunc("/order", orderHandler)
+	http.HandleFunc("/receipt", receiptHandler)
 	http.HandleFunc("/register", registerHandler)
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/customer", customerHandler)

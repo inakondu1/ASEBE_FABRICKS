@@ -124,7 +124,8 @@
             WhatsApp so we can confirm it.
         </p>
 
-        <a href="/checkout"
+        <a id="checkout-link"
+           href="#"
            class="order-button"
            style="text-decoration:none; display:inline-block;">
 
@@ -151,6 +152,12 @@
 
 
 <script>
+
+const orderID = "{{.}}";
+
+document.getElementById("checkout-link").href =
+    "/checkout?order=" + encodeURIComponent(orderID);
+
 
 function copyAccount() {
 
