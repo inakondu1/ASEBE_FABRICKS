@@ -209,8 +209,6 @@
 
                 </button>
 
-                {{if eq .PaymentStatus "PAID"}}
-
                 <button
                     onclick="forwardToWhatsApp()"
                     class="order-button"
@@ -219,21 +217,6 @@
                     FORWARD TO WHATSAPP 📱
 
                 </button>
-
-                {{else}}
-
-                <p style="
-                    margin-top:15px;
-                    color:#c62828;
-                    font-weight:bold;
-                ">
-
-                    WhatsApp forwarding is available
-                    after full payment.
-
-                </p>
-
-                {{end}}
 
             </div>
 
