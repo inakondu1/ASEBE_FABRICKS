@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Order History</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/cart">CART 🛒</a>
+        <a href="/customer?phone={{.Phone}}">MY ACCOUNT</a>
+    </nav>
+</header>
+
+
+<section class="shop-header">
+
+    <p>ASEBE FABRICS</p>
+
+    <h1>MY ORDER HISTORY</h1>
+
+    <span>
+        Your previous orders are stored here.
+    </span>
+
+</section>
+
+
+<section style="max-width:1000px; margin:40px auto; padding:20px;">
+
+    {{if .Orders}}
+
+        {{range .Orders}}
+
+        <div class="product-card" style="margin-bottom:25px;">
+
+            <div class="product-info">
+
+                <h2>
+                    ORDER #{{.ID}}
+                </h2>
+
+                <p>
+                    <strong>Date:</strong>
+                    {{.Date}}
+                </p>
+
+                <hr>
+
+                <p>
+                    <strong>Total:</strong>
+                    ₦{{.Total}}
+                </p>
+
+                <p>
+                    <strong>Amount Paid:</strong>
+                    ₦{{.AmountPaid}}
+                </p>
+
+                <p>
+                    <strong>Balance:</strong>
+                    ₦{{.Balance}}
+                </p>
+
+                <p>
+                    <strong>Payment Status:</strong>
+                    {{.PaymentStatus}}
+                </p>
+
+                <a
+                    href="/receipt?order={{.ID}}"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
+
+                    VIEW RECEIPT
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {{end}}
+
+    {{else}}
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>NO ORDERS YET</h2>
+
+                <p>
+                    You have not placed any orders yet.
+                </p>
+
+                <a
+                    href="/shop"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
+
+                    START SHOPPING
+
+                </a>
+
+            </div>
+
+        </div>
+
+    {{end}}
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
+</footer>
+
+</body>
+
+</html>
+EOFcat > templates/order-history.html <<'EOF'
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Order History</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/cart">CART 🛒</a>
+        <a href="/customer?phone={{.Phone}}">MY ACCOUNT</a>
+    </nav>
+</header>
+
+
+<section class="shop-header">
+
+    <p>ASEBE FABRICS</p>
+
+    <h1>MY ORDER HISTORY</h1>
+
+    <span>
+        Your previous orders are stored here.
+    </span>
+
+</section>
+
+
+<section style="max-width:1000px; margin:40px auto; padding:20px;">
+
+    {{if .Orders}}
+
+        {{range .Orders}}
+
+        <div class="product-card" style="margin-bottom:25px;">
+
+            <div class="product-info">
+
+                <h2>
+                    ORDER #{{.ID}}
+                </h2>
+
+                <p>
+                    <strong>Date:</strong>
+                    {{.Date}}
+                </p>
+
+                <hr>
+
+                <p>
+                    <strong>Total:</strong>
+                    ₦{{.Total}}
+                </p>
+
+                <p>
+                    <strong>Amount Paid:</strong>
+                    ₦{{.AmountPaid}}
+                </p>
+
+                <p>
+                    <strong>Balance:</strong>
+                    ₦{{.Balance}}
+                </p>
+
+                <p>
+                    <strong>Payment Status:</strong>
+                    {{.PaymentStatus}}
+                </p>
+
+                <a
+                    href="/receipt?order={{.ID}}"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
+
+                    VIEW RECEIPT
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {{end}}
+
+    {{else}}
+
+        <div class="product-card">
+
+            <div class="product-info">
+
+                <h2>NO ORDERS YET</h2>
+
+                <p>
+                    You have not placed any orders yet.
+                </p>
+
+                <a
+                    href="/shop"
+                    class="order-button"
+                    style="text-decoration:none; display:inline-block;">
+
+                    START SHOPPING
+
+                </a>
+
+            </div>
+
+        </div>
+
+    {{end}}
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
+</footer>
+
+</body>
+
+</html>
