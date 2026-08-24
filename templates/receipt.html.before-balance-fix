@@ -252,7 +252,7 @@ function forwardToWhatsApp() {
 
     const message =
         "Hello ASEBE FABRICS! 👋\n\n" +
-        "*ORDER RECEIPT*\n\n" +
+        "*PAID ORDER RECEIPT*\n\n" +
         "*Order Number:* #{{.OrderID}}\n" +
         "*Customer:* {{.CustomerName}}\n" +
         "*Phone:* {{.Phone}}\n\n" +
@@ -260,9 +260,8 @@ function forwardToWhatsApp() {
         "{{range .Items}}- {{.ProductName}} × {{.Quantity}} = ₦{{.Subtotal}}\n{{end}}" +
         "\n*TOTAL:* ₦{{.Total}}\n" +
         "*AMOUNT PAID:* ₦{{.AmountPaid}}\n" +
-        "*BALANCE REMAINING:* ₦{{.Balance}}\n" +
         "*PAYMENT STATUS:* {{.PaymentStatus}}\n\n" +
-        "Please confirm my order. Thank you.";
+        "Please confirm my paid order. Thank you.";
 
     const whatsappNumber = "2348101228840";
 
