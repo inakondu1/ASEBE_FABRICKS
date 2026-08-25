@@ -17,6 +17,29 @@
 
 <body>
 
+<script>
+(function () {
+
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("new_login") === "1") {
+
+        // Start a completely fresh shopping session.
+        localStorage.removeItem("asebeCart");
+
+        // Remove the login flag from the address bar.
+        params.delete("new_login");
+
+        const newURL =
+            window.location.pathname +
+            (params.toString() ? "?" + params.toString() : "");
+
+        window.history.replaceState({}, "", newURL);
+    }
+
+})();
+</script>
+
 <header class="navbar">
 
     <div class="logo">
