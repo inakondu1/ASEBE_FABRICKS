@@ -128,6 +128,19 @@ func initDatabase() {
 
 	log.Println("Customers table ready")
 
+	// Add active order tracking for each customer.
+	_, err = db.Exec(`
+        ALTER TABLE customers
+        ADD COLUMN active_order_id INTEGER
+    `)
+
+	if err != nil {
+		// The column may already exist on an existing database.
+		log.Println("active_order_id column may already exist:", err)
+	}
+
+	log.Println("Customer active order tracking ready")
+
 	log.Println("ASEBE FABRICS database connected")
 	log.Println("Products table ready")
 

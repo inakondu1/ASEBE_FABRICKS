@@ -41,7 +41,7 @@
     <h1>PAYMENT</h1>
 
     <span>
-        Complete your payment before sending your order.
+        Review your order breakdown before making payment.
     </span>
 
 </section>
@@ -49,21 +49,104 @@
 
 <section style="max-width:600px; margin:40px auto; padding:20px;">
 
+    <!-- ========================= -->
+    <!-- ORDER BREAKDOWN -->
+    <!-- ========================= -->
+
     <div class="product-card">
 
         <div class="product-info">
 
             <h2>ORDER #{{.OrderID}}</h2>
 
+            <hr>
+
             <p>
-                <strong>ORDER TOTAL</strong>
+                <strong>NEW FABRICS</strong>
             </p>
 
-            <h1 style="margin-bottom:25px;">
+            <h2>
+                ₦{{.CurrentOrderTotal}}
+            </h2>
+
+
+            {{if gt .PreviousBalance 0}}
+
+            <div style="
+                margin-top:20px;
+                padding:18px;
+                border:2px solid #c00;
+                border-radius:10px;
+            ">
+
+                <p>
+                    <strong>⚠️ PREVIOUS BALANCE</strong>
+                </p>
+
+                <h2>
+                    ₦{{.PreviousBalance}}
+                </h2>
+
+                <p style="margin-bottom:0;">
+                    This amount was unpaid from a previous
+                    order and has been carried forward to
+                    this order.
+                </p>
+
+                {{if gt .PreviousBalanceOrderID 0}}
+
+                <p style="margin-top:10px;">
+                    Previous Order:
+                    <strong>
+                        #{{.PreviousBalanceOrderID}}
+                    </strong>
+                </p>
+
+                {{end}}
+
+            </div>
+
+            {{end}}
+
+
+            <hr style="margin-top:25px;">
+
+
+            <p>
+                <strong>TOTAL TO PAY</strong>
+            </p>
+
+            <h1 style="margin-bottom:10px;">
                 ₦{{.Total}}
             </h1>
 
-            <hr>
+
+            {{if gt .AmountPaid 0}}
+
+            <p>
+                <strong>ALREADY PAID:</strong>
+                ₦{{.AmountPaid}}
+            </p>
+
+            <p>
+                <strong>REMAINING BALANCE:</strong>
+                ₦{{.Balance}}
+            </p>
+
+            {{end}}
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- BANK DETAILS -->
+    <!-- ========================= -->
+
+    <div class="product-card" style="margin-top:25px;">
+
+        <div class="product-info">
 
             <h2>BANK TRANSFER</h2>
 
@@ -111,6 +194,10 @@
 
     </div>
 
+
+    <!-- ========================= -->
+    <!-- PAYMENT FORM -->
+    <!-- ========================= -->
 
     <div class="empty-shop" style="margin-top:25px;">
 
@@ -229,6 +316,12 @@
 const orderTotal =
     Number("{{.Total}}");
 
+const amountAlreadyPaid =
+    Number("{{.AmountPaid}}");
+
+const remainingBalance =
+    Number("{{.Balance}}");
+
 
 function copyAccount() {
 
@@ -257,10 +350,11 @@ function setPaymentAmount() {
             "amount-paid"
         );
 
+
     if (type === "full") {
 
         amount.value =
-            orderTotal;
+            remainingBalance;
 
         amount.readOnly = true;
 
@@ -309,10 +403,11 @@ function validatePayment() {
     }
 
 
-    if (amount > orderTotal) {
+    if (amount > remainingBalance) {
 
         alert(
-            "Amount paid cannot be greater than the order total."
+            "Amount paid cannot be greater than the remaining balance of ₦"
+            + remainingBalance
         );
 
         return false;
@@ -321,11 +416,11 @@ function validatePayment() {
 
     if (
         type === "full" &&
-        amount !== orderTotal
+        amount !== remainingBalance
     ) {
 
         alert(
-            "Full payment must equal the order total."
+            "Full payment must equal the remaining balance."
         );
 
         return false;
