@@ -202,6 +202,22 @@
 
 </footer>
 
+<script>
+const params = new URLSearchParams(window.location.search);
+
+if (params.get("new_login") === "1") {
+    localStorage.removeItem("asebeCart");
+
+    params.delete("new_login");
+
+    const cleanURL =
+        window.location.pathname +
+        (params.toString() ? "?" + params.toString() : "");
+
+    window.history.replaceState({}, "", cleanURL);
+}
+</script>
+
 </body>
 
 </html>

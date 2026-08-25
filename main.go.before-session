@@ -14,38 +14,6 @@ import (
 	"time"
 )
 
-// =========================
-// CUSTOMER SESSION HELPERS
-// =========================
-
-func setCustomerSession(w http.ResponseWriter, customerID int) {
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "asebe_customer",
-		Value:    strconv.Itoa(customerID),
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	})
-}
-
-func getCustomerSession(r *http.Request) (int, bool) {
-
-	cookie, err := r.Cookie("asebe_customer")
-
-	if err != nil {
-		return 0, false
-	}
-
-	customerID, err := strconv.Atoi(cookie.Value)
-
-	if err != nil || customerID <= 0 {
-		return 0, false
-	}
-
-	return customerID, true
-}
-
 func renderTemplate(w http.ResponseWriter, filename string, data interface{}) {
 	tmpl, err := template.ParseFiles(filename)
 	if err != nil {
@@ -1384,44 +1352,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Customer logged in:", customerName)
-	setCustomerSession(w, customerID)
 
 	http.Redirect(
 		w,
 		r,
 		"/customer?phone="+url.QueryEscape(phone)+"&new_login=1",
-		http.StatusSeeOther,
-	)
-}
-
-// =========================
-// CUSTOMER LOGOUT
-// =========================
-
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(
-			w,
-			"Method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "asebe_customer",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	})
-
-	http.Redirect(
-		w,
-		r,
-		"/",
 		http.StatusSeeOther,
 	)
 }
@@ -1639,6 +1574,29 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 // =========================
 // CUSTOMER LOGOUT
+// =========================
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	log.Println("Customer logged out")
+
+	http.Redirect(
+		w,
+		r,
+		"/login",
+		http.StatusSeeOther,
+	)
+}
+
 func main() {
 
 	// Connect to database
@@ -1673,7 +1631,6 @@ func main() {
 	http.HandleFunc("/register", registerHandler)
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
-
 	http.HandleFunc("/customer", customerHandler)
 	http.HandleFunc("/order-history", orderHistoryHandler)
 
