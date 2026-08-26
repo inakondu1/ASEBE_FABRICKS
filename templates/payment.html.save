@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+q<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -70,7 +70,7 @@
             </h2>
 
 
-            {{if gt .PreviousBalance 0.0}}
+            {{if gt .PreviousBalance 0}}
 
             <div style="
                 margin-top:20px;
@@ -121,7 +121,7 @@
             </h1>
 
 
-            {{if gt .AmountPaid 0.0}}
+            {{if gt .AmountPaid 0}}
 
             <p>
                 <strong>ALREADY PAID:</strong>
@@ -160,7 +160,7 @@
             </p>
 
             <h3>
-                Ina Hadiza Isah
+                ASEBE FABRICS
             </h3>
 
 
@@ -169,7 +169,7 @@
             </p>
 
             <h3 id="account-number">
-                8101228840
+                0000000000
             </h3>
 
             <button
@@ -187,7 +187,7 @@
             </p>
 
             <h3>
-                OPay
+                YOUR BANK NAME
             </h3>
 
         </div>

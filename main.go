@@ -47,7 +47,11 @@ func getCustomerSession(r *http.Request) (int, bool) {
 }
 
 func renderTemplate(w http.ResponseWriter, filename string, data interface{}) {
-	tmpl, err := template.ParseFiles(filename)
+	tmpl, err := template.New(filepath.Base(filename)).Funcs(template.FuncMap{
+		"subtract": func(a, b float64) float64 {
+			return a - b
+		},
+	}).ParseFiles(filename)
 	if err != nil {
 		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -156,18 +160,21 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	// Load the complete order breakdown.
 	var total float64
 	var previousBalance float64
+	var previousBalanceOrderID int64
 	var amountPaid float64
 
 	err := db.QueryRow(`
                 SELECT
                         total_amount,
                         COALESCE(previous_balance, 0),
+                        COALESCE(previous_balance_order_id, 0),
                         amount_paid
                 FROM orders
                 WHERE id = ?
         `, orderID).Scan(
 		&total,
 		&previousBalance,
+		&previousBalanceOrderID,
 		&amountPaid,
 	)
 
@@ -208,21 +215,23 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type PaymentPage struct {
-		OrderID           string
-		CurrentOrderTotal float64
-		PreviousBalance   float64
-		Total             float64
-		AmountPaid        float64
-		Balance           float64
+		OrderID                string
+		CurrentOrderTotal      float64
+		PreviousBalance        float64
+		PreviousBalanceOrderID int64
+		Total                  float64
+		AmountPaid             float64
+		Balance                float64
 	}
 
 	data := PaymentPage{
-		OrderID:           orderID,
-		CurrentOrderTotal: currentOrderTotal,
-		PreviousBalance:   previousBalance,
-		Total:             total,
-		AmountPaid:        amountPaid,
-		Balance:           total - amountPaid,
+		OrderID:                orderID,
+		CurrentOrderTotal:      currentOrderTotal,
+		PreviousBalance:        previousBalance,
+		PreviousBalanceOrderID: previousBalanceOrderID,
+		Total:                  total,
+		AmountPaid:             amountPaid,
+		Balance:                total - amountPaid,
 	}
 
 	renderTemplate(
@@ -385,6 +394,25 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError,
 		)
 		return
+	}
+
+	// A fully paid order is no longer the customer's active order.
+	// The next purchase must create a new order number.
+	if paymentStatus == "PAID" {
+		_, err = db.Exec(`
+			UPDATE customers
+			SET active_order_id = NULL
+			WHERE active_order_id = ?
+		`, orderID)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not close paid order: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 	}
 
 	http.Redirect(
@@ -1069,7 +1097,7 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		totalWithBalance := total + previousBalance
+		totalWithBalance := total
 
 		result, err := db.Exec(`
             INSERT INTO orders
@@ -1704,62 +1732,45 @@ func customerHandler(w http.ResponseWriter, r *http.Request) {
 func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {
-		http.Error(
-			w,
-			"Method not allowed",
-			http.StatusMethodNotAllowed,
-		)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	phone := r.URL.Query().Get("phone")
 
 	if phone == "" {
-		http.Redirect(
-			w,
-			r,
-			"/login",
-			http.StatusSeeOther,
-		)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
 	var customerID int
 
 	err := db.QueryRow(`
-                SELECT id
-                FROM customers
-                WHERE phone = ?
-        `, phone).Scan(&customerID)
+		SELECT id
+		FROM customers
+		WHERE phone = ?
+	`, phone).Scan(&customerID)
 
 	if err == sql.ErrNoRows {
-		http.Redirect(
-			w,
-			r,
-			"/login",
-			http.StatusSeeOther,
-		)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
 	if err != nil {
-		http.Error(
-			w,
-			"Could not load customer: "+err.Error(),
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "Could not load customer: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	type OrderHistoryItem struct {
-		ID                     int64
-		Date                   string
-		Total                  float64
-		AmountPaid             float64
-		Balance                float64
-		PaymentStatus          string
-		PreviousBalance        float64
-		PreviousBalanceOrderID int64
+		ID                      int64
+		Date                    string
+		Total                   float64
+		AmountPaid              float64
+		Balance                 float64
+		PaymentStatus           string
+		PreviousBalance         float64
+		PreviousBalanceOrderID  int64
+		CarriedForwardToOrderID int64
 	}
 
 	type OrderHistoryPage struct {
@@ -1768,24 +1779,23 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := db.Query(`
-                SELECT
-                        id,
-                        created_at,
-                        total_amount,
-                        amount_paid,
-                        total_amount - amount_paid,
-                        payment_status
-                FROM orders
-                WHERE customer_id = ?
-                ORDER BY id DESC
-        `, customerID)
+		SELECT
+			id,
+			created_at,
+			total_amount,
+			amount_paid,
+			total_amount - amount_paid,
+			payment_status,
+			COALESCE(previous_balance, 0),
+			COALESCE(previous_balance_order_id, 0),
+			COALESCE(carried_forward_to_order_id, 0)
+		FROM orders
+		WHERE customer_id = ?
+		ORDER BY id DESC
+	`, customerID)
 
 	if err != nil {
-		http.Error(
-			w,
-			"Could not load order history: "+err.Error(),
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "Could not load order history: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -1804,26 +1814,28 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			&order.AmountPaid,
 			&order.Balance,
 			&order.PaymentStatus,
+			&order.PreviousBalance,
+			&order.PreviousBalanceOrderID,
+			&order.CarriedForwardToOrderID,
 		)
 
 		if err != nil {
-			http.Error(
-				w,
-				"Could not read order history: "+err.Error(),
-				http.StatusInternalServerError,
-			)
+			http.Error(w, "Could not read order history: "+err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		// Once an unpaid balance has been carried into another order,
+		// that old order no longer has a separate outstanding balance.
+		if order.CarriedForwardToOrderID > 0 {
+			order.Balance = 0
+			order.PaymentStatus = "CARRIED FORWARD"
 		}
 
 		orders = append(orders, order)
 	}
 
 	if err := rows.Err(); err != nil {
-		http.Error(
-			w,
-			"Could not read order history: "+err.Error(),
-			http.StatusInternalServerError,
-		)
+		http.Error(w, "Could not read order history: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
