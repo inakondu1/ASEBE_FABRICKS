@@ -11,6 +11,99 @@
 
     <link rel="stylesheet"
           href="/static/css/style.css">
+
+    <style>
+
+        .history-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .history-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .history-card h2 {
+            margin-top: 0;
+        }
+
+        .history-section {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 10px;
+            background: #f7f7f7;
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .history-row:last-child {
+            border-bottom: none;
+        }
+
+        .history-label {
+            font-weight: 600;
+        }
+
+        .history-value {
+            font-weight: 700;
+        }
+
+        .outstanding-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 10px;
+            background: #fff3cd;
+        }
+
+        .total-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #eeeeee;
+        }
+
+        .balance-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8d7da;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .order-button {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+
+            .history-row {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 <body>
@@ -22,11 +115,14 @@
     </div>
 
     <nav>
+
         <a href="/">HOME</a>
         <a href="/shop">SHOP</a>
         <a href="/cart">CART 🛒</a>
         <a href="/customer?phone={{.Phone}}">MY ACCOUNT</a>
+
     </nav>
+
 </header>
 
 
@@ -37,63 +133,154 @@
     <h1>MY ORDER HISTORY</h1>
 
     <span>
-        Your previous orders are stored here.
+        Your orders, payments and outstanding balances.
     </span>
 
 </section>
 
 
-<section style="max-width:1000px; margin:40px auto; padding:20px;">
+<section class="history-container">
 
     {{if .Orders}}
 
         {{range .Orders}}
 
-        <div class="product-card" style="margin-bottom:25px;">
+        <div class="history-card">
 
-            <div class="product-info">
+            <h2>
+                ORDER #{{.ID}}
+            </h2>
 
-                <h2>
-                    ORDER #{{.ID}}
-                </h2>
+            <p>
+                <strong>Date:</strong>
+                {{.DisplayDate}}
+            </p>
 
-                <p>
-                    <strong>Date:</strong>
-                    {{.Date}}
-                </p>
 
-                <hr>
+            <hr>
 
-                <p>
-                    <strong>Total:</strong>
-                    ₦{{.Total}}
-                </p>
 
-                <p>
-                    <strong>Amount Paid:</strong>
-                    ₦{{.AmountPaid}}
-                </p>
+            <div class="history-section">
 
-                <p>
-                    <strong>Balance:</strong>
-                    ₦{{.Balance}}
-                </p>
+                <h3>ORDER SUMMARY</h3>
 
-                <p>
-                    <strong>Payment Status:</strong>
-                    {{.PaymentStatus}}
-                </p>
 
-                <a
-                    href="/receipt?order={{.ID}}"
-                    class="order-button"
-                    style="text-decoration:none; display:inline-block;">
+                <div class="history-row">
 
-                    VIEW RECEIPT
+                    <span class="history-label">
+                        New Fabrics:
+                    </span>
 
-                </a>
+                    <span class="history-value">
+                        ₦{{.CurrentOrderTotal}}
+                    </span>
+
+                </div>
+
+
+                <div class="history-row">
+
+                    <span class="history-label">
+                        Previous Outstanding Balance:
+                    </span>
+
+                    <span class="history-value">
+                        ₦{{.PreviousBalance}}
+                    </span>
+
+                </div>
+
+
+                {{if .PreviousBalanceOrderID}}
+
+                <div class="history-row">
+
+                    <span class="history-label">
+                        Carried From Order:
+                    </span>
+
+                    <span class="history-value">
+                        #{{.PreviousBalanceOrderID}}
+                    </span>
+
+                </div>
+
+                <div class="outstanding-box">
+
+                    This outstanding amount was carried
+                    from the previous order into this order.
+
+                </div>
+
+                {{end}}
 
             </div>
+
+
+            <div class="total-box">
+
+                <h3>TOTAL TO PAY</h3>
+
+
+                <div class="history-row">
+
+                    <span class="history-label">
+                        Order Total:
+                    </span>
+
+                    <span class="history-value">
+                        ₦{{.Total}}
+                    </span>
+
+                </div>
+
+
+                <div class="history-row">
+
+                    <span class="history-label">
+                        Already Paid:
+                    </span>
+
+                    <span class="history-value">
+                        ₦{{.AmountPaid}}
+                    </span>
+
+                </div>
+
+
+                <div class="history-row">
+
+                    <span class="history-label">
+                        Remaining Balance:
+                    </span>
+
+                    <span class="history-value">
+                        ₦{{.Balance}}
+                    </span>
+
+                </div>
+
+
+                <p>
+
+                    <strong>Payment Status:</strong>
+
+                    <span class="status">
+                        {{.PaymentStatus}}
+                    </span>
+
+                </p>
+
+            </div>
+
+
+            <a
+                href="/receipt?order={{.ID}}"
+                class="order-button">
+
+                VIEW RECEIPT
+
+            </a>
 
         </div>
 
@@ -101,177 +288,21 @@
 
     {{else}}
 
-        <div class="product-card">
+        <div class="history-card">
 
-            <div class="product-info">
+            <h2>NO ORDERS YET</h2>
 
-                <h2>NO ORDERS YET</h2>
+            <p>
+                You have not placed any orders yet.
+            </p>
 
-                <p>
-                    You have not placed any orders yet.
-                </p>
+            <a
+                href="/shop"
+                class="order-button">
 
-                <a
-                    href="/shop"
-                    class="order-button"
-                    style="text-decoration:none; display:inline-block;">
+                START SHOPPING
 
-                    START SHOPPING
-
-                </a>
-
-            </div>
-
-        </div>
-
-    {{end}}
-
-</section>
-
-
-<footer>
-
-    <div class="footer-logo">
-        ASEBE <span>FABRICS</span>
-    </div>
-
-    <p>
-        Quality Fabrics • Beautiful Designs • Great Prices
-    </p>
-
-    <p>
-        © 2026 ASEBE FABRICS
-    </p>
-
-</footer>
-
-</body>
-
-</html>
-EOFcat > templates/order-history.html <<'EOF'
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>ASEBE FABRICS | Order History</title>
-
-    <link rel="stylesheet"
-          href="/static/css/style.css">
-</head>
-
-<body>
-
-<header class="navbar">
-
-    <div class="logo">
-        <span>ASEBE</span> FABRICS
-    </div>
-
-    <nav>
-        <a href="/">HOME</a>
-        <a href="/shop">SHOP</a>
-        <a href="/cart">CART 🛒</a>
-        <a href="/customer?phone={{.Phone}}">MY ACCOUNT</a>
-    </nav>
-</header>
-
-
-<section class="shop-header">
-
-    <p>ASEBE FABRICS</p>
-
-    <h1>MY ORDER HISTORY</h1>
-
-    <span>
-        Your previous orders are stored here.
-    </span>
-
-</section>
-
-
-<section style="max-width:1000px; margin:40px auto; padding:20px;">
-
-    {{if .Orders}}
-
-        {{range .Orders}}
-
-        <div class="product-card" style="margin-bottom:25px;">
-
-            <div class="product-info">
-
-                <h2>
-                    ORDER #{{.ID}}
-                </h2>
-
-                <p>
-                    <strong>Date:</strong>
-                    {{.Date}}
-                </p>
-
-                <hr>
-
-                <p>
-                    <strong>Total:</strong>
-                    ₦{{.Total}}
-                </p>
-
-                <p>
-                    <strong>Amount Paid:</strong>
-                    ₦{{.AmountPaid}}
-                </p>
-
-                <p>
-                    <strong>Balance:</strong>
-                    ₦{{.Balance}}
-                </p>
-
-                <p>
-                    <strong>Payment Status:</strong>
-                    {{.PaymentStatus}}
-                </p>
-
-                <a
-                    href="/receipt?order={{.ID}}"
-                    class="order-button"
-                    style="text-decoration:none; display:inline-block;">
-
-                    VIEW RECEIPT
-
-                </a>
-
-            </div>
-
-        </div>
-
-        {{end}}
-
-    {{else}}
-
-        <div class="product-card">
-
-            <div class="product-info">
-
-                <h2>NO ORDERS YET</h2>
-
-                <p>
-                    You have not placed any orders yet.
-                </p>
-
-                <a
-                    href="/shop"
-                    class="order-button"
-                    style="text-decoration:none; display:inline-block;">
-
-                    START SHOPPING
-
-                </a>
-
-            </div>
+            </a>
 
         </div>
 

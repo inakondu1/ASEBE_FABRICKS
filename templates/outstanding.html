@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Outstanding Bill</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+
+    <style>
+
+        .outstanding-container {
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .bill-card {
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .working-box {
+            margin-top: 25px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+        }
+
+        .working-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 12px 0;
+        }
+
+        .working-total {
+            border-top: 2px solid #333;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .remaining {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .remaining h2 {
+            margin-bottom: 10px;
+        }
+
+        .remaining-amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .pay-button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/cart">CART 🛒</a>
+        <a href="/customer?phone={{.Phone}}">MY ACCOUNT</a>
+
+    </nav>
+
+</header>
+
+
+<section class="shop-header">
+
+    <p>ASEBE FABRICS</p>
+
+    <h1>OUTSTANDING BILL</h1>
+
+    <span>
+        Your current unpaid balance.
+    </span>
+
+</section>
+
+
+<section class="outstanding-container">
+
+{{if .HasOutstanding}}
+
+    <div class="product-card bill-card">
+
+        <div class="product-info">
+
+            <h2>
+                ⚠️ OUTSTANDING BILL
+            </h2>
+
+            <p>
+                <strong>
+                    Order #{{.OrderID}}
+                </strong>
+            </p>
+
+            <hr>
+
+
+            <div class="working-box">
+
+                <h3>
+                    🧾 HOW YOUR BALANCE WAS CALCULATED
+                </h3>
+
+
+                {{if gt .PreviousBalance 0}}
+
+                <div class="working-line">
+
+                    <span>
+                        Previous Order #{{.PreviousBalanceOrderID}}
+                    </span>
+
+                    <strong>
+                        ₦{{printf "%.2f" .PreviousBalance}}
+                    </strong>
+
+                </div>
+
+                <div class="working-line">
+
+                    <span>
+                        New Fabrics
+                    </span>
+
+                    <strong>
+                        ₦{{printf "%.2f" .CurrentOrderTotal}}
+                    </strong>
+
+                </div>
+
+                <div class="working-line working-total">
+
+                    <span>
+                        TOTAL ORDER VALUE
+                    </span>
+
+                    <strong>
+                        ₦{{printf "%.2f" .Total}}
+                    </strong>
+
+                </div>
+
+                {{else}}
+
+                <div class="working-line working-total">
+
+                    <span>
+                        ORDER TOTAL
+                    </span>
+
+                    <strong>
+                        ₦{{printf "%.2f" .Total}}
+                    </strong>
+
+                </div>
+
+                {{end}}
+
+
+                <div class="working-line">
+
+                    <span>
+                        Already Paid
+                    </span>
+
+                    <strong>
+                        ₦{{printf "%.2f" .AmountPaid}}
+                    </strong>
+
+                </div>
+
+
+                <div class="working-line working-total">
+
+                    <span>
+                        REMAINING BALANCE
+                    </span>
+
+                    <strong>
+                        ₦{{printf "%.2f" .Balance}}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="remaining">
+
+                <h2>
+                    AMOUNT STILL TO PAY
+                </h2>
+
+                <div class="remaining-amount">
+                    ₦{{printf "%.2f" .Balance}}
+                </div>
+
+                <p>
+                    This is the only outstanding balance
+                    currently attached to your account.
+                </p>
+
+            </div>
+
+
+            <a
+                href="/payment?order={{.OrderID}}"
+                class="order-button pay-button">
+
+                PAY OUTSTANDING BILL 💳
+
+            </a>
+
+        </div>
+
+    </div>
+
+{{else}}
+
+    <div class="product-card empty-message">
+
+        <div class="product-info">
+
+            <h2>
+                ✅ NO OUTSTANDING BILL
+            </h2>
+
+            <p>
+                You currently have no unpaid balance.
+            </p>
+
+            <a
+                href="/shop"
+                class="order-button"
+                style="text-decoration:none; display:inline-block;">
+
+                START SHOPPING
+
+            </a>
+
+        </div>
+
+    </div>
+
+{{end}}
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
+
+    <p>
+        © 2026 ASEBE FABRICS
+    </p>
+
+</footer>
+
+</body>
+
+</html>

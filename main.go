@@ -15,6 +15,34 @@ import (
 )
 
 // =========================
+// DATE FORMATTER
+// =========================
+
+func formatNigeriaDate(value string) string {
+
+	if value == "" {
+		return ""
+	}
+
+	layouts := []string{
+		time.RFC3339,
+		"2006-01-02 15:04:05",
+	}
+
+	for _, layout := range layouts {
+
+		parsed, err := time.Parse(layout, value)
+
+		if err == nil {
+			return parsed.In(time.FixedZone("WAT", 60*60)).
+				Format("02 January 2006, 03:04 PM")
+		}
+	}
+
+	return value
+}
+
+// =========================
 // CUSTOMER SESSION HELPERS
 // =========================
 
@@ -1378,6 +1406,9 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	receipt.Date = formatNigeriaDate(receipt.Date)
+	receipt.LastPayment = formatNigeriaDate(receipt.LastPayment)
+
 	receipt.Balance = receipt.Total - receipt.AmountPaid
 
 	err = db.QueryRow(`
@@ -1743,6 +1774,10 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ---------------------------------------------------------
+	// FIND CUSTOMER
+	// ---------------------------------------------------------
+
 	var customerID int
 
 	err := db.QueryRow(`
@@ -1757,20 +1792,37 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, "Could not load customer: "+err.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Could not load customer: "+err.Error(),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
+	// ---------------------------------------------------------
+	// DATA STRUCTURES
+	// ---------------------------------------------------------
+
 	type OrderHistoryItem struct {
-		ID                      int64
-		Date                    string
-		Total                   float64
-		AmountPaid              float64
-		Balance                 float64
-		PaymentStatus           string
-		PreviousBalance         float64
-		PreviousBalanceOrderID  int64
-		CarriedForwardToOrderID int64
+		ID   int64
+		Date string
+
+		// Current order information
+		CurrentOrderTotal float64
+
+		// Previous debt carried into this order
+		PreviousBalance        float64
+		PreviousBalanceOrderID int64
+
+		// Complete financial picture
+		Total         float64
+		AmountPaid    float64
+		Balance       float64
+		PaymentStatus string
+
+		// Human-friendly date
+		DisplayDate string
 	}
 
 	type OrderHistoryPage struct {
@@ -1778,24 +1830,30 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		Orders []OrderHistoryItem
 	}
 
+	// ---------------------------------------------------------
+	// LOAD ORDERS
+	// ---------------------------------------------------------
+
 	rows, err := db.Query(`
 		SELECT
-			id,
-			created_at,
-			total_amount,
-			amount_paid,
-			total_amount - amount_paid,
-			payment_status,
-			COALESCE(previous_balance, 0),
-			COALESCE(previous_balance_order_id, 0),
-			COALESCE(carried_forward_to_order_id, 0)
-		FROM orders
-		WHERE customer_id = ?
-		ORDER BY id DESC
+			o.id,
+			o.created_at,
+			o.total_amount,
+			o.amount_paid,
+			o.payment_status,
+			COALESCE(o.previous_balance, 0),
+			COALESCE(o.previous_balance_order_id, 0)
+		FROM orders o
+		WHERE o.customer_id = ?
+		ORDER BY o.id DESC
 	`, customerID)
 
 	if err != nil {
-		http.Error(w, "Could not load order history: "+err.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Could not load order history: "+err.Error(),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -1812,32 +1870,76 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			&order.Date,
 			&order.Total,
 			&order.AmountPaid,
-			&order.Balance,
 			&order.PaymentStatus,
 			&order.PreviousBalance,
 			&order.PreviousBalanceOrderID,
-			&order.CarriedForwardToOrderID,
 		)
 
 		if err != nil {
-			http.Error(w, "Could not read order history: "+err.Error(), http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Could not read order history: "+err.Error(),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
-		// Once an unpaid balance has been carried into another order,
-		// that old order no longer has a separate outstanding balance.
-		if order.CarriedForwardToOrderID > 0 {
+		// -----------------------------------------------------
+		// CURRENT FABRICS TOTAL
+		// -----------------------------------------------------
+
+		err = db.QueryRow(`
+			SELECT COALESCE(SUM(subtotal), 0)
+			FROM order_items
+			WHERE order_id = ?
+		`, order.ID).Scan(&order.CurrentOrderTotal)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not calculate order fabrics: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		// -----------------------------------------------------
+		// REMAINING BALANCE
+		// -----------------------------------------------------
+
+		order.Balance = order.Total - order.AmountPaid
+
+		// Prevent tiny floating-point negative values.
+		if order.Balance < 0 {
 			order.Balance = 0
-			order.PaymentStatus = "CARRIED FORWARD"
+		}
+
+		// -----------------------------------------------------
+		// FORMAT DATE FOR CUSTOMER
+		// -----------------------------------------------------
+
+		order.DisplayDate = order.Date
+
+		if parsed, err := time.Parse(time.RFC3339, order.Date); err == nil {
+			order.DisplayDate = parsed.In(time.FixedZone("WAT", 60*60)).
+				Format("02 January 2006, 3:04 PM")
 		}
 
 		orders = append(orders, order)
 	}
 
 	if err := rows.Err(); err != nil {
-		http.Error(w, "Could not read order history: "+err.Error(), http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Could not read order history: "+err.Error(),
+			http.StatusInternalServerError,
+		)
 		return
 	}
+
+	// ---------------------------------------------------------
+	// SEND READY-TO-DISPLAY DATA TO TEMPLATE
+	// ---------------------------------------------------------
 
 	data := OrderHistoryPage{
 		Phone:  phone,
