@@ -1048,212 +1048,130 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 	var orderID int64
 	var previousBalance float64
+	var previousBalanceOrderID int64
 
 	// =========================================================
-	// REUSE EXISTING ACTIVE ORDER
+	// CREATE A NEW ORDER FOR EVERY NEW PURCHASE
 	// =========================================================
+	//
+	// A partially paid order is NOT reused.
+	// Its remaining balance is carried into the new order.
 
-	if activeOrderID.Valid && activeOrderID.Int64 > 0 {
+	err = db.QueryRow(`
+		SELECT
+			total_amount - amount_paid,
+			id
+		FROM orders
+		WHERE customer_id = ?
+		  AND amount_paid < total_amount
+		  AND carried_forward_to_order_id IS NULL
+		ORDER BY id DESC
+		LIMIT 1
+	`,
+		customerID,
+	).Scan(
+		&previousBalance,
+		&previousBalanceOrderID,
+	)
 
-		orderID = activeOrderID.Int64
-
-		err = db.QueryRow(`
-            SELECT previous_balance
-            FROM orders
-            WHERE id = ?
-              AND customer_id = ?
-        `,
-			orderID,
-			customerID,
-		).Scan(&previousBalance)
-
-		if err == sql.ErrNoRows {
-
-			// The saved active order no longer exists.
-			// We will create a new one below.
-			activeOrderID.Valid = false
-			activeOrderID.Int64 = 0
-
-		} else if err != nil {
-
-			http.Error(
-				w,
-				"Could not load active order: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
+	if err == sql.ErrNoRows {
+		previousBalance = 0
+		previousBalanceOrderID = 0
+	} else if err != nil {
+		http.Error(
+			w,
+			"Could not check previous balance: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
 	}
 
-	// =========================================================
-	// CREATE NEW ACTIVE ORDER
-	// =========================================================
+	// New fabrics + previous unpaid balance.
+	totalWithBalance := total + previousBalance
 
-	if !activeOrderID.Valid || activeOrderID.Int64 == 0 {
-
-		var previousBalanceOrderID int64
-
-		err = db.QueryRow(`
-            SELECT
-                total_amount - amount_paid,
-                id
-            FROM orders
-            WHERE customer_id = ?
-              AND amount_paid < total_amount
-              AND carried_forward_to_order_id IS NULL
-            ORDER BY id ASC
-            LIMIT 1
-        `,
-			customerID,
-		).Scan(
-			&previousBalance,
-			&previousBalanceOrderID,
+	result, err := db.Exec(`
+		INSERT INTO orders
+		(
+			customer_id,
+			total_amount,
+			amount_paid,
+			payment_status,
+			previous_balance,
+			previous_balance_order_id
 		)
+		VALUES (?, ?, 0, 'UNPAID', ?, ?)
+	`,
+		customerID,
+		totalWithBalance,
+		previousBalance,
+		previousBalanceOrderID,
+	)
 
-		if err == sql.ErrNoRows {
+	if err != nil {
+		http.Error(
+			w,
+			"Could not create order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
 
-			previousBalance = 0
-			previousBalanceOrderID = 0
+	orderID, err = result.LastInsertId()
 
-		} else if err != nil {
+	if err != nil {
+		http.Error(
+			w,
+			"Could not get order ID: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
 
-			http.Error(
-				w,
-				"Could not check previous balance: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
+	// Remember this as the customer's current order.
+	_, err = db.Exec(`
+		UPDATE customers
+		SET active_order_id = ?
+		WHERE id = ?
+	`,
+		orderID,
+		customerID,
+	)
 
-		totalWithBalance := total
+	if err != nil {
+		http.Error(
+			w,
+			"Could not save active order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
 
-		result, err := db.Exec(`
-            INSERT INTO orders
-            (
-                customer_id,
-                total_amount,
-                amount_paid,
-                payment_status,
-                previous_balance,
-                previous_balance_order_id
-            )
-            VALUES (?, ?, 0, 'UNPAID', ?, ?)
-        `,
-			customerID,
-			totalWithBalance,
-			previousBalance,
+	// Link the previous unpaid order to this new order.
+	if previousBalanceOrderID > 0 {
+		_, err = db.Exec(`
+			UPDATE orders
+			SET carried_forward_to_order_id = ?
+			WHERE id = ?
+		`,
+			orderID,
 			previousBalanceOrderID,
 		)
 
 		if err != nil {
-
 			http.Error(
 				w,
-				"Could not create order: "+err.Error(),
+				"Could not link previous balance: "+err.Error(),
 				http.StatusInternalServerError,
 			)
 			return
 		}
-
-		orderID, err = result.LastInsertId()
-
-		if err != nil {
-
-			http.Error(
-				w,
-				"Could not get order ID: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		// Remember this order for this customer.
-		_, err = db.Exec(`
-            UPDATE customers
-            SET active_order_id = ?
-            WHERE id = ?
-        `,
-			orderID,
-			customerID,
-		)
-
-		if err != nil {
-
-			http.Error(
-				w,
-				"Could not save active order: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		// Carry forward any previous unpaid balance.
-		if previousBalanceOrderID > 0 {
-
-			_, err = db.Exec(`
-                UPDATE orders
-                SET carried_forward_to_order_id = ?
-                WHERE id = ?
-            `,
-				orderID,
-				previousBalanceOrderID,
-			)
-
-			if err != nil {
-
-				http.Error(
-					w,
-					"Could not link previous balance: "+err.Error(),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-		}
-
-		log.Println("========== NEW ACTIVE ORDER ==========")
-		log.Println("Order ID:", orderID)
-
-	} else {
-
-		// =====================================================
-		// UPDATE EXISTING ACTIVE ORDER
-		// =====================================================
-
-		// The previous balance belongs to this active order.
-		// Include it once together with the current cart total.
-		totalWithBalance := previousBalance + total
-
-		_, err = db.Exec(`
-            UPDATE orders
-            SET
-                total_amount = ?,
-                payment_status = CASE
-                    WHEN amount_paid >= ? THEN 'PAID'
-                    WHEN amount_paid > 0 THEN 'PARTIAL'
-                    ELSE 'UNPAID'
-                END
-            WHERE id = ?
-              AND customer_id = ?
-        `,
-			totalWithBalance,
-			totalWithBalance,
-			orderID,
-			customerID,
-		)
-
-		if err != nil {
-
-			http.Error(
-				w,
-				"Could not update active order: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		log.Println("========== REUSING ACTIVE ORDER ==========")
-		log.Println("Order ID:", orderID)
 	}
+
+	log.Println("========== NEW ORDER ==========")
+	log.Println("Order ID:", orderID)
+	log.Println("New fabrics:", total)
+	log.Println("Previous balance:", previousBalance)
+	log.Println("Total:", totalWithBalance)
 
 	// =========================================================
 	// REFRESH ORDER ITEMS
@@ -1430,7 +1348,7 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 		SELECT product_name, price, quantity, subtotal
 		FROM order_items
 		WHERE order_id = ?
-		ORDER BY id ASC
+		ORDER BY id DESC
 	`, orderID)
 
 	if err != nil {
