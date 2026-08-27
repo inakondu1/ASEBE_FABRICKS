@@ -1630,14 +1630,18 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 
+	customerID, ok := getCustomerSession(r)
+
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// =========================================================
+	// GET: SHOW CURRENT OUTSTANDING BALANCE
+	// =========================================================
+
 	if r.Method == http.MethodGet {
-
-		customerID, ok := getCustomerSession(r)
-
-		if !ok {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
 
 		var orderID int64
 		var total float64
@@ -1721,6 +1725,10 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// =========================================================
+	// POST: PAY EXISTING OUTSTANDING BALANCE
+	// =========================================================
+
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -1730,16 +1738,7 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	customerID, ok := getCustomerSession(r)
-
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
-	err := r.ParseForm()
-
-	if err != nil {
+	if err := r.ParseForm(); err != nil {
 		http.Error(
 			w,
 			"Could not process payment",
@@ -1762,8 +1761,8 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ---------------------------------------------------------
-	// ALWAYS APPLY STANDALONE PAYMENT TO THE CUSTOMER'S
-	// CURRENT OUTSTANDING ORDER.
+	// FIND THE EXISTING ORDER THAT OWNS THE DEBT.
+	// NO NEW ORDER IS CREATED HERE.
 	// ---------------------------------------------------------
 
 	var orderID int64
@@ -1804,27 +1803,84 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	remaining := total - currentAmountPaid
+	// ---------------------------------------------------------
+	// CALCULATE THE DEBT BEFORE AND AFTER THIS PAYMENT.
+	// ---------------------------------------------------------
 
-	if amount > remaining {
+	previousBalance := total - currentAmountPaid
+
+	if previousBalance < 0 {
+		previousBalance = 0
+	}
+
+	if amount > previousBalance {
 		http.Error(
 			w,
 			fmt.Sprintf(
 				"Payment is greater than your outstanding balance of ₦%.2f",
-				remaining,
+				previousBalance,
 			),
 			http.StatusBadRequest,
 		)
 		return
 	}
 
+	balanceRemaining := previousBalance - amount
+
+	if balanceRemaining < 0 {
+		balanceRemaining = 0
+	}
+
 	newTotalPaid := currentAmountPaid + amount
 
 	paymentStatus := "PART PAYMENT"
 
-	if newTotalPaid == total {
+	if balanceRemaining == 0 {
 		paymentStatus = "PAID"
 	}
+
+	// ---------------------------------------------------------
+	// RECORD THIS AS A PAYMENT TRANSACTION.
+	//
+	// IMPORTANT:
+	// THIS DOES NOT CREATE A NEW ORDER.
+	//
+	// The payment remains linked to the order that owns the debt.
+	// ---------------------------------------------------------
+
+	_, err = db.Exec(`
+		INSERT INTO payments (
+			order_id,
+			customer_id,
+			payment_type,
+			previous_balance,
+			amount_paid,
+			balance_remaining,
+			payment_status
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`,
+		orderID,
+		customerID,
+		"OUTSTANDING BALANCE PAYMENT",
+		previousBalance,
+		amount,
+		balanceRemaining,
+		paymentStatus,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not record payment transaction: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// ---------------------------------------------------------
+	// UPDATE THE ORIGINAL ORDER'S PAYMENT INFORMATION.
+	// ---------------------------------------------------------
 
 	_, err = db.Exec(`
 		UPDATE orders
@@ -1850,8 +1906,10 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If the outstanding order is now completely paid,
-	// close the customer's active order.
+	// ---------------------------------------------------------
+	// IF THE OLD ORDER IS FULLY PAID, CLOSE ITS ACTIVE ORDER.
+	// ---------------------------------------------------------
+
 	if paymentStatus == "PAID" {
 
 		_, err = db.Exec(`
@@ -1876,17 +1934,23 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("========== OUTSTANDING PAYMENT ==========")
 	log.Println("Customer ID:", customerID)
-	log.Println("Order ID:", orderID)
+	log.Println("Payment belongs to Order:", orderID)
+	log.Println("Previous Balance:", previousBalance)
 	log.Println("Payment:", amount)
-	log.Println("Previous Paid:", currentAmountPaid)
-	log.Println("New Total Paid:", newTotalPaid)
+	log.Println("Balance Remaining:", balanceRemaining)
 	log.Println("Status:", paymentStatus)
 	log.Println("=========================================")
+
+	// ---------------------------------------------------------
+	// SEND THE CUSTOMER TO THE PAYMENT RECEIPT.
+	//
+	// This is NOT a new order receipt.
+	// ---------------------------------------------------------
 
 	http.Redirect(
 		w,
 		r,
-		"/receipt?order="+strconv.FormatInt(orderID, 10),
+		"/receipt?order="+strconv.FormatInt(orderID, 10)+"&payment=outstanding",
 		http.StatusSeeOther,
 	)
 }
