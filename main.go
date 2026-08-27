@@ -1317,6 +1317,8 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Receipt struct {
+                ReceiptTitle         string
+                IsOutstandingPayment bool
 		OrderID                int64
 		Date                   string
 		CustomerName           string
@@ -1332,6 +1334,14 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var receipt Receipt
+
+
+        receipt.ReceiptTitle = "ORDER RECEIPT"
+
+        if r.URL.Query().Get("payment") == "outstanding" {
+                receipt.ReceiptTitle = "OUTSTANDING PAYMENT RECEIPT"
+                receipt.IsOutstandingPayment = true
+        }
 
 	err := db.QueryRow(`
 		SELECT
