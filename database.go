@@ -10,7 +10,6 @@ import (
 var db *sql.DB
 
 func initDatabase() {
-
 	var err error
 
 	// Connect to database
@@ -25,6 +24,42 @@ func initDatabase() {
 
 	if err != nil {
 		log.Fatal("Could not connect to database:", err)
+	}
+
+	// =========================================================
+	// PAYMENT TRANSACTIONS
+	// =========================================================
+	//
+	// Stores separate payments made against existing orders.
+	// This is NOT a new order.
+	//
+	// Example:
+	// Previous Balance:  ₦6,000
+	// Amount Paid:       ₦5,000
+	// Balance Remaining: ₦1,000
+	//
+	// The remaining balance is what can be carried forward.
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS payments (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			order_id INTEGER NOT NULL,
+			customer_id INTEGER NOT NULL,
+			payment_type TEXT NOT NULL DEFAULT 'OUTSTANDING BALANCE PAYMENT',
+			previous_balance REAL NOT NULL DEFAULT 0,
+			amount_paid REAL NOT NULL DEFAULT 0,
+			balance_remaining REAL NOT NULL DEFAULT 0,
+			payment_status TEXT NOT NULL DEFAULT 'PART PAYMENT',
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (order_id) REFERENCES orders(id),
+			FOREIGN KEY (customer_id) REFERENCES customers(id)
+		)
+	`)
+
+	if err != nil {
+		log.Println("Payments table setup error:", err)
+	} else {
+		log.Println("Payment transactions table ready")
 	}
 
 	// Create products table

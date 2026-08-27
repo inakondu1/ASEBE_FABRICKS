@@ -343,17 +343,19 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load the order's total and previous payments.
+	// Load the order's total, previous payments, and customer.
 	var total float64
 	var currentAmountPaid float64
+	var customerID int
 
 	err = db.QueryRow(`
-                SELECT total_amount, amount_paid
-                FROM orders
-                WHERE id = ?
-        `, orderID).Scan(
+        SELECT total_amount, amount_paid, customer_id
+        FROM orders
+        WHERE id = ?
+`, orderID).Scan(
 		&total,
 		&currentAmountPaid,
+		&customerID,
 	)
 
 	if err == sql.ErrNoRows {
@@ -374,13 +376,15 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// The amount entered is the NEW payment.
-	// Add it to all previous payments.
-	newTotalPaid := currentAmountPaid + amountPaid
+	// Calculate the balance before this payment.
+	remaining := total - currentAmountPaid
 
-	if newTotalPaid > total {
-		remaining := total - currentAmountPaid
+	if remaining < 0 {
+		remaining = 0
+	}
 
+	// The new payment cannot be greater than the remaining balance.
+	if amountPaid > remaining {
 		http.Error(
 			w,
 			fmt.Sprintf(
@@ -391,6 +395,53 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+
+	// Calculate the balance after this payment.
+	balanceRemaining := remaining - amountPaid
+
+	if balanceRemaining < 0 {
+		balanceRemaining = 0
+	}
+
+	transactionStatus := "PART PAYMENT"
+
+	if balanceRemaining == 0 {
+		transactionStatus = "PAID"
+	}
+
+	// Record this payment as a separate transaction.
+	_, err = db.Exec(`
+        INSERT INTO payments (
+                order_id,
+                customer_id,
+                payment_type,
+                previous_balance,
+                amount_paid,
+                balance_remaining,
+                payment_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+`,
+		orderID,
+		customerID,
+		"OUTSTANDING BALANCE PAYMENT",
+		remaining,
+		amountPaid,
+		balanceRemaining,
+		transactionStatus,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not record payment transaction: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// Add this payment to all previous payments.
+	newTotalPaid := currentAmountPaid + amountPaid
 
 	paymentStatus := "UNPAID"
 
@@ -403,13 +454,13 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = db.Exec(`
-                UPDATE orders
-                SET
-                        amount_paid = ?,
-                        payment_status = ?,
-                        last_payment_date = CURRENT_TIMESTAMP
-                WHERE id = ?
-        `,
+        UPDATE orders
+        SET
+                amount_paid = ?,
+                payment_status = ?,
+                last_payment_date = CURRENT_TIMESTAMP
+        WHERE id = ?
+`,
 		newTotalPaid,
 		paymentStatus,
 		orderID,
@@ -428,10 +479,10 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 	// The next purchase must create a new order number.
 	if paymentStatus == "PAID" {
 		_, err = db.Exec(`
-			UPDATE customers
-			SET active_order_id = NULL
-			WHERE active_order_id = ?
-		`, orderID)
+                UPDATE customers
+                SET active_order_id = NULL
+                WHERE active_order_id = ?
+        `, orderID)
 
 		if err != nil {
 			http.Error(
@@ -1574,6 +1625,273 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // =========================
+// PAY OUTSTANDING BALANCE
+// =========================
+
+func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodGet {
+
+		customerID, ok := getCustomerSession(r)
+
+		if !ok {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		var orderID int64
+		var total float64
+		var amountPaid float64
+		var previousBalance float64
+
+		err := db.QueryRow(`
+			SELECT
+				id,
+				total_amount,
+				amount_paid,
+				COALESCE(previous_balance, 0)
+			FROM orders
+			WHERE customer_id = ?
+			  AND amount_paid < total_amount
+			ORDER BY id DESC
+			LIMIT 1
+		`, customerID).Scan(
+			&orderID,
+			&total,
+			&amountPaid,
+			&previousBalance,
+		)
+
+		if err == sql.ErrNoRows {
+
+			type OutstandingPage struct {
+				HasBalance bool
+				Balance    float64
+			}
+
+			renderTemplate(
+				w,
+				"templates/outstanding.html",
+				OutstandingPage{
+					HasBalance: false,
+					Balance:    0,
+				},
+			)
+
+			return
+		}
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load outstanding balance: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		balance := total - amountPaid
+
+		if balance < 0 {
+			balance = 0
+		}
+
+		type OutstandingPage struct {
+			HasBalance      bool
+			OrderID         int64
+			Total           float64
+			AmountPaid      float64
+			Balance         float64
+			PreviousBalance float64
+		}
+
+		renderTemplate(
+			w,
+			"templates/outstanding.html",
+			OutstandingPage{
+				HasBalance:      balance > 0,
+				OrderID:         orderID,
+				Total:           total,
+				AmountPaid:      amountPaid,
+				Balance:         balance,
+				PreviousBalance: previousBalance,
+			},
+		)
+
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	customerID, ok := getCustomerSession(r)
+
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not process payment",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	amountText := r.FormValue("amount_paid")
+
+	amount, err := strconv.ParseFloat(amountText, 64)
+
+	if err != nil || amount <= 0 {
+		http.Error(
+			w,
+			"Please enter a valid payment amount",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// ---------------------------------------------------------
+	// ALWAYS APPLY STANDALONE PAYMENT TO THE CUSTOMER'S
+	// CURRENT OUTSTANDING ORDER.
+	// ---------------------------------------------------------
+
+	var orderID int64
+	var total float64
+	var currentAmountPaid float64
+
+	err = db.QueryRow(`
+		SELECT
+			id,
+			total_amount,
+			amount_paid
+		FROM orders
+		WHERE customer_id = ?
+		  AND amount_paid < total_amount
+		ORDER BY id DESC
+		LIMIT 1
+	`, customerID).Scan(
+		&orderID,
+		&total,
+		&currentAmountPaid,
+	)
+
+	if err == sql.ErrNoRows {
+		http.Error(
+			w,
+			"You currently have no outstanding balance.",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not find outstanding order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	remaining := total - currentAmountPaid
+
+	if amount > remaining {
+		http.Error(
+			w,
+			fmt.Sprintf(
+				"Payment is greater than your outstanding balance of ₦%.2f",
+				remaining,
+			),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	newTotalPaid := currentAmountPaid + amount
+
+	paymentStatus := "PART PAYMENT"
+
+	if newTotalPaid == total {
+		paymentStatus = "PAID"
+	}
+
+	_, err = db.Exec(`
+		UPDATE orders
+		SET
+			amount_paid = ?,
+			payment_status = ?,
+			last_payment_date = CURRENT_TIMESTAMP
+		WHERE id = ?
+		  AND customer_id = ?
+	`,
+		newTotalPaid,
+		paymentStatus,
+		orderID,
+		customerID,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not save outstanding payment: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// If the outstanding order is now completely paid,
+	// close the customer's active order.
+	if paymentStatus == "PAID" {
+
+		_, err = db.Exec(`
+			UPDATE customers
+			SET active_order_id = NULL
+			WHERE id = ?
+			  AND active_order_id = ?
+		`,
+			customerID,
+			orderID,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not close paid order: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+	}
+
+	log.Println("========== OUTSTANDING PAYMENT ==========")
+	log.Println("Customer ID:", customerID)
+	log.Println("Order ID:", orderID)
+	log.Println("Payment:", amount)
+	log.Println("Previous Paid:", currentAmountPaid)
+	log.Println("New Total Paid:", newTotalPaid)
+	log.Println("Status:", paymentStatus)
+	log.Println("=========================================")
+
+	http.Redirect(
+		w,
+		r,
+		"/receipt?order="+strconv.FormatInt(orderID, 10),
+		http.StatusSeeOther,
+	)
+}
+
+// =========================
 // CUSTOMER LOGOUT
 // =========================
 
@@ -1685,34 +2003,25 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	phone := r.URL.Query().Get("phone")
+	customerID, ok := getCustomerSession(r)
 
-	if phone == "" {
+	if !ok {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
-	// ---------------------------------------------------------
-	// FIND CUSTOMER
-	// ---------------------------------------------------------
-
-	var customerID int
+	var phone string
 
 	err := db.QueryRow(`
-		SELECT id
+		SELECT phone
 		FROM customers
-		WHERE phone = ?
-	`, phone).Scan(&customerID)
-
-	if err == sql.ErrNoRows {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
+		WHERE id = ?
+	`, customerID).Scan(&phone)
 
 	if err != nil {
 		http.Error(
 			w,
-			"Could not load customer: "+err.Error(),
+			"Could not load customer phone: "+err.Error(),
 			http.StatusInternalServerError,
 		)
 		return
@@ -1873,6 +2182,87 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 // =========================
 // CUSTOMER LOGOUT
+
+func checkPaymentTransactionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	rows, err := db.Query(`
+		SELECT
+			id,
+			order_id,
+			customer_id,
+			payment_type,
+			previous_balance,
+			amount_paid,
+			balance_remaining,
+			payment_status,
+			created_at
+		FROM payments
+		ORDER BY id DESC
+	`)
+
+	if err != nil {
+		http.Error(w, "Could not load payment transactions: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	fmt.Fprintln(w, "<html><body><h1>Payment Transactions</h1>")
+
+	for rows.Next() {
+
+		var id int64
+		var orderID int64
+		var customerID int64
+		var paymentType string
+		var previousBalance float64
+		var amountPaid float64
+		var balanceRemaining float64
+		var status string
+		var createdAt string
+
+		err := rows.Scan(
+			&id,
+			&orderID,
+			&customerID,
+			&paymentType,
+			&previousBalance,
+			&amountPaid,
+			&balanceRemaining,
+			&status,
+			&createdAt,
+		)
+
+		if err != nil {
+			http.Error(w, "Could not read payment transaction: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintf(
+			w,
+			"<hr><p><strong>Payment ID:</strong> %d</p>"+
+				"<p><strong>Order:</strong> #%d</p>"+
+				"<p><strong>Customer:</strong> %d</p>"+
+				"<p><strong>Payment Type:</strong> %s</p>"+
+				"<p><strong>Previous Outstanding:</strong> ₦%.2f</p>"+
+				"<p><strong>Amount Paid:</strong> ₦%.2f</p>"+
+				"<p><strong>Outstanding Remaining:</strong> ₦%.2f</p>"+
+				"<p><strong>Status:</strong> %s</p>"+
+				"<p><strong>Date:</strong> %s</p>",
+			id,
+			orderID,
+			customerID,
+			paymentType,
+			previousBalance,
+			amountPaid,
+			balanceRemaining,
+			status,
+			createdAt,
+		)
+	}
+
+	fmt.Fprintln(w, "</body></html>")
+}
+
 func main() {
 
 	// Connect to database
@@ -1910,9 +2300,11 @@ func main() {
 
 	http.HandleFunc("/customer", customerHandler)
 	http.HandleFunc("/order-history", orderHistoryHandler)
+	http.HandleFunc("/pay-outstanding", outstandingPaymentHandler)
 
 	// Admin
 	// Admin
+	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
 	http.HandleFunc("/admin/edit-fabric", editFabricHandler)
