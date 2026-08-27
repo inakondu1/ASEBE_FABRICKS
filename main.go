@@ -174,43 +174,48 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderID := r.URL.Query().Get("order")
+	customerIDText := r.URL.Query().Get("customer")
+	name := r.URL.Query().Get("name")
+	phone := r.URL.Query().Get("phone")
+	address := r.URL.Query().Get("address")
+	note := r.URL.Query().Get("note")
+	cartJSON := r.URL.Query().Get("cart")
 
-	if orderID == "" {
+	if customerIDText == "" || phone == "" || cartJSON == "" {
 		http.Error(
 			w,
-			"Order number is required",
+			"Incomplete order information",
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	// Load the complete order breakdown.
-	var total float64
-	var previousBalance float64
-	var previousBalanceOrderID int64
-	var amountPaid float64
+	customerID, err := strconv.Atoi(customerIDText)
 
-	err := db.QueryRow(`
-                SELECT
-                        total_amount,
-                        COALESCE(previous_balance, 0),
-                        COALESCE(previous_balance_order_id, 0),
-                        amount_paid
-                FROM orders
+	if err != nil || customerID <= 0 {
+		http.Error(
+			w,
+			"Invalid customer",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// Make sure the customer is still registered.
+	var registeredCustomerID int
+
+	err = db.QueryRow(`
+                SELECT id
+                FROM customers
                 WHERE id = ?
-        `, orderID).Scan(
-		&total,
-		&previousBalance,
-		&previousBalanceOrderID,
-		&amountPaid,
-	)
+                  AND phone = ?
+        `, customerID, phone).Scan(&registeredCustomerID)
 
 	if err == sql.ErrNoRows {
 		http.Error(
 			w,
-			"Order not found",
-			http.StatusNotFound,
+			"Customer account could not be verified.",
+			http.StatusBadRequest,
 		)
 		return
 	}
@@ -218,32 +223,100 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(
 			w,
-			"Could not load order: "+err.Error(),
+			"Could not verify customer: "+err.Error(),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	// Calculate only the fabrics currently inside this order.
+	// Read the cart without creating an order.
+	var cart []struct {
+		ID       int     `json:"id"`
+		Name     string  `json:"name"`
+		Price    float64 `json:"price"`
+		Quantity int     `json:"quantity"`
+	}
+
+	err = json.Unmarshal([]byte(cartJSON), &cart)
+
+	if err != nil || len(cart) == 0 {
+		http.Error(
+			w,
+			"Could not read your cart.",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// Calculate the current fabric total.
 	var currentOrderTotal float64
 
-	err = db.QueryRow(`
-                SELECT COALESCE(SUM(subtotal), 0)
-                FROM order_items
-                WHERE order_id = ?
-        `, orderID).Scan(&currentOrderTotal)
+	for _, item := range cart {
 
-	if err != nil {
+		if item.Quantity <= 0 || item.Price < 0 {
+			http.Error(
+				w,
+				"Invalid item in cart",
+				http.StatusBadRequest,
+			)
+			return
+		}
+
+		currentOrderTotal +=
+			item.Price * float64(item.Quantity)
+	}
+
+	if currentOrderTotal <= 0 {
 		http.Error(
 			w,
-			"Could not calculate order items: "+err.Error(),
+			"Order total must be greater than zero",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// Find any unpaid balance from a previous order.
+	var previousBalance float64
+	var previousBalanceOrderID int64
+
+	err = db.QueryRow(`
+                SELECT
+                        total_amount - amount_paid,
+                        id
+                FROM orders
+                WHERE customer_id = ?
+                  AND amount_paid < total_amount
+                  AND carried_forward_to_order_id IS NULL
+                ORDER BY id DESC
+                LIMIT 1
+        `,
+		customerID,
+	).Scan(
+		&previousBalance,
+		&previousBalanceOrderID,
+	)
+
+	if err == sql.ErrNoRows {
+		previousBalance = 0
+		previousBalanceOrderID = 0
+	} else if err != nil {
+		http.Error(
+			w,
+			"Could not check previous balance: "+err.Error(),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
+	total := currentOrderTotal + previousBalance
+
 	type PaymentPage struct {
-		OrderID                string
+		CustomerID             int
+		Name                   string
+		Phone                  string
+		Address                string
+		Note                   string
+		Cart                   string
 		CurrentOrderTotal      float64
 		PreviousBalance        float64
 		PreviousBalanceOrderID int64
@@ -253,13 +326,18 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PaymentPage{
-		OrderID:                orderID,
+		CustomerID:             customerID,
+		Name:                   name,
+		Phone:                  phone,
+		Address:                address,
+		Note:                   note,
+		Cart:                   cartJSON,
 		CurrentOrderTotal:      currentOrderTotal,
 		PreviousBalance:        previousBalance,
 		PreviousBalanceOrderID: previousBalanceOrderID,
 		Total:                  total,
-		AmountPaid:             amountPaid,
-		Balance:                total - amountPaid,
+		AmountPaid:             0,
+		Balance:                total,
 	}
 
 	renderTemplate(
@@ -269,33 +347,7 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// =========================
-// CHECKOUT
-// =========================
-
 func checkoutHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method == http.MethodGet {
-
-		orderID := r.URL.Query().Get("order")
-
-		if orderID == "" {
-			http.Error(
-				w,
-				"Order number is required",
-				http.StatusBadRequest,
-			)
-			return
-		}
-
-		renderTemplate(
-			w,
-			"templates/checkout.html",
-			orderID,
-		)
-
-		return
-	}
 
 	if r.Method != http.MethodPost {
 		http.Error(
@@ -306,9 +358,7 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-
-	if err != nil {
+	if err := r.ParseForm(); err != nil {
 		http.Error(
 			w,
 			"Could not process payment",
@@ -317,23 +367,30 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderID := r.FormValue("order")
-	amountPaidText := r.FormValue("amount_paid")
+	customerID, err := strconv.Atoi(r.FormValue("customer"))
+	if err != nil || customerID <= 0 {
+		http.Error(w, "Invalid customer", http.StatusBadRequest)
+		return
+	}
 
-	if orderID == "" {
+	name := r.FormValue("name")
+	phone := r.FormValue("phone")
+	address := r.FormValue("address")
+	note := r.FormValue("note")
+	cartJSON := r.FormValue("cart")
+	amountPaidText := r.FormValue("amount_paid")
+	paymentConfirmed := r.FormValue("payment_confirmed")
+
+	if paymentConfirmed != "yes" {
 		http.Error(
 			w,
-			"Order number is required",
+			"Please confirm that payment has been made.",
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	amountPaid, err := strconv.ParseFloat(
-		amountPaidText,
-		64,
-	)
-
+	amountPaid, err := strconv.ParseFloat(amountPaidText, 64)
 	if err != nil || amountPaid <= 0 {
 		http.Error(
 			w,
@@ -343,92 +400,282 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load the order's total, previous payments, and customer.
-	var total float64
-	var currentAmountPaid float64
-	var customerID int
+	var cart []struct {
+		ID       int     `json:"id"`
+		Name     string  `json:"name"`
+		Price    float64 `json:"price"`
+		Quantity int     `json:"quantity"`
+	}
 
-	err = db.QueryRow(`
-        SELECT total_amount, amount_paid, customer_id
-        FROM orders
-        WHERE id = ?
-`, orderID).Scan(
-		&total,
-		&currentAmountPaid,
-		&customerID,
-	)
-
-	if err == sql.ErrNoRows {
+	if err := json.Unmarshal([]byte(cartJSON), &cart); err != nil || len(cart) == 0 {
 		http.Error(
 			w,
-			"Order not found",
-			http.StatusNotFound,
+			"Could not read your cart",
+			http.StatusBadRequest,
 		)
+		return
+	}
+
+	// Verify the registered customer.
+	var registeredPhone string
+
+	err = db.QueryRow(`
+                SELECT phone
+                FROM customers
+                WHERE id = ?
+        `, customerID).Scan(&registeredPhone)
+
+	if err == sql.ErrNoRows {
+		http.Error(w, "Customer not found", http.StatusBadRequest)
 		return
 	}
 
 	if err != nil {
 		http.Error(
 			w,
-			"Could not load order: "+err.Error(),
+			"Could not verify customer: "+err.Error(),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	// Calculate the balance before this payment.
-	remaining := total - currentAmountPaid
-
-	if remaining < 0 {
-		remaining = 0
+	if registeredPhone != phone {
+		http.Error(
+			w,
+			"Customer verification failed",
+			http.StatusBadRequest,
+		)
+		return
 	}
 
-	// The new payment cannot be greater than the remaining balance.
-	if amountPaid > remaining {
+	// Calculate the new fabrics total.
+	var newFabricTotal float64
+
+	for _, item := range cart {
+
+		if item.Quantity <= 0 || item.Price < 0 {
+			http.Error(
+				w,
+				"Invalid item in cart",
+				http.StatusBadRequest,
+			)
+			return
+		}
+
+		newFabricTotal += item.Price * float64(item.Quantity)
+	}
+
+	if newFabricTotal <= 0 {
+		http.Error(
+			w,
+			"Order total must be greater than zero",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// Find an unpaid balance from a previous order.
+	var previousBalance float64
+	var previousBalanceOrderID int64
+
+	err = db.QueryRow(`
+                SELECT
+                        total_amount - amount_paid,
+                        id
+                FROM orders
+                WHERE customer_id = ?
+                  AND amount_paid < total_amount
+                  AND carried_forward_to_order_id IS NULL
+                ORDER BY id DESC
+                LIMIT 1
+        `,
+		customerID,
+	).Scan(
+		&previousBalance,
+		&previousBalanceOrderID,
+	)
+
+	if err == sql.ErrNoRows {
+		previousBalance = 0
+		previousBalanceOrderID = 0
+	} else if err != nil {
+		http.Error(
+			w,
+			"Could not check previous balance: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	total := newFabricTotal + previousBalance
+
+	// Payment cannot exceed the amount currently due.
+	if amountPaid > total {
 		http.Error(
 			w,
 			fmt.Sprintf(
-				"Payment is greater than the remaining balance of ₦%.2f",
-				remaining,
+				"Payment cannot be greater than the total of ₦%.2f",
+				total,
 			),
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	// Calculate the balance after this payment.
-	balanceRemaining := remaining - amountPaid
+	balanceRemaining := total - amountPaid
 
 	if balanceRemaining < 0 {
 		balanceRemaining = 0
 	}
 
-	transactionStatus := "PART PAYMENT"
+	paymentStatus := "PART PAYMENT"
 
 	if balanceRemaining == 0 {
-		transactionStatus = "PAID"
+		paymentStatus = "PAID"
 	}
 
-	// Record this payment as a separate transaction.
+	// =========================================================
+	// CREATE THE ORDER ONLY NOW
+	// =========================================================
+
+	result, err := db.Exec(`
+                INSERT INTO orders
+                (
+                        customer_id,
+                        total_amount,
+                        amount_paid,
+                        payment_status,
+                        previous_balance,
+                        previous_balance_order_id,
+                        last_payment_date
+                )
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `,
+		customerID,
+		total,
+		amountPaid,
+		paymentStatus,
+		previousBalance,
+		previousBalanceOrderID,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not create order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	orderID, err := result.LastInsertId()
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not get order ID: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// Save this as the customer's active order.
 	_, err = db.Exec(`
-        INSERT INTO payments (
-                order_id,
-                customer_id,
-                payment_type,
-                previous_balance,
-                amount_paid,
-                balance_remaining,
-                payment_status
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-`,
+                UPDATE customers
+                SET active_order_id = ?
+                WHERE id = ?
+        `,
 		orderID,
 		customerID,
-		"OUTSTANDING BALANCE PAYMENT",
-		remaining,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not save active order: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// Link the previous unpaid order to this new order.
+	if previousBalanceOrderID > 0 {
+
+		_, err = db.Exec(`
+                        UPDATE orders
+                        SET carried_forward_to_order_id = ?
+                        WHERE id = ?
+                `,
+			orderID,
+			previousBalanceOrderID,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not link previous balance: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+	}
+
+	// Save the fabrics in the new order.
+	for _, item := range cart {
+
+		subtotal := item.Price * float64(item.Quantity)
+
+		_, err = db.Exec(`
+                        INSERT INTO order_items
+                        (
+                                order_id,
+                                product_id,
+                                product_name,
+                                price,
+                                quantity,
+                                subtotal
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?)
+                `,
+			orderID,
+			item.ID,
+			item.Name,
+			item.Price,
+			item.Quantity,
+			subtotal,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not save order item: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+	}
+
+	// Record the payment transaction.
+	_, err = db.Exec(`
+                INSERT INTO payments
+                (
+                        order_id,
+                        customer_id,
+                        payment_type,
+                        previous_balance,
+                        amount_paid,
+                        balance_remaining,
+                        payment_status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+		orderID,
+		customerID,
+		"ORDER PAYMENT",
+		total,
 		amountPaid,
 		balanceRemaining,
-		transactionStatus,
+		paymentStatus,
 	)
 
 	if err != nil {
@@ -440,49 +687,18 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Add this payment to all previous payments.
-	newTotalPaid := currentAmountPaid + amountPaid
-
-	paymentStatus := "UNPAID"
-
-	if newTotalPaid > 0 && newTotalPaid < total {
-		paymentStatus = "PART PAYMENT"
-	}
-
-	if newTotalPaid == total {
-		paymentStatus = "PAID"
-	}
-
-	_, err = db.Exec(`
-        UPDATE orders
-        SET
-                amount_paid = ?,
-                payment_status = ?,
-                last_payment_date = CURRENT_TIMESTAMP
-        WHERE id = ?
-`,
-		newTotalPaid,
-		paymentStatus,
-		orderID,
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not save payment: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// A fully paid order is no longer the customer's active order.
-	// The next purchase must create a new order number.
+	// A fully paid order is no longer active.
 	if paymentStatus == "PAID" {
+
 		_, err = db.Exec(`
-                UPDATE customers
-                SET active_order_id = NULL
-                WHERE active_order_id = ?
-        `, orderID)
+                        UPDATE customers
+                        SET active_order_id = NULL
+                        WHERE id = ?
+                          AND active_order_id = ?
+                `,
+			customerID,
+			orderID,
+		)
 
 		if err != nil {
 			http.Error(
@@ -494,10 +710,23 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	log.Println("========== ORDER CREATED AFTER PAYMENT ==========")
+	log.Println("Order ID:", orderID)
+	log.Println("Customer:", name)
+	log.Println("Phone:", phone)
+	log.Println("Address:", address)
+	log.Println("Note:", note)
+	log.Println("New fabrics:", newFabricTotal)
+	log.Println("Previous balance:", previousBalance)
+	log.Println("Total:", total)
+	log.Println("Amount paid:", amountPaid)
+	log.Println("Balance:", balanceRemaining)
+	log.Println("==================================================")
+
 	http.Redirect(
 		w,
 		r,
-		"/receipt?order="+url.QueryEscape(orderID),
+		"/receipt?order="+url.QueryEscape(strconv.FormatInt(orderID, 10)),
 		http.StatusSeeOther,
 	)
 }
@@ -980,13 +1209,21 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, "Could not process order", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Could not process order",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -997,12 +1234,20 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	cartJSON := r.FormValue("cart")
 
 	if name == "" || phone == "" {
-		http.Error(w, "Name and phone number are required", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Name and phone number are required",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	if cartJSON == "" {
-		http.Error(w, "Your cart is empty", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Your cart is empty",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -1015,32 +1260,41 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal([]byte(cartJSON), &cart)
 	if err != nil {
-		http.Error(w, "Could not read your cart", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Could not read your cart",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	if len(cart) == 0 {
-		http.Error(w, "Your cart is empty", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Your cart is empty",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	// Find the registered customer.
+	// ---------------------------------------------------------
+	// FIND REGISTERED CUSTOMER
+	// ---------------------------------------------------------
+
 	var customerID int
 
 	err = db.QueryRow(`
-		SELECT id
-		FROM customers
-		WHERE phone = ?
-	`, phone).Scan(&customerID)
+                SELECT id
+                FROM customers
+                WHERE phone = ?
+        `, phone).Scan(&customerID)
 
 	if err == sql.ErrNoRows {
-
 		http.Error(
 			w,
 			"Please register before placing an order.",
 			http.StatusBadRequest,
 		)
-
 		return
 	}
 
@@ -1053,7 +1307,10 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Calculate order total.
+	// ---------------------------------------------------------
+	// CALCULATE NEW FABRICS TOTAL
+	// ---------------------------------------------------------
+
 	var total float64
 
 	for _, item := range cart {
@@ -1071,54 +1328,32 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if total <= 0 {
-		http.Error(w, "Order total must be greater than zero", http.StatusBadRequest)
-		return
-	}
-
-	// =========================================================
-	// ACTIVE ORDER SYSTEM
-	// =========================================================
-
-	// Check whether this customer already has an active order.
-	var activeOrderID sql.NullInt64
-
-	err = db.QueryRow(`
-        SELECT active_order_id
-        FROM customers
-        WHERE id = ?
-    `, customerID).Scan(&activeOrderID)
-
-	if err != nil {
 		http.Error(
 			w,
-			"Could not check active order: "+err.Error(),
-			http.StatusInternalServerError,
+			"Order total must be greater than zero",
+			http.StatusBadRequest,
 		)
 		return
 	}
 
-	var orderID int64
+	// ---------------------------------------------------------
+	// FIND OUTSTANDING BALANCE
+	// ---------------------------------------------------------
+
 	var previousBalance float64
 	var previousBalanceOrderID int64
 
-	// =========================================================
-	// CREATE A NEW ORDER FOR EVERY NEW PURCHASE
-	// =========================================================
-	//
-	// A partially paid order is NOT reused.
-	// Its remaining balance is carried into the new order.
-
 	err = db.QueryRow(`
-		SELECT
-			total_amount - amount_paid,
-			id
-		FROM orders
-		WHERE customer_id = ?
-		  AND amount_paid < total_amount
-		  AND carried_forward_to_order_id IS NULL
-		ORDER BY id DESC
-		LIMIT 1
-	`,
+                SELECT
+                        total_amount - amount_paid,
+                        id
+                FROM orders
+                WHERE customer_id = ?
+                  AND amount_paid < total_amount
+                  AND carried_forward_to_order_id IS NULL
+                ORDER BY id DESC
+                LIMIT 1
+        `,
 		customerID,
 	).Scan(
 		&previousBalance,
@@ -1137,163 +1372,63 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// New fabrics + previous unpaid balance.
 	totalWithBalance := total + previousBalance
 
-	result, err := db.Exec(`
-		INSERT INTO orders
-		(
-			customer_id,
-			total_amount,
-			amount_paid,
-			payment_status,
-			previous_balance,
-			previous_balance_order_id
-		)
-		VALUES (?, ?, 0, 'UNPAID', ?, ?)
-	`,
-		customerID,
-		totalWithBalance,
-		previousBalance,
-		previousBalanceOrderID,
-	)
+	// ---------------------------------------------------------
+	// IMPORTANT:
+	//
+	// NO ORDER IS CREATED HERE.
+	// NO ORDER ITEMS ARE CREATED HERE.
+	// NO PAYMENT IS CREATED HERE.
+	//
+	// We only carry the customer's order information forward
+	// to the payment page.
+	// ---------------------------------------------------------
 
-	if err != nil {
-		http.Error(
-			w,
-			"Could not create order: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
+	type PendingOrder struct {
+		CustomerID             int
+		Name                   string
+		Phone                  string
+		Address                string
+		Note                   string
+		Cart                   string
+		NewFabricTotal         float64
+		PreviousBalance        float64
+		PreviousBalanceOrderID int64
+		Total                  float64
 	}
 
-	orderID, err = result.LastInsertId()
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not get order ID: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
+	pending := PendingOrder{
+		CustomerID:             customerID,
+		Name:                   name,
+		Phone:                  phone,
+		Address:                address,
+		Note:                   note,
+		Cart:                   cartJSON,
+		NewFabricTotal:         total,
+		PreviousBalance:        previousBalance,
+		PreviousBalanceOrderID: previousBalanceOrderID,
+		Total:                  totalWithBalance,
 	}
 
-	// Remember this as the customer's current order.
-	_, err = db.Exec(`
-		UPDATE customers
-		SET active_order_id = ?
-		WHERE id = ?
-	`,
-		orderID,
-		customerID,
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not save active order: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Link the previous unpaid order to this new order.
-	if previousBalanceOrderID > 0 {
-		_, err = db.Exec(`
-			UPDATE orders
-			SET carried_forward_to_order_id = ?
-			WHERE id = ?
-		`,
-			orderID,
-			previousBalanceOrderID,
-		)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not link previous balance: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	}
-
-	log.Println("========== NEW ORDER ==========")
-	log.Println("Order ID:", orderID)
-	log.Println("New fabrics:", total)
-	log.Println("Previous balance:", previousBalance)
-	log.Println("Total:", totalWithBalance)
-
-	// =========================================================
-	// REFRESH ORDER ITEMS
-	// =========================================================
-
-	// Remove the previous cart contents from this active order.
-	// This prevents duplicate quantities when the customer
-	// submits the same cart again.
-	_, err = db.Exec(`
-        DELETE FROM order_items
-        WHERE order_id = ?
-    `, orderID)
-
-	if err != nil {
-
-		http.Error(
-			w,
-			"Could not refresh order items: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Save every fabric in the order.
-	for _, item := range cart {
-
-		subtotal := item.Price * float64(item.Quantity)
-
-		_, err = db.Exec(`
-			INSERT INTO order_items
-			(order_id, product_id, product_name, price, quantity, subtotal)
-			VALUES (?, ?, ?, ?, ?, ?)
-		`,
-			orderID,
-			item.ID,
-			item.Name,
-			item.Price,
-			item.Quantity,
-			subtotal,
-		)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not save order item: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	}
-
-	log.Println("========== NEW ORDER ==========")
-	log.Println("Order ID:", orderID)
-	log.Println("Customer:", name)
-	log.Println("Phone:", phone)
-	log.Println("Address:", address)
-	log.Println("Note:", note)
-	log.Println("Total:", total)
-	log.Println("===============================")
+	// Encode the pending order into the payment URL.
+	//
+	// Nothing is written to the database here.
+	query := url.Values{}
+	query.Set("customer", strconv.Itoa(pending.CustomerID))
+	query.Set("name", pending.Name)
+	query.Set("phone", pending.Phone)
+	query.Set("address", pending.Address)
+	query.Set("note", pending.Note)
+	query.Set("cart", pending.Cart)
 
 	http.Redirect(
 		w,
 		r,
-		"/payment?order="+strconv.FormatInt(orderID, 10),
+		"/payment?"+query.Encode(),
 		http.StatusSeeOther,
 	)
 }
-
-// =========================
-// ORDER RECEIPT
-// =========================
 
 func receiptHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -1317,31 +1452,35 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Receipt struct {
-                ReceiptTitle         string
-                IsOutstandingPayment bool
-		OrderID                int64
-		Date                   string
-		CustomerName           string
-		Phone                  string
-		Items                  []ReceiptItem
-		Total                  float64
-		AmountPaid             float64
-		Balance                float64
-		PaymentStatus          string
-		PreviousBalance        float64
-		PreviousBalanceOrderID int64
-		LastPayment            string
+		ReceiptTitle            string
+		IsOutstandingPayment    bool
+		PaymentID               int64
+		PaymentPreviousBalance  float64
+		PaymentAmount           float64
+		PaymentBalanceRemaining float64
+		PaymentDate             string
+		OrderID                 int64
+		Date                    string
+		CustomerName            string
+		Phone                   string
+		Items                   []ReceiptItem
+		Total                   float64
+		AmountPaid              float64
+		Balance                 float64
+		PaymentStatus           string
+		PreviousBalance         float64
+		PreviousBalanceOrderID  int64
+		LastPayment             string
 	}
 
 	var receipt Receipt
 
+	receipt.ReceiptTitle = "ORDER RECEIPT"
 
-        receipt.ReceiptTitle = "ORDER RECEIPT"
-
-        if r.URL.Query().Get("payment") == "outstanding" {
-                receipt.ReceiptTitle = "OUTSTANDING PAYMENT RECEIPT"
-                receipt.IsOutstandingPayment = true
-        }
+	if r.URL.Query().Get("payment") == "outstanding" {
+		receipt.ReceiptTitle = "OUTSTANDING PAYMENT RECEIPT"
+		receipt.IsOutstandingPayment = true
+	}
 
 	err := db.QueryRow(`
 		SELECT
@@ -1389,6 +1528,92 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 	receipt.LastPayment = formatNigeriaDate(receipt.LastPayment)
 
 	receipt.Balance = receipt.Total - receipt.AmountPaid
+
+	// OUTSTANDING PAYMENT RECEIPT
+	if receipt.IsOutstandingPayment {
+
+		err = db.QueryRow(`
+				SELECT
+						id,
+						previous_balance,
+						amount_paid,
+						balance_remaining,
+						created_at
+				FROM payments
+				WHERE order_id = ?
+				ORDER BY id DESC
+				LIMIT 1
+			`, orderID).Scan(
+			&receipt.PaymentID,
+			&receipt.PaymentPreviousBalance,
+			&receipt.PaymentAmount,
+			&receipt.PaymentBalanceRemaining,
+			&receipt.PaymentDate,
+		)
+
+		if err == sql.ErrNoRows {
+			http.Error(
+				w,
+				"Payment transaction not found",
+				http.StatusNotFound,
+			)
+			return
+		}
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load payment receipt: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		receipt.PaymentDate = formatNigeriaDate(receipt.PaymentDate)
+	}
+
+	// OUTSTANDING PAYMENT RECEIPT
+	if receipt.IsOutstandingPayment {
+
+		err = db.QueryRow(`
+				SELECT
+						id,
+						previous_balance,
+						amount_paid,
+						balance_remaining,
+						created_at
+				FROM payments
+				WHERE order_id = ?
+				ORDER BY id DESC
+				LIMIT 1
+			`, orderID).Scan(
+			&receipt.PaymentID,
+			&receipt.PaymentPreviousBalance,
+			&receipt.PaymentAmount,
+			&receipt.PaymentBalanceRemaining,
+			&receipt.PaymentDate,
+		)
+
+		if err == sql.ErrNoRows {
+			http.Error(
+				w,
+				"Payment transaction not found",
+				http.StatusNotFound,
+			)
+			return
+		}
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load payment receipt: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		receipt.PaymentDate = formatNigeriaDate(receipt.PaymentDate)
+	}
 
 	err = db.QueryRow(`
 		SELECT COUNT(*)

@@ -57,7 +57,7 @@
 
         <div class="product-info">
 
-            <h2>ORDER #{{.OrderID}}</h2>
+            <h2>YOUR ORDER</h2>
 
             <hr>
 
@@ -212,8 +212,33 @@
 
             <input
                 type="hidden"
-                name="order"
-                value="{{.OrderID}}">
+                name="customer"
+                value="{{.CustomerID}}">
+
+            <input
+                type="hidden"
+                name="name"
+                value="{{.Name}}">
+
+            <input
+                type="hidden"
+                name="phone"
+                value="{{.Phone}}">
+
+            <input
+                type="hidden"
+                name="address"
+                value="{{.Address}}">
+
+            <input
+                type="hidden"
+                name="note"
+                value="{{.Note}}">
+
+            <input
+                type="hidden"
+                name="cart"
+                value="{{.Cart}}">
 
 
             <label>

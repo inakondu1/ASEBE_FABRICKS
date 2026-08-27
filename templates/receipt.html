@@ -96,6 +96,69 @@ localStorage.removeItem("asebeCart");
 
             <hr>
 
+            {{if .IsOutstandingPayment}}
+
+            <h3>
+                OUTSTANDING PAYMENT DETAILS
+            </h3>
+
+            <div style="
+                padding:20px;
+                background:#f5f5f5;
+                border-radius:10px;
+            ">
+
+                <p>
+                    <strong>
+                        Payment For Order:
+                    </strong>
+
+                    #{{.OrderID}}
+                </p>
+
+                <p>
+                    <strong>
+                        Previous Outstanding Balance:
+                    </strong>
+
+                    ₦{{.PaymentPreviousBalance}}
+                </p>
+
+                <p>
+                    <strong>
+                        Amount Paid Now:
+                    </strong>
+
+                    ₦{{.PaymentAmount}}
+                </p>
+
+                <p>
+                    <strong>
+                        Balance Remaining:
+                    </strong>
+
+                    ₦{{.PaymentBalanceRemaining}}
+                </p>
+
+                <p>
+                    <strong>
+                        Payment Status:
+                    </strong>
+
+                    {{.PaymentStatus}}
+                </p>
+
+                <p>
+                    <strong>
+                        Payment Date:
+                    </strong>
+
+                    {{.PaymentDate}}
+                </p>
+
+            </div>
+
+            {{else}}
 
             <h3>
                 ORDER ITEMS
@@ -124,9 +187,7 @@ localStorage.removeItem("asebeCart");
 
             {{end}}
 
-
             <br>
-
 
             <div style="
                 display:flex;
@@ -144,52 +205,9 @@ localStorage.removeItem("asebeCart");
 
             </div>
 
+            {{end}}
 
             <br>
-
-
-            <div style="
-                padding:20px;
-                background:#f5f5f5;
-            ">
-
-                <p>
-                    <strong>
-                        Amount Paid:
-                    </strong>
-
-                    ₦{{.AmountPaid}}
-                </p>
-
-
-                <p>
-                    <strong>
-                        Balance Remaining:
-                    </strong>
-
-                    ₦{{.Balance}}
-                </p>
-
-
-                <p>
-                    <strong>
-                        Payment Status:
-                    </strong>
-
-                    {{.PaymentStatus}}
-                </p>
-
-
-                <p>
-                    <strong>
-                        Last Payment:
-                    </strong>
-
-                    {{.LastPayment}}
-                </p>
-
-            </div>
-
 
             <br>
 
