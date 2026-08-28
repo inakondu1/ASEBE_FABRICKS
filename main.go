@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -731,7 +732,7 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		orderID,
 		customerID,
 		"ORDER PAYMENT",
-		total,
+		previousBalance,
 		amountPaid,
 		balanceRemaining,
 		paymentStatus,
@@ -898,6 +899,7 @@ func setAdminSession(w http.ResponseWriter, adminID int) {
 		Path:     "/",
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
+		MaxAge:   60 * 60,
 	})
 }
 
@@ -915,7 +917,19 @@ func getAdminSession(r *http.Request) (int, bool) {
 		return 0, false
 	}
 
-	return adminID, true
+	var verifiedAdminID int
+
+	err = db.QueryRow(`
+                SELECT id
+                FROM admins
+                WHERE id = ?
+        `, adminID).Scan(&verifiedAdminID)
+
+	if err != nil {
+		return 0, false
+	}
+
+	return verifiedAdminID, true
 }
 
 // =========================
@@ -1009,6 +1023,38 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		"/admin",
+		http.StatusSeeOther,
+	)
+}
+
+// =========================
+// ADMIN LOGOUT
+// =========================
+
+func adminLogoutHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "asebe_admin",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	http.Redirect(
+		w,
+		r,
+		"/",
 		http.StatusSeeOther,
 	)
 }
@@ -2913,6 +2959,30 @@ func checkPaymentTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "</body></html>")
 }
 
+func clearTestHistory() {
+	_, err := db.Exec(`DELETE FROM payments`)
+	if err != nil {
+		log.Fatal("Could not clear payments:", err)
+	}
+
+	_, err = db.Exec(`DELETE FROM order_items`)
+	if err != nil {
+		log.Fatal("Could not clear order items:", err)
+	}
+
+	_, err = db.Exec(`DELETE FROM orders`)
+	if err != nil {
+		log.Fatal("Could not clear orders:", err)
+	}
+
+	_, err = db.Exec(`UPDATE customers SET active_order_id = NULL`)
+	if err != nil {
+		log.Fatal("Could not reset active orders:", err)
+	}
+
+	log.Println("✅ Order history cleared successfully.")
+}
+
 func main() {
 
 	// Connect to database
@@ -2957,6 +3027,7 @@ func main() {
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
 	http.HandleFunc("/admin/login", adminLoginHandler)
+	http.HandleFunc("/admin/logout", adminLogoutHandler)
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
 	http.HandleFunc("/admin/edit-fabric", editFabricHandler)
@@ -3000,6 +3071,8 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	search := strings.TrimSpace(r.URL.Query().Get("search"))
+
 	type AdminOrder struct {
 		ID            int64
 		CustomerName  string
@@ -3011,20 +3084,130 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		CreatedAt     string
 	}
 
-	rows, err := db.Query(`
-		SELECT
-			o.id,
-			c.full_name,
-			c.phone,
-			o.total_amount,
-			o.amount_paid,
-			(o.total_amount - o.amount_paid + COALESCE(o.previous_balance, 0)),
-			o.payment_status,
-			o.created_at
-		FROM orders o
-		JOIN customers c ON c.id = o.customer_id
-		ORDER BY o.id DESC
-	`)
+	type AdminOrdersPage struct {
+		Orders            []AdminOrder
+		Search            string
+		CustomerFound     bool
+		CustomerHasOrders bool
+		Message           string
+	}
+
+	page := AdminOrdersPage{
+		Search: search,
+	}
+
+	var rows *sql.Rows
+	var err error
+
+	if search == "" {
+
+		rows, err = db.Query(`
+                        SELECT
+                                o.id,
+                                c.full_name,
+                                c.phone,
+                                o.total_amount,
+                                o.amount_paid,
+                                (
+                                        o.total_amount
+                                        - o.amount_paid
+                                        + COALESCE(o.previous_balance, 0)
+                                ),
+                                o.payment_status,
+                                o.created_at
+                        FROM orders o
+                        JOIN customers c ON c.id = o.customer_id
+                        ORDER BY o.id DESC
+                `)
+
+		page.CustomerFound = true
+
+	} else {
+
+		var customerID int64
+
+		err = db.QueryRow(`
+                        SELECT id
+                        FROM customers
+                        WHERE full_name LIKE ?
+                           OR phone LIKE ?
+                        ORDER BY id DESC
+                        LIMIT 1
+                `,
+			"%"+search+"%",
+			"%"+search+"%",
+		).Scan(&customerID)
+
+		if err == sql.ErrNoRows {
+			page.Message = "Customer not found."
+			renderTemplate(
+				w,
+				"templates/admin_orders.html",
+				page,
+			)
+			return
+		}
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not search customer: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		page.CustomerFound = true
+
+		var orderCount int
+
+		err = db.QueryRow(`
+                        SELECT COUNT(*)
+                        FROM orders
+                        WHERE customer_id = ?
+                `, customerID).Scan(&orderCount)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not check customer orders: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		if orderCount == 0 {
+			page.Message = "This customer has not placed any orders yet."
+			renderTemplate(
+				w,
+				"templates/admin_orders.html",
+				page,
+			)
+			return
+		}
+
+		page.CustomerHasOrders = true
+
+		rows, err = db.Query(`
+                        SELECT
+                                o.id,
+                                c.full_name,
+                                c.phone,
+                                o.total_amount,
+                                o.amount_paid,
+                                (
+                                        o.total_amount
+                                        - o.amount_paid
+                                        + COALESCE(o.previous_balance, 0)
+                                ),
+                                o.payment_status,
+                                o.created_at
+                        FROM orders o
+                        JOIN customers c ON c.id = o.customer_id
+                        WHERE o.customer_id = ?
+                        ORDER BY o.id DESC
+                `, customerID)
+	}
 
 	if err != nil {
 		http.Error(
@@ -3036,8 +3219,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer rows.Close()
-
-	var orders []AdminOrder
 
 	for rows.Next() {
 
@@ -3069,10 +3250,12 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		)
 
 		if parseErr == nil {
-			order.CreatedAt = parsedTime.Format("02 January 2006, 3:04 PM")
+			order.CreatedAt = parsedTime.Format(
+				"02 January 2006, 3:04 PM",
+			)
 		}
 
-		orders = append(orders, order)
+		page.Orders = append(page.Orders, order)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -3084,9 +3267,11 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	page.CustomerHasOrders = len(page.Orders) > 0
+
 	renderTemplate(
 		w,
 		"templates/admin_orders.html",
-		orders,
+		page,
 	)
 }
