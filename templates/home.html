@@ -29,13 +29,21 @@
 
     <a href="/cart">CART 🛒</a>
 
-    <a href="/order">ORDER</a>
+    {{if .LoggedIn}}
 
-    <a href="/payment">PAYMENT</a>
+        <a href="/customer">MY ACCOUNT</a>
 
-    <a href="/register">REGISTER</a>
+        <a href="/order-history">ORDER HISTORY</a>
 
-    <a href="/login">LOGIN</a>
+        <a href="/logout">LOGOUT</a>
+
+    {{else}}
+
+        <a href="/register">REGISTER</a>
+
+        <a href="/login">LOGIN</a>
+
+    {{end}}
 
 </nav>
 
@@ -49,9 +57,19 @@
 
 <div class="hero-content">
 
+    {{if .LoggedIn}}
+
+    <p class="hero-small">
+        WELCOME BACK, {{.CustomerName}}
+    </p>
+
+{{else}}
+
     <p class="hero-small">
         WELCOME TO
     </p>
+
+{{end}}
 
     <h1>
         ASEBE <span>FABRICS</span>

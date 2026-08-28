@@ -205,13 +205,33 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	note := r.URL.Query().Get("note")
 	cartJSON := r.URL.Query().Get("cart")
 
-	// PAYMENT from the navigation menu should not show
-	// an error page. The customer must first log in.
+	// PAYMENT from the navigation menu.
+	//
+	// If the customer is not logged in, send them to LOGIN.
+	// If they are logged in but have no pending order,
+	// send them to the cart instead of showing an error page.
 	if customerIDText == "" || phone == "" || cartJSON == "" {
+
+		_, loggedIn := getCustomerSession(r)
+
+		if !loggedIn {
+			http.Redirect(
+				w,
+				r,
+				"/login?message="+url.QueryEscape(
+					"Please log in before making a payment.",
+				),
+				http.StatusSeeOther,
+			)
+			return
+		}
+
 		http.Redirect(
 			w,
 			r,
-			"/login?message=Please+log+in+before+making+a+payment.",
+			"/cart?message="+url.QueryEscape(
+				"You are logged in. Please add your fabrics to the cart before making a payment.",
+			),
 			http.StatusSeeOther,
 		)
 		return
