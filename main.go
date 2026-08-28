@@ -2298,7 +2298,11 @@ func customerHandler(w http.ResponseWriter, r *http.Request) {
 func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
 		return
 	}
 
@@ -2312,10 +2316,10 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	var phone string
 
 	err := db.QueryRow(`
-		SELECT phone
-		FROM customers
-		WHERE id = ?
-	`, customerID).Scan(&phone)
+                SELECT phone
+                FROM customers
+                WHERE id = ?
+        `, customerID).Scan(&phone)
 
 	if err != nil {
 		http.Error(
@@ -2326,29 +2330,27 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ---------------------------------------------------------
-	// DATA STRUCTURES
-	// ---------------------------------------------------------
+	type PaymentHistoryItem struct {
+		ID               int64
+		PaymentType      string
+		PreviousBalance  float64
+		AmountPaid       float64
+		BalanceRemaining float64
+		PaymentStatus    string
+		DisplayDate      string
+	}
 
 	type OrderHistoryItem struct {
-		ID   int64
-		Date string
-
-		// Current order information
-		CurrentOrderTotal float64
-
-		// Previous debt carried into this order
+		ID                     int64
+		CurrentOrderTotal      float64
 		PreviousBalance        float64
 		PreviousBalanceOrderID int64
-
-		// Complete financial picture
-		Total         float64
-		AmountPaid    float64
-		Balance       float64
-		PaymentStatus string
-
-		// Human-friendly date
-		DisplayDate string
+		Total                  float64
+		AmountPaid             float64
+		Balance                float64
+		PaymentStatus          string
+		DisplayDate            string
+		Payments               []PaymentHistoryItem
 	}
 
 	type OrderHistoryPage struct {
@@ -2356,23 +2358,19 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		Orders []OrderHistoryItem
 	}
 
-	// ---------------------------------------------------------
-	// LOAD ORDERS
-	// ---------------------------------------------------------
-
 	rows, err := db.Query(`
-		SELECT
-			o.id,
-			o.created_at,
-			o.total_amount,
-			o.amount_paid,
-			o.payment_status,
-			COALESCE(o.previous_balance, 0),
-			COALESCE(o.previous_balance_order_id, 0)
-		FROM orders o
-		WHERE o.customer_id = ?
-		ORDER BY o.id DESC
-	`, customerID)
+                SELECT
+                        o.id,
+                        o.created_at,
+                        o.total_amount,
+                        o.amount_paid,
+                        o.payment_status,
+                        COALESCE(o.previous_balance, 0),
+                        COALESCE(o.previous_balance_order_id, 0)
+                FROM orders o
+                WHERE o.customer_id = ?
+                ORDER BY o.id DESC
+        `, customerID)
 
 	if err != nil {
 		http.Error(
@@ -2390,10 +2388,11 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 
 		var order OrderHistoryItem
+		var createdAt string
 
 		err := rows.Scan(
 			&order.ID,
-			&order.Date,
+			&createdAt,
 			&order.Total,
 			&order.AmountPaid,
 			&order.PaymentStatus,
@@ -2410,15 +2409,11 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// -----------------------------------------------------
-		// CURRENT FABRICS TOTAL
-		// -----------------------------------------------------
-
 		err = db.QueryRow(`
-			SELECT COALESCE(SUM(subtotal), 0)
-			FROM order_items
-			WHERE order_id = ?
-		`, order.ID).Scan(&order.CurrentOrderTotal)
+                        SELECT COALESCE(SUM(subtotal), 0)
+                        FROM order_items
+                        WHERE order_id = ?
+                `, order.ID).Scan(&order.CurrentOrderTotal)
 
 		if err != nil {
 			http.Error(
@@ -2429,27 +2424,96 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// -----------------------------------------------------
-		// REMAINING BALANCE
-		// -----------------------------------------------------
-
 		order.Balance = order.Total - order.AmountPaid
 
-		// Prevent tiny floating-point negative values.
 		if order.Balance < 0 {
 			order.Balance = 0
 		}
 
-		// -----------------------------------------------------
-		// FORMAT DATE FOR CUSTOMER
-		// -----------------------------------------------------
+		order.DisplayDate = createdAt
 
-		order.DisplayDate = order.Date
-
-		if parsed, err := time.Parse(time.RFC3339, order.Date); err == nil {
-			order.DisplayDate = parsed.In(time.FixedZone("WAT", 60*60)).
-				Format("02 January 2006, 3:04 PM")
+		if parsed, err := time.Parse(time.RFC3339, createdAt); err == nil {
+			order.DisplayDate = parsed.In(
+				time.FixedZone("WAT", 60*60),
+			).Format("02 January 2006, 3:04 PM")
 		}
+
+		paymentRows, err := db.Query(`
+                        SELECT
+                                id,
+                                payment_type,
+                                COALESCE(previous_balance, 0),
+                                amount_paid,
+                                COALESCE(balance_remaining, 0),
+                                payment_status,
+                                created_at
+                        FROM payments
+                        WHERE order_id = ?
+                          AND customer_id = ?
+                        ORDER BY id DESC
+                `, order.ID, customerID)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load payment history: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		for paymentRows.Next() {
+
+			var payment PaymentHistoryItem
+			var paymentDate string
+
+			err := paymentRows.Scan(
+				&payment.ID,
+				&payment.PaymentType,
+				&payment.PreviousBalance,
+				&payment.AmountPaid,
+				&payment.BalanceRemaining,
+				&payment.PaymentStatus,
+				&paymentDate,
+			)
+
+			if err != nil {
+				paymentRows.Close()
+
+				http.Error(
+					w,
+					"Could not read payment history: "+err.Error(),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+
+			payment.DisplayDate = paymentDate
+
+			if parsed, err := time.Parse(time.RFC3339, paymentDate); err == nil {
+				payment.DisplayDate = parsed.In(
+					time.FixedZone("WAT", 60*60),
+				).Format("02 January 2006, 3:04 PM")
+			}
+
+			order.Payments = append(
+				order.Payments,
+				payment,
+			)
+		}
+
+		if err := paymentRows.Err(); err != nil {
+			paymentRows.Close()
+
+			http.Error(
+				w,
+				"Could not read payment history: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		paymentRows.Close()
 
 		orders = append(orders, order)
 	}
@@ -2462,10 +2526,6 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-
-	// ---------------------------------------------------------
-	// SEND READY-TO-DISPLAY DATA TO TEMPLATE
-	// ---------------------------------------------------------
 
 	data := OrderHistoryPage{
 		Phone:  phone,

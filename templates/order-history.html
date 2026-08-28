@@ -28,15 +28,26 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
-        .history-card h2 {
-            margin-top: 0;
-        }
-
         .history-section {
             margin-top: 20px;
             padding: 18px;
             border-radius: 10px;
             background: #f7f7f7;
+        }
+
+        .payment-section {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #eeeeee;
+        }
+
+        .payment-card {
+            background: #ffffff;
+            padding: 18px;
+            margin-top: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #222;
         }
 
         .history-row {
@@ -90,6 +101,12 @@
         .order-button {
             display: inline-block;
             margin-top: 20px;
+            text-decoration: none;
+        }
+
+        .payment-button {
+            display: inline-block;
+            margin-top: 15px;
             text-decoration: none;
         }
 
@@ -147,6 +164,8 @@
 
         <div class="history-card">
 
+            {{$order := .}}
+
             <h2>
                 ORDER #{{.ID}}
             </h2>
@@ -156,14 +175,91 @@
                 {{.DisplayDate}}
             </p>
 
-
             <hr>
+
+
+            {{if .Payments}}
+
+            <div class="payment-section">
+
+                <h3>PAYMENT TRANSACTIONS</h3>
+
+                {{range .Payments}}
+
+                <div class="payment-card">
+
+                    <h4>
+                        {{.PaymentType}}
+                    </h4>
+
+                    <p>
+                        <strong>Date:</strong>
+                        {{.DisplayDate}}
+                    </p>
+
+                    <div class="history-row">
+
+                        <span class="history-label">
+                            Previous Balance:
+                        </span>
+
+                        <span class="history-value">
+                            ₦{{.PreviousBalance}}
+                        </span>
+
+                    </div>
+
+                    <div class="history-row">
+
+                        <span class="history-label">
+                            Amount Paid:
+                        </span>
+
+                        <span class="history-value">
+                            ₦{{.AmountPaid}}
+                        </span>
+
+                    </div>
+
+                    <div class="history-row">
+
+                        <span class="history-label">
+                            Balance Remaining:
+                        </span>
+
+                        <span class="history-value">
+                            ₦{{.BalanceRemaining}}
+                        </span>
+
+                    </div>
+
+                    <p>
+
+                        <strong>Status:</strong>
+                        {{.PaymentStatus}}
+
+                    </p>
+
+                    <a
+                        href="/receipt?order={{$order.ID}}&payment=outstanding"
+                        class="order-button payment-button">
+
+                        VIEW PAYMENT RECEIPT
+
+                    </a>
+
+                </div>
+
+                {{end}}
+
+            </div>
+
+            {{end}}
 
 
             <div class="history-section">
 
                 <h3>ORDER SUMMARY</h3>
-
 
                 <div class="history-row">
 
@@ -178,6 +274,8 @@
                 </div>
 
 
+                {{if gt .PreviousBalance 0.0}}
+
                 <div class="history-row">
 
                     <span class="history-label">
@@ -189,7 +287,6 @@
                     </span>
 
                 </div>
-
 
                 {{if .PreviousBalanceOrderID}}
 
@@ -214,13 +311,14 @@
 
                 {{end}}
 
+                {{end}}
+
             </div>
 
 
             <div class="total-box">
 
                 <h3>TOTAL TO PAY</h3>
-
 
                 <div class="history-row">
 
@@ -234,7 +332,6 @@
 
                 </div>
 
-
                 <div class="history-row">
 
                     <span class="history-label">
@@ -247,7 +344,6 @@
 
                 </div>
 
-
                 <div class="history-row">
 
                     <span class="history-label">
@@ -259,7 +355,6 @@
                     </span>
 
                 </div>
-
 
                 <p>
 
@@ -274,11 +369,14 @@
             </div>
 
 
+
+
+
             <a
                 href="/receipt?order={{.ID}}"
                 class="order-button">
 
-                VIEW RECEIPT
+                VIEW ORDER RECEIPT
 
             </a>
 
