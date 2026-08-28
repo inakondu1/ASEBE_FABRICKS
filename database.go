@@ -218,6 +218,8 @@ func initDatabase() {
 
 	log.Println("Orders table ready")
 	log.Println("Order items table ready")
+	// Create admin accounts table
+	createAdminTable()
 
 }
 
@@ -251,4 +253,55 @@ func addDebtColumns() {
 	}
 
 	log.Println("Debt tracking fields ready")
+}
+
+// =========================
+// ADMIN ACCOUNTS
+// =========================
+
+func createAdminTable() {
+
+	_, err := db.Exec(`
+                CREATE TABLE IF NOT EXISTS admins (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT NOT NULL UNIQUE,
+                        password TEXT NOT NULL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+        `)
+
+	if err != nil {
+		log.Fatal("Could not create admins table:", err)
+	}
+
+	log.Println("Admin table ready")
+
+	// Create the first admin account only when none exists.
+	var adminCount int
+
+	err = db.QueryRow(
+		"SELECT COUNT(*) FROM admins",
+	).Scan(&adminCount)
+
+	if err != nil {
+		log.Fatal("Could not check admin accounts:", err)
+	}
+
+	if adminCount == 0 {
+
+		_, err = db.Exec(`
+			INSERT INTO admins
+			(username, password)
+			VALUES (?, ?)
+		`,
+			"admin",
+			"admin123",
+		)
+
+		if err != nil {
+			log.Fatal("Could not create first admin account:", err)
+		}
+
+		log.Println("Default admin account created")
+	}
 }

@@ -784,6 +784,18 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminHandler(w http.ResponseWriter, r *http.Request) {
 
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
 	rows, err := db.Query(`
 		SELECT id, name, description, price, quantity, image
 		FROM products
@@ -863,10 +875,149 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // =========================
+// ADMIN SESSION HELPERS
+// =========================
+
+func setAdminSession(w http.ResponseWriter, adminID int) {
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "asebe_admin",
+		Value:    strconv.Itoa(adminID),
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func getAdminSession(r *http.Request) (int, bool) {
+
+	cookie, err := r.Cookie("asebe_admin")
+
+	if err != nil {
+		return 0, false
+	}
+
+	adminID, err := strconv.Atoi(cookie.Value)
+
+	if err != nil || adminID <= 0 {
+		return 0, false
+	}
+
+	return adminID, true
+}
+
+// =========================
+// ADMIN LOGIN
+// =========================
+
+func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodGet {
+		message := r.URL.Query().Get("message")
+
+		renderTemplate(
+			w,
+			"templates/admin_login.html",
+			struct {
+				Message string
+			}{
+				Message: message,
+			},
+		)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	err := r.ParseForm()
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not process login",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" || password == "" {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login?message=Please+enter+your+username+and+password.",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	var adminID int
+
+	err = db.QueryRow(`
+                SELECT id
+                FROM admins
+                WHERE username = ?
+                  AND password = ?
+        `,
+		username,
+		password,
+	).Scan(&adminID)
+
+	if err == sql.ErrNoRows {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login?message=The+username+or+password+is+incorrect.+Please+try+again.",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not login: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	setAdminSession(w, adminID)
+
+	http.Redirect(
+		w,
+		r,
+		"/admin",
+		http.StatusSeeOther,
+	)
+}
+
+// =========================
 // ADD FABRIC
 // =========================
 
 func addFabricHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
 
 	if r.Method == http.MethodGet {
 		renderTemplate(w, "templates/add_fabric.html", nil)
@@ -965,6 +1116,18 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 
 func deleteFabricHandler(w http.ResponseWriter, r *http.Request) {
 
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -999,6 +1162,18 @@ func deleteFabricHandler(w http.ResponseWriter, r *http.Request) {
 // =========================
 
 func editFabricHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
 
 	if r.Method == http.MethodGet {
 
@@ -2636,6 +2811,18 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 
 func checkPaymentTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
 	rows, err := db.Query(`
 		SELECT
 			id,
@@ -2756,6 +2943,7 @@ func main() {
 	// Admin
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
+	http.HandleFunc("/admin/login", adminLoginHandler)
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
 	http.HandleFunc("/admin/edit-fabric", editFabricHandler)

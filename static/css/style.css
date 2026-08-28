@@ -1221,3 +1221,17 @@ footer p {
         gap: 15px;
     }
 }
+
+
+/* =========================
+   ADMIN BACK BUTTON
+   ========================= */
+
+.back-button {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 10px 18px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 6px;
+}
