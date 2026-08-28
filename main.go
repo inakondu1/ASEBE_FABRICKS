@@ -2955,6 +2955,7 @@ func main() {
 	// Admin
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
+	http.HandleFunc("/admin/orders", adminOrdersHandler)
 	http.HandleFunc("/admin/login", adminLoginHandler)
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
@@ -2970,4 +2971,122 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// =========================
+// ADMIN ORDERS
+// =========================
+
+func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	type AdminOrder struct {
+		ID            int64
+		CustomerName  string
+		Phone         string
+		Total         float64
+		AmountPaid    float64
+		Balance       float64
+		PaymentStatus string
+		CreatedAt     string
+	}
+
+	rows, err := db.Query(`
+		SELECT
+			o.id,
+			c.full_name,
+			c.phone,
+			o.total_amount,
+			o.amount_paid,
+			(o.total_amount - o.amount_paid + COALESCE(o.previous_balance, 0)),
+			o.payment_status,
+			o.created_at
+		FROM orders o
+		JOIN customers c ON c.id = o.customer_id
+		ORDER BY o.id DESC
+	`)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load orders: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer rows.Close()
+
+	var orders []AdminOrder
+
+	for rows.Next() {
+
+		var order AdminOrder
+
+		err := rows.Scan(
+			&order.ID,
+			&order.CustomerName,
+			&order.Phone,
+			&order.Total,
+			&order.AmountPaid,
+			&order.Balance,
+			&order.PaymentStatus,
+			&order.CreatedAt,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read orders: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		parsedTime, parseErr := time.Parse(
+			"2006-01-02T15:04:05Z",
+			order.CreatedAt,
+		)
+
+		if parseErr == nil {
+			order.CreatedAt = parsedTime.Format("02 January 2006, 3:04 PM")
+		}
+
+		orders = append(orders, order)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read orders: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	renderTemplate(
+		w,
+		"templates/admin_orders.html",
+		orders,
+	)
 }

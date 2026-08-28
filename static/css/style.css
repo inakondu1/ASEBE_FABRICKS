@@ -1543,3 +1543,121 @@ footer p {
     border-radius: 16px;
 }
 
+
+/* =========================
+   ADMIN ORDERS
+   ========================= */
+
+.orders-list {
+    display: grid;
+    gap: 22px;
+    margin-top: 30px;
+}
+
+.order-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eee;
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+.order-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #777;
+}
+
+.order-card-header h2 {
+    margin: 5px 0 0;
+    font-size: 25px;
+}
+
+.order-status {
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: #f1f1f1;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.order-customer {
+    padding: 20px 0;
+}
+
+.order-customer h3 {
+    margin: 0 0 7px;
+    font-size: 20px;
+}
+
+.order-customer p {
+    margin: 0;
+    color: #666;
+}
+
+.order-financials {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.order-financials div {
+    background: #f7f7f7;
+    padding: 17px;
+    border-radius: 12px;
+}
+
+.order-financials span {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #777;
+    margin-bottom: 7px;
+}
+
+.order-financials strong {
+    font-size: 18px;
+}
+
+.order-date {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    font-size: 13px;
+}
+
+.order-date span {
+    color: #777;
+}
+
+@media (max-width: 700px) {
+
+    .order-financials {
+        grid-template-columns: 1fr;
+    }
+
+    .order-card-header {
+        align-items: flex-start;
+    }
+
+    .order-date {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
