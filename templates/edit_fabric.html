@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
-```
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<title>ASEBE FABRICS | Edit Fabric</title>
+    <title>ASEBE FABRICS | Edit Fabric</title>
 
-<link rel="stylesheet"
-      href="/static/css/style.css">
-```
+    <link rel="stylesheet"
+          href="/static/css/style.css">
 
 </head>
 
@@ -21,162 +19,171 @@
 
 <header class="navbar">
 
-```
-<div class="logo">
-    <span>ASEBE</span> FABRICS
-</div>
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
 
-<nav>
-    <a href="/">HOME</a>
-    <a href="/shop">SHOP</a>
-    <a href="/admin">ADMIN</a>
-</nav>
-```
+    <nav>
+        <a href="/">HOME</a>
+        <a href="/shop">SHOP</a>
+        <a href="/admin">ADMIN</a>
+    </nav>
 
 </header>
 
+
 <section class="shop-header">
 
-```
-<p>ASEBE FABRICS</p>
+    <p>ASEBE FABRICS</p>
 
-<h1>EDIT FABRIC</h1>
+    <h1>EDIT FABRIC</h1>
 
-<span>
-    Update the fabric information below.
-</span>
-```
+    <span>
+        Update the fabric information below.
+    </span>
 
 </section>
 
+
 <section class="form-section">
 
-```
-<form method="POST"
-      action="/admin/edit-fabric"
-      enctype="multipart/form-data"
-      class="fabric-form">
+    <a href="/admin"
+       class="back-button">
 
-    <input type="hidden"
-           name="id"
-           value="{{.ID}}">
+        ← BACK TO ADMIN DASHBOARD
+
+    </a>
 
 
-    <label for="name">
-        Fabric Name
-    </label>
+    <form
+        method="POST"
+        action="/admin/edit-fabric"
+        enctype="multipart/form-data"
+        class="fabric-form"
+    >
 
-    <input
-        type="text"
-        id="name"
-        name="name"
-        value="{{.Name}}"
-        required>
-
-
-    <label for="description">
-        Description
-    </label>
-
-    <textarea
-        id="description"
-        name="description"
-        rows="5"
-        required>{{.Description}}</textarea>
+        <input
+            type="hidden"
+            name="id"
+            value="{{.ID}}"
+        >
 
 
-    <label for="price">
-        Price (₦)
-    </label>
+        <label for="name">
+            Fabric Name
+        </label>
 
-    <input
-        type="number"
-        id="price"
-        name="price"
-        value="{{.Price}}"
-        min="0"
-        step="0.01"
-        required>
-
-
-    <label for="quantity">
-        Quantity / Stock
-    </label>
-
-    <input
-        type="number"
-        id="quantity"
-        name="quantity"
-        value="{{.Quantity}}"
-        min="0"
-        required>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{.Name}}"
+            required
+        >
 
 
-    <label for="image">
-        Change Fabric Image
-    </label>
+        <label for="description">
+            Description
+        </label>
 
-    {{if .Image}}
+        <textarea
+            id="description"
+            name="description"
+            rows="5"
+            required
+        >{{.Description}}</textarea>
 
-        <div style="margin:15px 0; text-align:center;">
+
+        <label for="price">
+            Price (₦)
+        </label>
+
+        <input
+            type="number"
+            id="price"
+            name="price"
+            value="{{.Price}}"
+            min="0"
+            step="0.01"
+            required
+        >
+
+
+        <label for="quantity">
+            Quantity / Stock
+        </label>
+
+        <input
+            type="number"
+            id="quantity"
+            name="quantity"
+            value="{{.Quantity}}"
+            min="0"
+            required
+        >
+
+
+        <label for="image">
+            Change Fabric Image
+        </label>
+
+
+        {{if .Image}}
+
+        <div class="current-image">
 
             <p>Current Image</p>
 
             <img
                 src="{{.Image}}"
                 alt="{{.Name}}"
-                style="max-width:300px; border-radius:10px;">
+            >
 
         </div>
 
-    {{end}}
+        {{end}}
 
 
-    <input
-        type="file"
-        id="image"
-        name="image"
-        accept="image/*">
+        <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+        >
 
 
-    <div style="text-align:center; margin-top:25px;">
+        <div class="edit-form-actions">
 
-        <button
-            type="submit"
-            class="order-button">
+            <button
+                type="submit"
+                class="save-button"
+            >
+                SAVE CHANGES
+            </button>
 
-            SAVE CHANGES
+            <a
+                href="/admin"
+                class="cancel-button"
+            >
+                CANCEL
+            </a>
 
-        </button>
+        </div>
 
-
-        <a
-            href="/admin"
-            class="order-button"
-            style="text-decoration:none; display:inline-block; margin-left:10px;">
-
-            CANCEL
-
-        </a>
-
-    </div>
-
-</form>
-```
+    </form>
 
 </section>
 
+
 <footer>
 
-```
-<div class="footer-logo">
-    ASEBE <span>FABRICS</span>
-</div>
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
 
-<p>
-    Quality Fabrics • Beautiful Designs • Great Prices
-</p>
-```
+    <p>
+        Quality Fabrics • Beautiful Designs • Great Prices
+    </p>
 
 </footer>
 

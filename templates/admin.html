@@ -49,6 +49,8 @@
         </div>
 
 
+        <!-- ADMIN ACTIONS -->
+
         <div class="admin-actions">
 
             <a href="/admin/add-fabric"
@@ -102,6 +104,128 @@
                     Return to the main website.
                 </p>
 
+            </a>
+
+        </div>
+
+
+        <!-- YOUR FABRICS -->
+
+        <div class="admin-products">
+
+            <h2 class="admin-products-title">
+                YOUR FABRICS
+            </h2>
+
+            {{if .}}
+
+                <div class="admin-product-list">
+
+                    {{range .}}
+
+                    <div class="admin-product-card">
+
+                        {{if .Image}}
+
+                            <img
+                                src="{{.Image}}"
+                                alt="{{.Name}}"
+                                class="admin-product-image">
+
+                        {{else}}
+
+                            <div class="admin-product-no-image">
+                                🧵
+                            </div>
+
+                        {{end}}
+
+
+                        <div class="admin-product-info">
+
+                            <h3>
+                                {{.Name}}
+                            </h3>
+
+                            <p>
+                                {{.Description}}
+                            </p>
+
+                            <strong>
+                                ₦{{printf "%.0f" .Price}}
+                            </strong>
+
+                            <span>
+                                Stock: {{.Quantity}}
+                            </span>
+
+                        </div>
+
+
+                        <div class="admin-product-actions">
+
+                            <a
+                                href="/admin/edit-fabric?id={{.ID}}"
+                                class="edit-button">
+
+                                EDIT
+
+                            </a>
+
+
+                            <form
+                                method="POST"
+                                action="/admin/delete-fabric"
+                                onsubmit="return confirm('Are you sure you want to delete this fabric?');">
+
+                                <input
+                                    type="hidden"
+                                    name="id"
+                                    value="{{.ID}}">
+
+                                <button
+                                    type="submit"
+                                    class="delete-button">
+
+                                    DELETE
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                    {{end}}
+
+                </div>
+
+            {{else}}
+
+                <div class="no-fabrics">
+
+                    <p>
+                        No fabrics have been added yet.
+                    </p>
+
+                    <a href="/admin/add-fabric">
+                        ADD YOUR FIRST FABRIC
+                    </a>
+
+                </div>
+
+            {{end}}
+
+        </div>
+
+
+        <!-- BACK TO WEBSITE -->
+
+        <div class="admin-back">
+
+            <a href="/">
+                ← BACK TO HOME PAGE
             </a>
 
         </div>

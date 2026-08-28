@@ -44,6 +44,14 @@
         Discover beautiful fabrics for every occasion.
     </span>
 
+    {{if .IsAdmin}}
+    <div style="margin-top: 20px;">
+        <a href="/admin" class="back-button">
+            ← BACK TO ADMIN DASHBOARD
+        </a>
+    </div>
+    {{end}}
+
 </section>
 
 
@@ -51,7 +59,7 @@
 
     {{if .}}
 
-        {{range .}}
+        {{range .Products}}
 
         <div class="product-card">
 

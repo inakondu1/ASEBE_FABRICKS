@@ -172,7 +172,19 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderTemplate(w, "templates/shop.html", products)
+	type ShopPage struct {
+		Products []Product
+		IsAdmin  bool
+	}
+
+	_, isAdmin := getAdminSession(r)
+
+	data := ShopPage{
+		Products: products,
+		IsAdmin:  isAdmin,
+	}
+
+	renderTemplate(w, "templates/shop.html", data)
 }
 
 // =========================
