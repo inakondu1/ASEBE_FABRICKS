@@ -102,7 +102,31 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderTemplate(w, "templates/home.html", nil)
+	type HomePage struct {
+		LoggedIn     bool
+		CustomerName string
+	}
+
+	data := HomePage{}
+
+	customerID, ok := getCustomerSession(r)
+
+	if ok {
+		var customerName string
+
+		err := db.QueryRow(`
+			SELECT full_name
+			FROM customers
+			WHERE id = ?
+		`, customerID).Scan(&customerName)
+
+		if err == nil {
+			data.LoggedIn = true
+			data.CustomerName = customerName
+		}
+	}
+
+	renderTemplate(w, "templates/home.html", data)
 }
 
 // =========================
@@ -181,11 +205,14 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	note := r.URL.Query().Get("note")
 	cartJSON := r.URL.Query().Get("cart")
 
+	// PAYMENT from the navigation menu should not show
+	// an error page. The customer must first log in.
 	if customerIDText == "" || phone == "" || cartJSON == "" {
-		http.Error(
+		http.Redirect(
 			w,
-			"Incomplete order information",
-			http.StatusBadRequest,
+			r,
+			"/login?message=Please+log+in+before+making+a+payment.",
+			http.StatusSeeOther,
 		)
 		return
 	}
@@ -1204,7 +1231,24 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
-		renderTemplate(w, "templates/order.html", nil)
+
+		_, loggedIn := getCustomerSession(r)
+
+		if !loggedIn {
+			http.Redirect(
+				w,
+				r,
+				"/register?message=Please+register+or+log+in+before+placing+an+order.",
+				http.StatusSeeOther,
+			)
+			return
+		}
+
+		renderTemplate(
+			w,
+			"templates/order.html",
+			nil,
+		)
 		return
 	}
 
@@ -1698,7 +1742,17 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
-		renderTemplate(w, "templates/register.html", nil)
+		message := r.URL.Query().Get("message")
+
+		renderTemplate(
+			w,
+			"templates/register.html",
+			struct {
+				Message string
+			}{
+				Message: message,
+			},
+		)
 		return
 	}
 
@@ -1746,10 +1800,13 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err == nil {
 
-		http.Error(
+		http.Redirect(
 			w,
-			"An account with this phone number already exists",
-			http.StatusConflict,
+			r,
+			"/login?message="+url.QueryEscape(
+				"You already have an ASEBE FABRICS account with this phone number. Please log in to continue.",
+			),
+			http.StatusSeeOther,
 		)
 
 		return
@@ -1796,7 +1853,19 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
-		renderTemplate(w, "templates/login.html", nil)
+
+		message := r.URL.Query().Get("message")
+
+		renderTemplate(
+			w,
+			"templates/login.html",
+			struct {
+				Message string
+			}{
+				Message: message,
+			},
+		)
+
 		return
 	}
 
@@ -1831,10 +1900,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err == sql.ErrNoRows {
-		http.Error(
+		http.Redirect(
 			w,
-			"No account found with this phone number. Please register first.",
-			http.StatusNotFound,
+			r,
+			"/register?message="+url.QueryEscape(
+				"We couldn't find an account with that phone number. No worries — you can create your account here.",
+			),
+			http.StatusSeeOther,
 		)
 		return
 	}

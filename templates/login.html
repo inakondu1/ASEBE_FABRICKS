@@ -59,6 +59,14 @@
 ```
 <div class="add-fabric-card">
 
+        {{if .Message}}
+        <div class="outstanding-box" style="margin-bottom:20px; text-align:center;">
+            {{.Message}}
+        </div>
+        {{end}}
+
+
+
     <div class="form-heading">
 
         <h1>Welcome Back</h1>
