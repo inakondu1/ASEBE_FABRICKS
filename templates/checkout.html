@@ -63,7 +63,9 @@
                     <input
                         type="text"
                         id="customer-name"
+                        value="{{.Name}}"
                         placeholder="Enter your full name"
+                        readonly
                         required
                     >
 
@@ -79,7 +81,9 @@
                     <input
                         type="tel"
                         id="customer-phone"
+                        value="{{.Phone}}"
                         placeholder="08012345678"
+                        readonly
                         required
                     >
 
@@ -155,6 +159,28 @@ let cart =
     JSON.parse(
         localStorage.getItem("asebeCart")
     ) || [];
+
+
+/*
+   Load registered customer details.
+
+   Name and phone are filled automatically
+   when the customer has already registered.
+*/
+const savedCustomer =
+    JSON.parse(
+        localStorage.getItem("asebeCustomer")
+    ) || {};
+
+if (savedCustomer.name) {
+    document.getElementById("customer-name").value =
+        savedCustomer.name;
+}
+
+if (savedCustomer.phone) {
+    document.getElementById("customer-phone").value =
+        savedCustomer.phone;
+}
 
 
 if (cart.length === 0) {

@@ -409,6 +409,80 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 
 func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
+	// =========================
+	// CHECKOUT PAGE
+	// =========================
+	if r.Method == http.MethodGet {
+
+		customerID, loggedIn := getCustomerSession(r)
+
+		if !loggedIn || customerID <= 0 {
+			http.Redirect(
+				w,
+				r,
+				"/login?message="+url.QueryEscape(
+					"Please log in before checkout.",
+				),
+				http.StatusSeeOther,
+			)
+			return
+		}
+
+		var customer struct {
+			ID    int
+			Name  string
+			Phone string
+		}
+
+		err := db.QueryRow(`
+                        SELECT id, full_name, phone
+                        FROM customers
+                        WHERE id = ?
+                `, customerID).Scan(
+			&customer.ID,
+			&customer.Name,
+			&customer.Phone,
+		)
+
+		if err == sql.ErrNoRows {
+			http.Redirect(
+				w,
+				r,
+				"/login?message="+url.QueryEscape(
+					"Customer account could not be found.",
+				),
+				http.StatusSeeOther,
+			)
+			return
+		}
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load customer: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		data := struct {
+			CustomerID int
+			Name       string
+			Phone      string
+		}{
+			CustomerID: customer.ID,
+			Name:       customer.Name,
+			Phone:      customer.Phone,
+		}
+
+		renderTemplate(
+			w,
+			"templates/checkout.html",
+			data,
+		)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -1485,9 +1559,9 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 
-		_, loggedIn := getCustomerSession(r)
+		customerID, loggedIn := getCustomerSession(r)
 
-		if !loggedIn {
+		if !loggedIn || customerID <= 0 {
 			http.Redirect(
 				w,
 				r,
@@ -1497,10 +1571,41 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		var customer struct {
+			Name  string
+			Phone string
+		}
+
+		err := db.QueryRow(`
+                SELECT full_name, phone
+                FROM customers
+                WHERE id = ?
+        `, customerID).Scan(
+			&customer.Name,
+			&customer.Phone,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load customer details: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		data := struct {
+			Name  string
+			Phone string
+		}{
+			Name:  customer.Name,
+			Phone: customer.Phone,
+		}
+
 		renderTemplate(
 			w,
 			"templates/order.html",
-			nil,
+			data,
 		)
 		return
 	}
@@ -3026,6 +3131,7 @@ func main() {
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
+	http.HandleFunc("/admin/customers", adminCustomersHandler)
 	http.HandleFunc("/admin/login", adminLoginHandler)
 	http.HandleFunc("/admin/logout", adminLogoutHandler)
 	http.HandleFunc("/admin", adminHandler)
@@ -3047,6 +3153,96 @@ func main() {
 // =========================
 // ADMIN ORDERS
 // =========================
+
+// =========================
+// ADMIN REGISTERED CUSTOMERS
+// =========================
+
+func adminCustomersHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	type Customer struct {
+		ID    int64
+		Name  string
+		Phone string
+	}
+
+	var customers []Customer
+
+	rows, err := db.Query(`
+		SELECT id, full_name, phone
+		FROM customers
+		ORDER BY full_name COLLATE NOCASE ASC
+	`)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load customers: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var customer Customer
+
+		err := rows.Scan(
+			&customer.ID,
+			&customer.Name,
+			&customer.Phone,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read customer: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		customers = append(customers, customer)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read customers: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	renderTemplate(
+		w,
+		"templates/admin_customers.html",
+		customers,
+	)
+}
 
 func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -3130,11 +3326,9 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                         SELECT id
                         FROM customers
                         WHERE full_name LIKE ?
-                           OR phone LIKE ?
                         ORDER BY id DESC
                         LIMIT 1
                 `,
-			"%"+search+"%",
 			"%"+search+"%",
 		).Scan(&customerID)
 
