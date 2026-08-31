@@ -1175,6 +1175,66 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check whether this fabric name already exists.
+	var existingID int
+	var existingName string
+	var existingDescription string
+	var existingPrice float64
+	var existingQuantity int
+	var existingImage string
+
+	err = db.QueryRow(`
+                SELECT id, name, description, price, quantity, image
+                FROM products
+                WHERE LOWER(name) = LOWER(?)
+                LIMIT 1
+        `,
+		name,
+	).Scan(
+		&existingID,
+		&existingName,
+		&existingDescription,
+		&existingPrice,
+		&existingQuantity,
+		&existingImage,
+	)
+
+	if err == nil {
+		type DuplicateFabricPage struct {
+			ID          int
+			Name        string
+			Description string
+			Price       float64
+			Quantity    int
+			Image       string
+		}
+
+		data := DuplicateFabricPage{
+			ID:          existingID,
+			Name:        existingName,
+			Description: existingDescription,
+			Price:       existingPrice,
+			Quantity:    existingQuantity,
+			Image:       existingImage,
+		}
+
+		renderTemplate(
+			w,
+			"templates/duplicate_fabric.html",
+			data,
+		)
+		return
+	}
+
+	if err != sql.ErrNoRows {
+		http.Error(
+			w,
+			"Could not check existing fabric: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
 	price, err := strconv.ParseFloat(r.FormValue("price"), 64)
 	if err != nil || price < 0 {
 		http.Error(w, "Invalid price", http.StatusBadRequest)
