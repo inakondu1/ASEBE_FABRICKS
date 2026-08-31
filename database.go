@@ -27,6 +27,35 @@ func initDatabase() {
 	}
 
 	// =========================================================
+	// PAYMENT REPORTS
+	// =========================================================
+	//
+	// Stores a customer's claim that they have made a payment.
+	// This remains PENDING until an admin checks the account
+	// and confirms the payment.
+	//
+
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS payment_reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                customer_id INTEGER NOT NULL,
+                amount REAL NOT NULL,
+                status TEXT NOT NULL DEFAULT 'PENDING',
+                customer_note TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                confirmed_at DATETIME,
+                confirmed_by INTEGER
+        )
+`)
+
+	if err != nil {
+		log.Fatal("Could not create payment reports table:", err)
+	}
+
+	log.Println("Payment reports table ready")
+
+	// =========================================================
 	// PAYMENT TRANSACTIONS
 	// =========================================================
 	//
@@ -304,4 +333,42 @@ func createAdminTable() {
 
 		log.Println("Default admin account created")
 	}
+}
+
+func inspectPaymentSchema() {
+	log.Println("========== DATABASE SCHEMA CHECK ==========")
+
+	rows, err := db.Query(`
+                SELECT name, sql
+                FROM sqlite_master
+                WHERE type = 'table'
+                  AND name IN ('orders', 'payments')
+                ORDER BY name
+        `)
+
+	if err != nil {
+		log.Println("Schema check error:", err)
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var tableName string
+		var tableSQL string
+
+		if err := rows.Scan(&tableName, &tableSQL); err != nil {
+			log.Println("Schema read error:", err)
+			return
+		}
+
+		log.Println("TABLE:", tableName)
+		log.Println(tableSQL)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Println("Schema rows error:", err)
+	}
+
+	log.Println("===========================================")
 }

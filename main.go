@@ -166,6 +166,7 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		products = append(products, product)
+
 	}
 
 	if err := rows.Err(); err != nil {
@@ -862,6 +863,47 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// =========================================================
+	// NOTIFY ADMIN THAT CUSTOMER HAS REPORTED A PAYMENT
+	// =========================================================
+	//
+	// Customer says payment has been made.
+	// Admin must still check the account and confirm it.
+	//
+
+	_, err = db.Exec(`
+                INSERT INTO payment_reports
+                (
+                        order_id,
+                        customer_id,
+                        amount,
+                        status,
+                        customer_note
+                )
+                VALUES (?, ?, ?, 'PENDING', ?)
+        `,
+		orderID,
+		customerID,
+		amountPaid,
+		"Customer reported that payment has been made.",
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not create payment notification: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	log.Println("========== PAYMENT REPORT CREATED ==========")
+	log.Println("Order ID:", orderID)
+	log.Println("Customer ID:", customerID)
+	log.Println("Amount:", amountPaid)
+	log.Println("Status: PENDING")
+	log.Println("============================================")
+
 	// A fully paid order is no longer active.
 	if paymentStatus == "PAID" {
 
@@ -902,6 +944,260 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		"/receipt?order="+url.QueryEscape(strconv.FormatInt(orderID, 10)),
+		http.StatusSeeOther,
+	)
+}
+
+// =========================
+// ADMIN PAYMENT REPORTS
+// =========================
+
+func formatNigeriaTime(value string) string {
+	parsed, err := time.Parse("2006-01-02T15:04:05Z", value)
+	if err != nil {
+		return value
+	}
+
+	nigeria, err := time.LoadLocation("Africa/Lagos")
+	if err != nil {
+		return value
+	}
+
+	return parsed.In(nigeria).Format("02 Jan 2006, 03:04 PM")
+}
+
+func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	rows, err := db.Query(`
+		SELECT
+			pr.id,
+			pr.order_id,
+			pr.customer_id,
+			c.full_name,
+			c.phone,
+			pr.amount,
+			pr.status,
+			pr.customer_note,
+			pr.created_at
+		FROM payment_reports pr
+		JOIN customers c ON c.id = pr.customer_id
+		ORDER BY pr.id DESC
+	`)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load payment reports: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer rows.Close()
+
+	fmt.Fprintln(w, "<html><body>")
+	fmt.Fprintln(w, "<h1>Payment Reports</h1>")
+
+	for rows.Next() {
+
+		var (
+			id           int64
+			orderID      int64
+			customerID   int64
+			customerName string
+			phone        string
+			amount       float64
+			status       string
+			note         sql.NullString
+			createdAt    string
+		)
+
+		err := rows.Scan(
+			&id,
+			&orderID,
+			&customerID,
+			&customerName,
+			&phone,
+			&amount,
+			&status,
+			&note,
+			&createdAt,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read payment report: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		fmt.Fprintln(w, "<hr>")
+
+		fmt.Fprintf(
+			w,
+			"<h2>🔔 Payment Report #%d</h2>"+
+				"<p><strong>Customer:</strong> %s</p>"+
+				"<p><strong>Phone:</strong> %s</p>"+
+				"<p><strong>Order:</strong> #%d</p>"+
+				"<p><strong>Amount:</strong> ₦%.2f</p>"+
+				"<p><strong>Status:</strong> %s</p>"+
+				"<p><strong>Note:</strong> %s</p>"+
+				"<p><strong>Reported:</strong> %s</p>",
+			id,
+			customerName,
+			phone,
+			orderID,
+			amount,
+			status,
+			note.String,
+			formatNigeriaTime(createdAt),
+		)
+
+		if status == "PENDING" {
+
+			fmt.Fprintf(
+				w,
+				`<form method="POST" action="/admin/confirm-payment" style="margin:20px 0;">
+					<input type="hidden" name="report_id" value="%d">
+					<button type="submit"
+						style="padding:12px 20px; background:#198754; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+						✅ CONFIRM PAYMENT
+					</button>
+				</form>`,
+				id,
+			)
+
+		} else if status == "CONFIRMED" {
+
+			fmt.Fprintln(
+				w,
+				`<p style="color:green; font-weight:bold;">✅ PAYMENT CONFIRMED</p>`,
+			)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read payment reports: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	fmt.Fprintln(w, "</body></html>")
+}
+
+// =========================
+// ADMIN CONFIRM PAYMENT
+// =========================
+
+func adminConfirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/admin/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	reportID, err := strconv.ParseInt(
+		r.FormValue("report_id"),
+		10,
+		64,
+	)
+
+	if err != nil || reportID <= 0 {
+		http.Error(
+			w,
+			"Invalid payment report",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	adminID, _ := getAdminSession(r)
+
+	result, err := db.Exec(`
+                UPDATE payment_reports
+                SET
+                        status = 'CONFIRMED',
+                        confirmed_at = CURRENT_TIMESTAMP,
+                        confirmed_by = ?
+                WHERE id = ?
+                  AND status = 'PENDING'
+        `,
+		adminID,
+		reportID,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not confirm payment: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not verify payment confirmation: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(
+			w,
+			"Payment report was already confirmed or does not exist.",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	log.Println("========== PAYMENT CONFIRMED ==========")
+	log.Println("Payment Report ID:", reportID)
+	log.Println("Confirmed By Admin ID:", adminID)
+	log.Println("Status: CONFIRMED")
+	log.Println("=======================================")
+
+	http.Redirect(
+		w,
+		r,
+		"/admin/payment-reports",
 		http.StatusSeeOther,
 	)
 }
@@ -2648,6 +2944,43 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	// UPDATE THE ORIGINAL ORDER'S PAYMENT INFORMATION.
 	// ---------------------------------------------------------
 
+	// =========================================================
+	// NOTIFY ADMIN THAT CUSTOMER HAS REPORTED AN OUTSTANDING PAYMENT
+	// =========================================================
+
+	_, err = db.Exec(`
+		INSERT INTO payment_reports
+		(
+			order_id,
+			customer_id,
+			amount,
+			status,
+			customer_note
+		)
+		VALUES (?, ?, ?, 'PENDING', ?)
+	`,
+		orderID,
+		customerID,
+		amount,
+		"Customer reported payment of outstanding balance.",
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not create payment notification: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	log.Println("========== OUTSTANDING PAYMENT REPORT CREATED ==========")
+	log.Println("Order ID:", orderID)
+	log.Println("Customer ID:", customerID)
+	log.Println("Amount:", amount)
+	log.Println("Status: PENDING")
+	log.Println("=========================================================")
+
 	_, err = db.Exec(`
 		UPDATE orders
 		SET
@@ -3193,6 +3526,7 @@ func main() {
 
 	// Connect to database
 	initDatabase()
+	inspectPaymentSchema()
 
 	// Static files
 	http.Handle(
@@ -3232,6 +3566,8 @@ func main() {
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
+	http.HandleFunc("/admin/payment-reports", adminPaymentReportsHandler)
+	http.HandleFunc("/admin/confirm-payment", adminConfirmPaymentHandler)
 	http.HandleFunc("/admin/customers", adminCustomersHandler)
 	http.HandleFunc("/admin/login", adminLoginHandler)
 	http.HandleFunc("/admin/logout", adminLogoutHandler)
@@ -3408,7 +3744,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                 (
                                         o.total_amount
                                         - o.amount_paid
-                                        + COALESCE(o.previous_balance, 0)
                                 ),
                                 o.payment_status,
                                 o.created_at
@@ -3493,7 +3828,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                 (
                                         o.total_amount
                                         - o.amount_paid
-                                        + COALESCE(o.previous_balance, 0)
                                 ),
                                 o.payment_status,
                                 o.created_at
