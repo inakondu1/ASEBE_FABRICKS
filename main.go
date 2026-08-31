@@ -787,6 +787,47 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 			)
 			return
 		}
+		// Reduce available stock by the quantity ordered.
+		result, err = db.Exec(`
+                        UPDATE products
+                        SET quantity = quantity - ?
+                        WHERE name = ?
+                          AND quantity >= ?
+                `,
+			item.Quantity,
+			item.Name,
+			item.Quantity,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not update stock for "+item.Name+": "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		rowsAffected, err := result.RowsAffected()
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not verify stock update for "+item.Name+": "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		if rowsAffected == 0 {
+			http.Error(
+				w,
+				"Could not reduce stock for "+item.Name+". The fabric may no longer have enough stock.",
+				http.StatusBadRequest,
+			)
+			return
+		}
+
 	}
 
 	// Record the payment transaction.

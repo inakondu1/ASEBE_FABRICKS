@@ -46,12 +46,32 @@
 
         </div>
 
+          <form method="GET" action="/admin/orders" class="order-search">
+              <input
+                  type="text"
+                  name="search"
+                  value="{{.Search}}"
+                  placeholder="Search customer by name"
+              >
 
-        {{if .}}
+              <button type="submit">
+                  SEARCH
+              </button>
+
+              {{if .Search}}
+              <a href="/admin/orders">
+                  SHOW ALL
+              </a>
+              {{end}}
+          </form>
+
+
+
+        {{if .Orders}}
 
         <div class="orders-list">
 
-            {{range .}}
+            {{range .Orders}}
 
             <div class="order-card">
 
