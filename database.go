@@ -89,6 +89,24 @@ func initDatabase() {
 		log.Println("Payments table setup error:", err)
 	} else {
 		log.Println("Payment transactions table ready")
+
+	}
+
+	// =========================================================
+	// PAYMENT REPORT LINK
+	// =========================================================
+	// Links each payment transaction to the payment report
+	// that created it.
+
+	_, err = db.Exec(`
+                ALTER TABLE payments
+                ADD COLUMN report_id INTEGER
+        `)
+
+	if err != nil {
+		log.Println("report_id column may already exist:", err)
+	} else {
+		log.Println("Payment report link column added")
 	}
 
 	// Create products table
