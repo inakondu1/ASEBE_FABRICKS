@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -1268,46 +1267,6 @@ func adminConfirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
 				previousBalance,
 			),
 			http.StatusBadRequest,
-		)
-		return
-	}
-
-	if previousBalance == 0 {
-		_, err = tx.Exec(`
-                        UPDATE payment_reports
-                        SET
-                                status = 'CONFIRMED',
-                                confirmed_at = CURRENT_TIMESTAMP,
-                                confirmed_by = ?
-                        WHERE id = ?
-                `,
-			adminID,
-			reportID,
-		)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not confirm payment report: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		if err := tx.Commit(); err != nil {
-			http.Error(
-				w,
-				"Could not complete confirmation: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		http.Redirect(
-			w,
-			r,
-			"/admin/payment-reports",
-			http.StatusSeeOther,
 		)
 		return
 	}
@@ -3267,140 +3226,6 @@ func outstandingPaymentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // =========================
-// CUSTOMER FABRIC REQUEST
-// =========================
-
-func fabricRequestHandler(w http.ResponseWriter, r *http.Request) {
-
-	customerID, ok := getCustomerSession(r)
-
-	if !ok {
-		http.Redirect(
-			w,
-			r,
-			"/login",
-			http.StatusSeeOther,
-		)
-		return
-	}
-
-	if r.Method == http.MethodGet {
-
-		renderTemplate(
-			w,
-			"templates/request_fabric.html",
-			nil,
-		)
-
-		return
-	}
-
-	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"Method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
-	err := r.ParseMultipartForm(10 << 20)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not read form: "+err.Error(),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	description := r.FormValue("description")
-	quantity := r.FormValue("quantity")
-
-	file, header, err := r.FormFile("image")
-
-	imagePath := ""
-
-	if err == nil {
-
-		defer file.Close()
-
-		imagePath = "/uploads/fabrics/" + header.Filename
-
-		dst, err := os.Create("." + imagePath)
-
-		if err != nil {
-			http.Error(
-				w,
-				err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		defer dst.Close()
-
-		io.Copy(dst, file)
-	}
-
-	var customerName string
-	var phone string
-
-	err = db.QueryRow(`
-                SELECT full_name, phone
-                FROM customers
-                WHERE id = ?
-        `, customerID).Scan(&customerName, &phone)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not load customer details: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	_, err = db.Exec(`
-                INSERT INTO fabric_requests
-                (
-                        customer_id,
-                        customer_name,
-                        phone,
-                        image,
-                        description,
-                        quantity,
-                        status
-                )
-                VALUES (?, ?, ?, ?, ?, ?, 'PENDING')
-        `,
-		customerID,
-		customerName,
-		phone,
-		imagePath,
-		description,
-		quantity,
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not save request: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	http.Redirect(
-		w,
-		r,
-		"/customer",
-		http.StatusSeeOther,
-	)
-}
-
-// =========================
 // CUSTOMER LOGOUT
 // =========================
 
@@ -3502,79 +3327,6 @@ func customerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // =========================
-
-// =========================
-// CUSTOMER FABRIC REQUESTS
-// =========================
-
-func myFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
-
-	customerID, ok := getCustomerSession(r)
-
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
-	type FabricRequest struct {
-		ID          int
-		Image       string
-		Description string
-		Quantity    int
-		Status      string
-		Date        string
-	}
-
-	rows, err := db.Query(`
-		SELECT
-			id,
-			image,
-			description,
-			quantity,
-			status,
-			created_at
-		FROM fabric_requests
-		WHERE customer_id = ?
-		ORDER BY id DESC
-	`, customerID)
-
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	defer rows.Close()
-
-	var requests []FabricRequest
-
-	for rows.Next() {
-
-		var f FabricRequest
-
-		err := rows.Scan(
-			&f.ID,
-			&f.Image,
-			&f.Description,
-			&f.Quantity,
-			&f.Status,
-			&f.Date,
-		)
-
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		requests = append(requests, f)
-	}
-
-	renderTemplate(
-		w,
-		"templates/my_fabric_requests.html",
-		requests,
-	)
-}
-
 // CUSTOMER ORDER HISTORY
 // =========================
 
@@ -3979,15 +3731,12 @@ func main() {
 
 	http.HandleFunc("/customer", customerHandler)
 	http.HandleFunc("/order-history", orderHistoryHandler)
-	http.HandleFunc("/fabric-request", fabricRequestHandler)
 	http.HandleFunc("/pay-outstanding", outstandingPaymentHandler)
-	http.HandleFunc("/my-fabric-requests", myFabricRequestsHandler)
 
 	// Admin
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
-	http.HandleFunc("/admin/fabric-requests", adminFabricRequestsHandler)
 	http.HandleFunc("/admin/payment-reports", adminPaymentReportsHandler)
 	http.HandleFunc("/admin/confirm-payment", adminConfirmPaymentHandler)
 	http.HandleFunc("/admin/customers", adminCustomersHandler)
@@ -4010,89 +3759,6 @@ func main() {
 }
 
 // =========================
-
-// =========================
-// ADMIN FABRIC REQUESTS
-// =========================
-
-func adminFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
-
-	_, ok := getAdminSession(r)
-
-	if !ok {
-		http.Redirect(
-			w,
-			r,
-			"/admin/login",
-			http.StatusSeeOther,
-		)
-		return
-	}
-
-	type FabricRequest struct {
-		ID           int
-		CustomerName string
-		Phone        string
-		Image        string
-		Description  string
-		Quantity     string
-		Status       string
-		Date         string
-	}
-
-	rows, err := db.Query(`
-		SELECT
-			id,
-			customer_name,
-			phone,
-			image,
-			description,
-			quantity,
-			status,
-			created_at
-		FROM fabric_requests
-		ORDER BY id DESC
-	`)
-
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	defer rows.Close()
-
-	var requests []FabricRequest
-
-	for rows.Next() {
-
-		var f FabricRequest
-
-		err := rows.Scan(
-			&f.ID,
-			&f.CustomerName,
-			&f.Phone,
-			&f.Image,
-			&f.Description,
-			&f.Quantity,
-			&f.Status,
-			&f.Date,
-		)
-
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		requests = append(requests, f)
-	}
-
-	renderTemplate(
-		w,
-		"templates/admin_fabric_requests.html",
-		requests,
-	)
-}
-
 // ADMIN ORDERS
 // =========================
 

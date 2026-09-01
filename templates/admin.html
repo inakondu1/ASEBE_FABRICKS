@@ -25,9 +25,11 @@
 
     <nav>
         <a href="/">HOME</a>
+        
+              
 
 
-        <a href="/shop">SHOP</a>
+<a href="/shop">SHOP</a>
         <a href="/payment">PAYMENT</a>
     </nav>
 
@@ -45,13 +47,97 @@
             <h1>ADMIN DASHBOARD</h1>
 
             <span>
-                Manage your fabrics and products.
+                Manage your fabrics, orders and customer payments.
             </span>
 
         </div>
 
 
-        <!-- ADMIN ACTIONS -->
+        <!-- =====================================================
+             PAYMENT SAFETY ALERT
+             ===================================================== -->
+
+        {{if gt .PendingPayments 0}}
+
+        <div style="
+            background:#fff3cd;
+            border:2px solid #ffc107;
+            border-radius:12px;
+            padding:22px;
+            margin:25px 0;
+            box-shadow:0 4px 10px rgba(0,0,0,0.08);
+        ">
+
+            <h2 style="
+                color:#856404;
+                margin-top:0;
+            ">
+                🔔 PAYMENT ACTION REQUIRED
+            </h2>
+
+            <p style="
+                color:#664d03;
+                font-size:17px;
+                font-weight:bold;
+            ">
+                You have {{.PendingPayments}}
+                payment report{{if ne .PendingPayments 1}}s{{end}}
+                waiting for confirmation.
+            </p>
+
+            <p style="color:#664d03;">
+                A customer has reported a payment. Please review and
+                confirm it before relying on the customer's balance
+                for another purchase.
+            </p>
+
+            <a href="/admin/payment-reports"
+               style="
+                   display:inline-block;
+                   background:#198754;
+                   color:white;
+                   text-decoration:none;
+                   padding:13px 20px;
+                   border-radius:7px;
+                   font-weight:bold;
+               ">
+                💳 VIEW & CONFIRM PAYMENTS
+            </a>
+
+        </div>
+
+        {{else}}
+
+        <div style="
+            background:#d1e7dd;
+            border:2px solid #198754;
+            border-radius:12px;
+            padding:18px;
+            margin:25px 0;
+        ">
+
+            <h3 style="
+                color:#0f5132;
+                margin:0 0 8px 0;
+            ">
+                ✅ PAYMENT REPORTS CLEAR
+            </h3>
+
+            <p style="
+                color:#0f5132;
+                margin:0;
+            ">
+                There are currently no pending customer payment reports.
+            </p>
+
+        </div>
+
+        {{end}}
+
+
+        <!-- =====================================================
+             ADMIN ACTIONS
+             ===================================================== -->
 
         <div class="admin-actions">
 
@@ -73,34 +159,60 @@
             </a>
 
 
+            <a href="/admin/orders"
+               class="admin-card">
 
-              <a href="/admin/orders" class="admin-card">
+                <div class="admin-icon">
+                    📋
+                </div>
 
-                  <div class="admin-icon">
-                      📋
-                  </div>
+                <h2>
+                    ORDERS
+                </h2>
 
-                  <h2>ORDERS</h2>
+                <p>
+                    View customer orders, payments and balances.
+                </p>
 
-                  <p>
-                      View customer orders, payments and balances.
-                  </p>
+            </a>
 
-              </a>
 
-                <a href="/admin/payment-reports" class="admin-card">
+            <a href="/admin/payment-reports"
+               class="admin-card">
 
-                    <div class="admin-icon">
-                        💳
-                    </div>
+                <div class="admin-icon">
+                    💳
+                </div>
 
-                    <h2>PAYMENT REPORTS</h2>
+                <h2>
+                    PAYMENT REPORTS
+                </h2>
 
-                    <p>
-                        Review customer payment reports and confirm payments.
-                    </p>
+                <p>
+                    Review customer payment reports and confirm payments.
+                </p>
 
-                </a>
+            </a>
+
+
+
+            <a href="/admin/fabric-requests"
+               class="admin-card">
+
+                <div class="admin-icon">
+                    🧵
+                </div>
+
+                <h2>
+                    FABRIC REQUESTS
+                </h2>
+
+                <p>
+                    View fabrics requested by customers.
+                </p>
+
+            </a>
+
 
             <a href="/shop"
                class="admin-card">
@@ -140,7 +252,9 @@
         </div>
 
 
-        <!-- YOUR FABRICS -->
+        <!-- =====================================================
+             YOUR FABRICS
+             ===================================================== -->
 
         <div class="admin-products">
 
@@ -148,11 +262,11 @@
                 YOUR FABRICS
             </h2>
 
-            {{if .}}
+            {{if .Products}}
 
                 <div class="admin-product-list">
 
-                    {{range .}}
+                    {{range .Products}}
 
                     <div class="admin-product-card">
 
@@ -251,7 +365,9 @@
         </div>
 
 
-        <!-- BACK TO WEBSITE -->
+        <!-- =====================================================
+             BACK TO WEBSITE
+             ===================================================== -->
 
         <div class="admin-back">
 
