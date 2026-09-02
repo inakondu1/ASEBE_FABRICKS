@@ -667,12 +667,6 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		balanceRemaining = 0
 	}
 
-	paymentStatus := "PART PAYMENT"
-
-	if balanceRemaining == 0 {
-		paymentStatus = "PAID"
-	}
-
 	// =========================================================
 	// CREATE THE ORDER ONLY NOW
 	// =========================================================
@@ -688,12 +682,12 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
                         previous_balance_order_id,
                         last_payment_date
                 )
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                VALUES (?, ?, ?, ?, ?, ?, NULL)
         `,
 		customerID,
 		total,
-		amountPaid,
-		paymentStatus,
+		0,
+		"PART PAYMENT",
 		previousBalance,
 		previousBalanceOrderID,
 	)
@@ -835,38 +829,6 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	// Record the payment transaction.
-	_, err = db.Exec(`
-                INSERT INTO payments
-                (
-                        order_id,
-                        customer_id,
-                        payment_type,
-                        previous_balance,
-                        amount_paid,
-                        balance_remaining,
-                        payment_status
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-        `,
-		orderID,
-		customerID,
-		"ORDER PAYMENT",
-		previousBalance,
-		amountPaid,
-		balanceRemaining,
-		paymentStatus,
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Could not record payment transaction: "+err.Error(),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
 	// =========================================================
 	// NOTIFY ADMIN THAT CUSTOMER HAS REPORTED A PAYMENT
 	// =========================================================
@@ -907,29 +869,6 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Amount:", amountPaid)
 	log.Println("Status: PENDING")
 	log.Println("============================================")
-
-	// A fully paid order is no longer active.
-	if paymentStatus == "PAID" {
-
-		_, err = db.Exec(`
-                        UPDATE customers
-                        SET active_order_id = NULL
-                        WHERE id = ?
-                          AND active_order_id = ?
-                `,
-			customerID,
-			orderID,
-		)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not close paid order: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	}
 
 	log.Println("========== ORDER CREATED AFTER PAYMENT ==========")
 	log.Println("Order ID:", orderID)
