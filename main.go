@@ -4005,6 +4005,7 @@ func main() {
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
 	http.HandleFunc("/admin/fabric-requests", adminFabricRequestsHandler)
+	http.HandleFunc("/admin/fabric-request-available", adminFabricRequestAvailableHandler)
 	http.HandleFunc("/admin/payment-reports", adminPaymentReportsHandler)
 	http.HandleFunc("/admin/confirm-payment", adminConfirmPaymentHandler)
 	http.HandleFunc("/admin/customers", adminCustomersHandler)
@@ -4108,6 +4109,34 @@ func adminFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 		"templates/admin_fabric_requests.html",
 		requests,
 	)
+}
+
+func adminFabricRequestAvailableHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, ok := getAdminSession(r)
+	if !ok {
+		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	requestID := r.FormValue("request_id")
+	if requestID == "" {
+		http.Error(w, "Missing request ID", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Exec(`UPDATE fabric_requests SET status = 'AVAILABLE' WHERE id = ? AND status = 'PENDING'`, requestID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin/fabric-requests", http.StatusSeeOther)
 }
 
 // ADMIN ORDERS
