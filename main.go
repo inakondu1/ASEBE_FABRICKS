@@ -136,11 +136,14 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 // =========================
 
 func shopHandler(w http.ResponseWriter, r *http.Request) {
+	search := strings.TrimSpace(r.URL.Query().Get("search"))
+
 	rows, err := db.Query(`
-		SELECT id, name, description, price, quantity, image
-		FROM products
-		ORDER BY id DESC
-	`)
+                SELECT id, name, description, price, quantity, image
+                FROM products
+                WHERE name LIKE ? OR description LIKE ?
+                ORDER BY id DESC
+        `, "%"+search+"%", "%"+search+"%")
 	if err != nil {
 		http.Error(w, "Could not load fabrics: "+err.Error(), http.StatusInternalServerError)
 		return
