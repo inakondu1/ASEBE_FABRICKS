@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -13,7 +14,11 @@ func initDatabase() {
 	var err error
 
 	// Connect to database
-	db, err = sql.Open("sqlite3", "asebe_fabrics.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "asebe_fabrics.db"
+	}
+	db, err = sql.Open("sqlite3", dbPath)
 
 	if err != nil {
 		log.Fatal("Could not open database:", err)

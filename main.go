@@ -1883,7 +1883,7 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		defer file.Close()
 
-		err = os.MkdirAll("uploads/fabrics", 0755)
+		err = os.MkdirAll(getUploadDir(), 0755)
 		if err != nil {
 			http.Error(w, "Could not create upload folder", http.StatusInternalServerError)
 			return
@@ -1893,7 +1893,7 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 
 		filename := strconv.FormatInt(time.Now().UnixNano(), 10) + extension
 
-		savePath := filepath.Join("uploads/fabrics", filename)
+		savePath := filepath.Join(getUploadDir(), filename)
 
 		destination, err := os.Create(savePath)
 		if err != nil {
@@ -2147,7 +2147,7 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		err = os.MkdirAll(
-			"uploads/fabrics",
+			getUploadDir(),
 			0755,
 		)
 
@@ -2172,7 +2172,7 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		) + extension
 
 		savePath := filepath.Join(
-			"uploads/fabrics",
+			getUploadDir(),
 			filename,
 		)
 
@@ -3906,6 +3906,14 @@ func getPort() string {
 		return "8080"
 	}
 	return port
+}
+
+func getUploadDir() string {
+	dir := os.Getenv("UPLOAD_DIR")
+	if dir == "" {
+		dir = "uploads/fabrics"
+	}
+	return dir
 }
 
 func main() {
