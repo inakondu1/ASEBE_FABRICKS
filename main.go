@@ -3916,6 +3916,10 @@ func getUploadDir() string {
 	return dir
 }
 
+func getUploadRoot() string {
+	return filepath.Dir(getUploadDir())
+}
+
 func main() {
 
 	// Connect to database
@@ -3936,7 +3940,7 @@ func main() {
 		"/uploads/",
 		http.StripPrefix(
 			"/uploads/",
-			http.FileServer(http.Dir("uploads")),
+			http.FileServer(http.Dir(getUploadRoot())),
 		),
 	)
 
