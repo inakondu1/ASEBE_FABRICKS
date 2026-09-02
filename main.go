@@ -3900,6 +3900,14 @@ func clearTestHistory() {
 	log.Println("✅ Order history cleared successfully.")
 }
 
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		return "8080"
+	}
+	return port
+}
+
 func main() {
 
 	// Connect to database
@@ -3962,7 +3970,7 @@ func main() {
 	log.Println("🚀 Server running on http://localhost:8080")
 	log.Println("======================================")
 
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":"+getPort(), nil)
 
 	if err != nil {
 		log.Fatal(err)
