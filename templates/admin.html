@@ -136,6 +136,31 @@
 
 
         <!-- =====================================================
+             FABRIC REQUEST ALERT
+             ===================================================== -->
+
+        {{if gt .PendingFabricRequests 0}}
+
+        <div style="background:#fff3cd;border:2px solid #ffc107;border-radius:12px;padding:22px;margin:25px 0;box-shadow:0 4px 10px rgba(0,0,0,0.08);">
+            <h2 style="color:#856404;margin-top:0;">🧵 FABRIC REQUEST ACTION REQUIRED</h2>
+            <p style="color:#664d03;font-size:17px;font-weight:bold;">
+                You have {{.PendingFabricRequests}} pending fabric request{{if ne .PendingFabricRequests 1}}s{{end}} waiting for review.
+            </p>
+            <p style="color:#664d03;">A customer has requested a fabric that may not currently be available. Please review the request.</p>
+            <a href="/admin/fabric-requests" style="display:inline-block;background:#198754;color:white;text-decoration:none;padding:13px 20px;border-radius:7px;font-weight:bold;">🧵 VIEW FABRIC REQUESTS</a>
+        </div>
+
+        {{else}}
+
+        <div style="background:#d1e7dd;border:2px solid #198754;border-radius:12px;padding:18px;margin:25px 0;">
+            <h3 style="color:#0f5132;margin:0 0 8px 0;">✅ FABRIC REQUESTS CLEAR</h3>
+            <p style="color:#0f5132;margin:0;">There are currently no pending fabric requests.</p>
+        </div>
+
+        {{end}}
+
+
+        <!-- =====================================================
              ADMIN ACTIONS
              ===================================================== -->
 

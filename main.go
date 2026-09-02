@@ -1589,17 +1589,34 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-
 	// =========================================================
+	// COUNT PENDING FABRIC REQUESTS
+	// =========================================================
+
+	var pendingFabricRequests int
+
+	err = db.QueryRow(`
+                SELECT COUNT(*)
+                FROM fabric_requests
+                WHERE status = 'PENDING'
+        `).Scan(&pendingFabricRequests)
+
+	if err != nil {
+		http.Error(w, "Could not check pending fabric requests: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// ADMIN DASHBOARD DATA
 	// =========================================================
 
 	data := struct {
-		Products        []Product
-		PendingPayments int
+		Products              []Product
+		PendingPayments       int
+		PendingFabricRequests int
 	}{
-		Products:        products,
-		PendingPayments: pendingPayments,
+		Products:              products,
+		PendingPayments:       pendingPayments,
+		PendingFabricRequests: pendingFabricRequests,
 	}
 
 	// =========================================================
