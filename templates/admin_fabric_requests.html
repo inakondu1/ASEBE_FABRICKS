@@ -92,11 +92,12 @@
             <form method="POST" action="/admin/fabric-request-available" style="margin-top:20px;">
                 <input type="hidden" name="request_id" value="{{.ID}}">
                 <button type="submit" style="background:#b30000;color:white;padding:12px 20px;border:none;border-radius:8px;cursor:pointer;">
-                    🧵 FABRIC AVAILABLE — NOTIFY CUSTOMER
+                    🧵 MARK FABRIC AS AVAILABLE
                 </button>
             </form>
             {{else if eq .Status "AVAILABLE"}}
-            <p style="color:green;font-weight:bold;margin-top:20px;">✅ FABRIC AVAILABLE — CUSTOMER NOTIFIED</p>
+            <p style="color:green;font-weight:bold;margin-top:20px;">✅ FABRIC AVAILABLE</p>
+            <a href="{{.WhatsAppURL}}" target="_blank" style="display:inline-block;margin-top:15px;background:#25D366;color:white;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">📱 NOTIFY CUSTOMER ON WHATSAPP</a>
             {{end}}
 
         </div>

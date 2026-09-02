@@ -4056,6 +4056,7 @@ func adminFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 		Quantity     string
 		Status       string
 		Date         string
+		WhatsAppURL  string
 	}
 
 	rows, err := db.Query(`
@@ -4101,6 +4102,9 @@ func adminFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		message := fmt.Sprintf("Hello %s 👋\n\nASEBE FABRICS UPDATE\n\nThe fabric you requested — %s — is now available.\n\nYou can now visit ASEBE FABRICS to place your order.\n\nThank you for choosing ASEBE FABRICS.", f.CustomerName, f.Description)
+		f.WhatsAppURL = "https://wa.me/" + whatsappNumber(f.Phone) + "?text=" + url.QueryEscape(message)
+
 		requests = append(requests, f)
 	}
 
@@ -4109,6 +4113,18 @@ func adminFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 		"templates/admin_fabric_requests.html",
 		requests,
 	)
+}
+
+func whatsappNumber(phone string) string {
+	phone = strings.TrimSpace(phone)
+	phone = strings.TrimPrefix(phone, "+")
+	if strings.HasPrefix(phone, "0") {
+		return "234" + phone[1:]
+	}
+	if strings.HasPrefix(phone, "234") {
+		return phone
+	}
+	return phone
 }
 
 func adminFabricRequestAvailableHandler(w http.ResponseWriter, r *http.Request) {
