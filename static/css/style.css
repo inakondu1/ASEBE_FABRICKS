@@ -19,7 +19,7 @@ body {
     min-height: 75px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     padding: 0 6%;
     background: #3b2418;
     border-bottom: 2px solid #6f4e37;
@@ -1659,5 +1659,29 @@ footer p {
         flex-direction: column;
         gap: 5px;
     }
+}
+
+
+/* =========================
+   FABRIC REQUEST NAVIGATION
+========================= */
+
+.request-navbar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 35px;
+    padding: 25px;
+    background: #3b2418;
+}
+
+.request-navbar a {
+    color: #f8f1e7;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.request-navbar a:hover {
+    color: #d6b98c;
 }
 
