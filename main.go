@@ -1834,7 +1834,7 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 			Name        string
 			Description string
 			Price       float64
-			Quantity    int
+			Quantity    string
 			Image       string
 		}
 
@@ -1843,7 +1843,7 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 			Name:        existingName,
 			Description: existingDescription,
 			Price:       existingPrice,
-			Quantity:    existingQuantity,
+			Quantity:    fmt.Sprintf("%d", existingQuantity),
 			Image:       existingImage,
 		}
 
@@ -3479,7 +3479,7 @@ func myFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 		ID          int
 		Image       string
 		Description string
-		Quantity    int
+		Quantity    string
 		Status      string
 		Date        string
 	}
