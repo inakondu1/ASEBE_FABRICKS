@@ -3481,7 +3481,7 @@ func myFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 		Description string
 		Quantity    string
 		Status      string
-		Date        string
+		CreatedAt   string
 	}
 
 	rows, err := db.Query(`
@@ -3516,7 +3516,7 @@ func myFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 			&f.Description,
 			&f.Quantity,
 			&f.Status,
-			&f.Date,
+			&f.CreatedAt,
 		)
 
 		if err != nil {
