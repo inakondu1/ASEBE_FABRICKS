@@ -30,6 +30,19 @@
         <a href="/order">ORDER</a>
         <a href="/payment">PAYMENT</a>
         <a href="/fabric-request">REQUEST FABRIC 🧵</a>
+
+        {{if .LoggedIn}}
+
+            <a href="/customer">MY ACCOUNT</a>
+            <a href="/order-history">ORDER HISTORY</a>
+            <a href="/logout">LOGOUT</a>
+
+        {{else}}
+
+            <a href="/register">REGISTER</a>
+            <a href="/login">LOGIN</a>
+
+        {{end}}
     </nav>
 
 </header>

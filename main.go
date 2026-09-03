@@ -76,6 +76,40 @@ func getCustomerSession(r *http.Request) (int, bool) {
 	return customerID, true
 }
 
+// =========================
+// CUSTOMER NAVIGATION DATA
+// =========================
+
+type NavData struct {
+	LoggedIn     bool
+	CustomerName string
+}
+
+func getNavData(r *http.Request) NavData {
+
+	data := NavData{}
+
+	customerID, ok := getCustomerSession(r)
+
+	if ok {
+
+		var customerName string
+
+		err := db.QueryRow(`
+                        SELECT full_name
+                        FROM customers
+                        WHERE id = ?
+                `, customerID).Scan(&customerName)
+
+		if err == nil {
+			data.LoggedIn = true
+			data.CustomerName = customerName
+		}
+	}
+
+	return data
+}
+
 func renderTemplate(w http.ResponseWriter, filename string, data interface{}) {
 	tmpl, err := template.New(filepath.Base(filename)).Funcs(template.FuncMap{
 		"subtract": func(a, b float64) float64 {
@@ -199,8 +233,10 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type ShopPage struct {
-		Products []Product
-		IsAdmin  bool
+		Products     []Product
+		IsAdmin      bool
+		LoggedIn     bool
+		CustomerName string
 	}
 
 	_, isAdmin := getAdminSession(r)
@@ -208,6 +244,24 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
 	data := ShopPage{
 		Products: products,
 		IsAdmin:  isAdmin,
+	}
+
+	customerID, ok := getCustomerSession(r)
+
+	if ok {
+
+		var customerName string
+
+		err := db.QueryRow(`
+				SELECT full_name
+				FROM customers
+				WHERE id = ?
+			`, customerID).Scan(&customerName)
+
+		if err == nil {
+			data.LoggedIn = true
+			data.CustomerName = customerName
+		}
 	}
 
 	renderTemplate(w, "templates/shop.html", data)
