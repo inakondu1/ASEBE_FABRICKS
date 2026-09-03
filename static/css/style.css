@@ -567,13 +567,28 @@ footer p {
 
     .navbar {
         flex-direction: column;
-        gap: 20px;
-        padding: 20px;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 15px;
+    }
+
+    .logo {
+        text-align: center;
+        font-size: 22px;
     }
 
     .navbar nav {
+        width: 100%;
+        display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .navbar nav a {
+        font-size: 14px;
+        padding: 8px;
     }
 
     .products {
@@ -1683,5 +1698,132 @@ footer p {
 
 .request-navbar a:hover {
     color: #d6b98c;
+}
+
+
+
+/* =========================
+   ERROR PAGE
+========================= */
+
+
+.error-card {
+
+    max-width: 600px;
+
+    margin: 50px auto;
+
+    padding: 45px 30px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+
+}
+
+
+
+.error-icon {
+
+    font-size: 55px;
+
+    margin-bottom: 20px;
+
+}
+
+
+
+.error-card h2 {
+
+    color: #3b2418;
+
+    margin-bottom: 20px;
+
+}
+
+
+
+.error-message {
+
+    color: #b30000;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    line-height: 1.6;
+
+}
+
+
+
+.error-help {
+
+    margin-top: 20px;
+
+    color: #6f4e37;
+
+}
+
+
+
+.error-button {
+
+    display: inline-block;
+
+    margin-top: 30px;
+
+    background: #3b2418;
+
+    color: white;
+
+    padding: 13px 28px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    font-weight: bold;
+
+}
+
+
+
+.error-button:hover {
+
+    background: #6f4e37;
+
+}
+
+
+@media (max-width:700px) {
+
+
+    .error-card {
+
+        margin: 30px 20px;
+
+        padding: 35px 20px;
+
+    }
+
+
+    .error-card h2 {
+
+        font-size: 22px;
+
+    }
+
+
+    .error-message {
+
+        font-size: 16px;
+
+    }
+
 }
 

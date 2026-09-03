@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>ASEBE FABRICS</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Error</title>
+
     <link rel="stylesheet" href="/static/css/style.css">
+
 </head>
 
+
 <body>
+
 
 <header class="navbar">
 
@@ -16,48 +25,54 @@
 </header>
 
 
+
 <section class="shop-header">
 
     <p>ASEBE FABRICS</p>
+
     <h1>⚠️ ERROR</h1>
 
 </section>
 
 
-<section style="
-max-width:600px;
-margin:50px auto;
-padding:40px;
-background:white;
-border-radius:15px;
-text-align:center;
-box-shadow:0 5px 20px rgba(0,0,0,0.15);
-">
 
-<h2 style="color:#b30000;">
-{{.}}
-</h2>
+<section class="error-card">
 
-<p style="margin-top:20px;">
-Please check your details and try again.
-</p>
 
-<br>
+    <div class="error-icon">
+        ⚠️
+    </div>
 
-<a href="/register"
-style="
-display:inline-block;
-background:#3b2418;
-color:white;
-padding:12px 25px;
-border-radius:8px;
-text-decoration:none;
-font-weight:bold;
-">
-GO BACK TO REGISTER
-</a>
+
+    <h2>
+        Something needs your attention
+    </h2>
+
+
+    <p class="error-message">
+        {{.}}
+    </p>
+
+
+    <p class="error-help">
+
+        Please check your details and try again.
+
+    </p>
+
+
+
+    <a href="/register" class="error-button">
+
+        GO BACK TO REGISTER
+
+    </a>
+
 
 </section>
 
+
+
 </body>
+
 </html>
