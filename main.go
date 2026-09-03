@@ -3437,51 +3437,80 @@ func customerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	phone := r.URL.Query().Get("phone")
-
-	if phone == "" {
-		http.Redirect(
-			w,
-			r,
-			"/login",
-			http.StatusSeeOther,
-		)
-		return
-	}
-
 	var customer struct {
 		ID    int
 		Name  string
 		Phone string
 	}
 
-	err := db.QueryRow(`
-		SELECT id, full_name, phone
-		FROM customers
-		WHERE phone = ?
-	`, phone).Scan(
-		&customer.ID,
-		&customer.Name,
-		&customer.Phone,
-	)
+	customerID, loggedIn := getCustomerSession(r)
 
-	if err == sql.ErrNoRows {
-		http.Redirect(
-			w,
-			r,
-			"/login",
-			http.StatusSeeOther,
-		)
-		return
-	}
+	if loggedIn {
 
-	if err != nil {
-		http.Error(
-			w,
-			"Could not load customer: "+err.Error(),
-			http.StatusInternalServerError,
+		err := db.QueryRow(`
+			SELECT id, full_name, phone
+			FROM customers
+			WHERE id = ?
+		`, customerID).Scan(
+			&customer.ID,
+			&customer.Name,
+			&customer.Phone,
 		)
-		return
+
+		if err != nil {
+			http.Redirect(
+				w,
+				r,
+				"/login",
+				http.StatusSeeOther,
+			)
+			return
+		}
+
+	} else {
+
+		phone := r.URL.Query().Get("phone")
+
+		if phone == "" {
+			http.Redirect(
+				w,
+				r,
+				"/login",
+				http.StatusSeeOther,
+			)
+			return
+		}
+
+		err := db.QueryRow(`
+			SELECT id, full_name, phone
+			FROM customers
+			WHERE phone = ?
+		`, phone).Scan(
+			&customer.ID,
+			&customer.Name,
+			&customer.Phone,
+		)
+
+		if err == sql.ErrNoRows {
+			http.Redirect(
+				w,
+				r,
+				"/login",
+				http.StatusSeeOther,
+			)
+			return
+		}
+
+		if err != nil {
+			http.Error(
+				w,
+				err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		setCustomerSession(w, customer.ID)
 	}
 
 	renderTemplate(
