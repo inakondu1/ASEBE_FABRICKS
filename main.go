@@ -2913,10 +2913,10 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !validPhone(phone) {
 
-		http.Error(
+		renderTemplate(
 			w,
+			"templates/error.html",
 			"Phone number must contain exactly 11 digits",
-			http.StatusBadRequest,
 		)
 
 		return
