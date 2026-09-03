@@ -95,6 +95,26 @@ func renderTemplate(w http.ResponseWriter, filename string, data interface{}) {
 }
 
 // =========================
+// PHONE VALIDATION
+// =========================
+
+func validPhone(phone string) bool {
+
+	if len(phone) != 11 {
+		return false
+	}
+
+	for _, c := range phone {
+
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+
+	return true
+}
+
+// =========================
 // HOME
 // =========================
 
@@ -2831,6 +2851,17 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(
 			w,
 			"Full name and phone number are required",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	if !validPhone(phone) {
+
+		http.Error(
+			w,
+			"Phone number must contain exactly 11 digits",
 			http.StatusBadRequest,
 		)
 
