@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -486,6 +487,251 @@ func paymentHandler(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+func flutterwavePayHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	secretKey := strings.TrimSpace(os.Getenv("FLW_SECRET_KEY"))
+	if secretKey == "" {
+		http.Error(w, "Flutterwave is not configured.", http.StatusInternalServerError)
+		return
+	}
+
+	customerID, ok := getCustomerSession(r)
+	if !ok {
+		http.Error(w, "Please log in before making a payment.", http.StatusUnauthorized)
+		return
+	}
+
+	name := strings.TrimSpace(r.FormValue("name"))
+	phone := strings.TrimSpace(r.FormValue("phone"))
+	address := strings.TrimSpace(r.FormValue("address"))
+	note := strings.TrimSpace(r.FormValue("note"))
+	cartJSON := strings.TrimSpace(r.FormValue("cart"))
+
+	if cartJSON == "" {
+		http.Error(w, "Your cart is empty.", http.StatusBadRequest)
+		return
+	}
+
+	var cart []struct {
+		ID       int     `json:"id"`
+		Name     string  `json:"name"`
+		Price    float64 `json:"price"`
+		Quantity int     `json:"quantity"`
+	}
+
+	if err := json.Unmarshal([]byte(cartJSON), &cart); err != nil {
+		http.Error(w, "Invalid cart data.", http.StatusBadRequest)
+		return
+	}
+
+	currentOrderTotal := 0.0
+
+	var err error
+
+	for _, item := range cart {
+		var price float64
+		var stock int
+
+		err := db.QueryRow(
+			"SELECT price, quantity FROM products WHERE id = ?",
+			item.ID,
+		).Scan(&price, &stock)
+
+		if err != nil {
+			http.Error(w, "Unable to verify your cart.", http.StatusBadRequest)
+			return
+		}
+
+		if item.Quantity <= 0 || item.Quantity > stock {
+			http.Error(w, "One or more products are no longer available in the requested quantity.", http.StatusBadRequest)
+			return
+		}
+
+		currentOrderTotal += price * float64(item.Quantity)
+	}
+
+	var previousBalance float64
+	var previousOrderID sql.NullInt64
+
+	err = db.QueryRow(`
+		SELECT
+			COALESCE(total_amount - amount_paid, 0),
+			id
+		FROM orders
+		WHERE customer_id = ?
+		  AND amount_paid < total_amount
+		ORDER BY id DESC
+		LIMIT 1
+	`, customerID).Scan(&previousBalance, &previousOrderID)
+
+	if err == sql.ErrNoRows {
+		previousBalance = 0
+		previousOrderID = sql.NullInt64{}
+	} else if err != nil {
+		http.Error(w, "Unable to check your outstanding balance.", http.StatusInternalServerError)
+		return
+	}
+
+	total := currentOrderTotal + previousBalance
+
+	transactionReference := fmt.Sprintf(
+		"ASEBE-%d-%d",
+		time.Now().UnixNano(),
+		customerID,
+	)
+
+	result, err := db.Exec(`
+		INSERT INTO flutterwave_pending_payments (
+			customer_id,
+			name,
+			phone,
+			address,
+			note,
+			cart_json,
+			current_order_total,
+			previous_balance,
+			previous_balance_order_id,
+			total_amount,
+			amount_paid,
+			transaction_reference,
+			status
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
+	`,
+		customerID,
+		name,
+		phone,
+		address,
+		note,
+		cartJSON,
+		currentOrderTotal,
+		previousBalance,
+		previousOrderID,
+		total,
+		total,
+		transactionReference,
+	)
+
+	if err != nil {
+		http.Error(w, "Unable to prepare your Flutterwave payment.", http.StatusInternalServerError)
+		return
+	}
+
+	pendingID, err := result.LastInsertId()
+	if err != nil {
+		http.Error(w, "Unable to prepare your payment.", http.StatusInternalServerError)
+		return
+	}
+
+	callbackURL := strings.TrimRight(
+		strings.TrimSpace(os.Getenv("PUBLIC_BASE_URL")),
+		"/",
+	)
+
+	if callbackURL == "" {
+		callbackURL = "http://localhost:" + getPort()
+	}
+
+	callbackURL += "/flutterwave/callback"
+
+	payload := map[string]interface{}{
+		"tx_ref":       transactionReference,
+		"amount":       total,
+		"currency":     "NGN",
+		"redirect_url": callbackURL,
+		"customer": map[string]string{
+			"email":       "customer@asebefabrics.com",
+			"name":        name,
+			"phonenumber": phone,
+		},
+		"customizations": map[string]string{
+			"title":       "ASEBE FABRICS",
+			"description": "Fabric order payment",
+		},
+		"meta": map[string]interface{}{
+			"pending_payment_id": pendingID,
+			"customer_id":        customerID,
+		},
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		http.Error(w, "Unable to prepare Flutterwave payment.", http.StatusInternalServerError)
+		return
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		"https://api.flutterwave.com/v3/payments",
+		bytes.NewBuffer(payloadBytes),
+	)
+	if err != nil {
+		http.Error(w, "Unable to connect to Flutterwave.", http.StatusBadGateway)
+		return
+	}
+
+	req.Header.Set("Authorization", "Bearer "+secretKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 30 * time.Second}
+
+	response, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "Unable to connect to Flutterwave.", http.StatusBadGateway)
+		return
+	}
+	defer response.Body.Close()
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		http.Error(w, "Unable to read Flutterwave response.", http.StatusBadGateway)
+		return
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		log.Printf(
+			"Flutterwave API error: HTTP %d: %s",
+			response.StatusCode,
+			string(responseBody),
+		)
+
+		http.Error(
+			w,
+			"Flutterwave could not create the payment.",
+			http.StatusBadGateway,
+		)
+		return
+	}
+
+	var flutterwaveResponse struct {
+		Status string `json:"status"`
+		Data   struct {
+			Link string `json:"link"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(responseBody, &flutterwaveResponse); err != nil {
+		http.Error(w, "Invalid Flutterwave response.", http.StatusBadGateway)
+		return
+	}
+
+	if flutterwaveResponse.Status != "success" || flutterwaveResponse.Data.Link == "" {
+		http.Error(w, "Flutterwave did not return a payment link.", http.StatusBadGateway)
+		return
+	}
+
+	http.Redirect(
+		w,
+		r,
+		flutterwaveResponse.Data.Link,
+		http.StatusFound,
+	)
+}
+
 func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	// =========================
@@ -968,6 +1214,387 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 // =========================
 // ADMIN PAYMENT REPORTS
 // =========================
+
+func flutterwaveCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	secretKey := strings.TrimSpace(os.Getenv("FLW_SECRET_KEY"))
+	if secretKey == "" {
+		http.Error(w, "Flutterwave is not configured.", http.StatusInternalServerError)
+		return
+	}
+
+	transactionID := strings.TrimSpace(r.URL.Query().Get("transaction_id"))
+	transactionReference := strings.TrimSpace(r.URL.Query().Get("tx_ref"))
+	status := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("status")))
+
+	if status != "successful" || transactionID == "" || transactionReference == "" {
+		http.Error(w, "Flutterwave payment was not completed.", http.StatusBadRequest)
+		return
+	}
+
+	var pending struct {
+		ID                int64
+		CustomerID        int
+		Name              string
+		Phone             string
+		Address           string
+		Note              string
+		CartJSON          string
+		CurrentOrderTotal float64
+		PreviousBalance   float64
+		PreviousOrderID   sql.NullInt64
+		TotalAmount       float64
+		AmountPaid        float64
+		Status            string
+	}
+
+	err := db.QueryRow(`
+		SELECT
+			id,
+			customer_id,
+			name,
+			phone,
+			address,
+			note,
+			cart_json,
+			current_order_total,
+			previous_balance,
+			previous_balance_order_id,
+			total_amount,
+			amount_paid,
+			status
+		FROM flutterwave_pending_payments
+		WHERE transaction_reference = ?
+	`, transactionReference).Scan(
+		&pending.ID,
+		&pending.CustomerID,
+		&pending.Name,
+		&pending.Phone,
+		&pending.Address,
+		&pending.Note,
+		&pending.CartJSON,
+		&pending.CurrentOrderTotal,
+		&pending.PreviousBalance,
+		&pending.PreviousOrderID,
+		&pending.TotalAmount,
+		&pending.AmountPaid,
+		&pending.Status,
+	)
+
+	if err == sql.ErrNoRows {
+		http.Error(w, "Payment record not found.", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Unable to load payment record.", http.StatusInternalServerError)
+		return
+	}
+
+	if pending.Status == "SUCCESS" {
+		http.Error(w, "This payment has already been processed.", http.StatusConflict)
+		return
+	}
+
+	verifyURL := "https://api.flutterwave.com/v3/transactions/" +
+		url.PathEscape(transactionID) +
+		"/verify"
+
+	req, err := http.NewRequest(http.MethodGet, verifyURL, nil)
+	if err != nil {
+		http.Error(w, "Unable to verify payment.", http.StatusBadGateway)
+		return
+	}
+
+	req.Header.Set("Authorization", "Bearer "+secretKey)
+
+	client := &http.Client{Timeout: 30 * time.Second}
+
+	response, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "Unable to connect to Flutterwave for verification.", http.StatusBadGateway)
+		return
+	}
+	defer response.Body.Close()
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		http.Error(w, "Unable to read Flutterwave verification.", http.StatusBadGateway)
+		return
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		log.Printf(
+			"Flutterwave verification error: HTTP %d: %s",
+			response.StatusCode,
+			string(responseBody),
+		)
+		http.Error(w, "Flutterwave could not verify the payment.", http.StatusBadGateway)
+		return
+	}
+
+	var verification struct {
+		Status string `json:"status"`
+		Data   struct {
+			Status   string  `json:"status"`
+			TxRef    string  `json:"tx_ref"`
+			Amount   float64 `json:"amount"`
+			Currency string  `json:"currency"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(responseBody, &verification); err != nil {
+		http.Error(w, "Invalid Flutterwave verification response.", http.StatusBadGateway)
+		return
+	}
+
+	if verification.Status != "success" ||
+		strings.ToLower(verification.Data.Status) != "successful" {
+		http.Error(w, "Flutterwave payment verification failed.", http.StatusBadRequest)
+		return
+	}
+
+	if verification.Data.TxRef != transactionReference {
+		http.Error(w, "Payment reference verification failed.", http.StatusBadRequest)
+		return
+	}
+
+	if strings.ToUpper(verification.Data.Currency) != "NGN" {
+		http.Error(w, "Payment currency verification failed.", http.StatusBadRequest)
+		return
+	}
+
+	if verification.Data.Amount != pending.TotalAmount {
+		http.Error(w, "Payment amount verification failed.", http.StatusBadRequest)
+		return
+	}
+
+	var existingPayment int
+
+	err = db.QueryRow(
+		"SELECT COUNT(*) FROM payments WHERE transaction_reference = ?",
+		transactionReference,
+	).Scan(&existingPayment)
+
+	if err != nil {
+		http.Error(w, "Unable to check payment record.", http.StatusInternalServerError)
+		return
+	}
+
+	if existingPayment > 0 {
+		http.Error(w, "This payment has already been recorded.", http.StatusConflict)
+		return
+	}
+
+	var cart []struct {
+		ProductID int `json:"product_id"`
+		Quantity  int `json:"quantity"`
+	}
+
+	if err := json.Unmarshal([]byte(pending.CartJSON), &cart); err != nil || len(cart) == 0 {
+		http.Error(w, "Unable to restore your order.", http.StatusBadRequest)
+		return
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		http.Error(w, "Unable to complete your order.", http.StatusInternalServerError)
+		return
+	}
+
+	defer tx.Rollback()
+
+	var orderID int64
+
+	result, err := tx.Exec(`
+		INSERT INTO orders (
+			customer_id,
+			customer_name,
+			phone,
+			address,
+			note,
+			total_amount,
+			amount_paid,
+			payment_status,
+			order_date,
+			previous_balance,
+			previous_order_id
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+	`,
+		pending.CustomerID,
+		pending.Name,
+		pending.Phone,
+		pending.Address,
+		pending.Note,
+		pending.TotalAmount,
+		pending.AmountPaid,
+		"PAID",
+		pending.PreviousBalance,
+		pending.PreviousOrderID,
+	)
+
+	if err != nil {
+		http.Error(w, "Unable to create your order.", http.StatusInternalServerError)
+		return
+	}
+
+	orderID, err = result.LastInsertId()
+	if err != nil {
+		http.Error(w, "Unable to create your order.", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = tx.Exec(`
+		UPDATE customers
+		SET active_order_id = ?
+		WHERE id = ?
+	`, orderID, pending.CustomerID)
+
+	if err != nil {
+		http.Error(w, "Unable to update customer order.", http.StatusInternalServerError)
+		return
+	}
+
+	if pending.PreviousOrderID.Valid {
+		_, err = tx.Exec(`
+			UPDATE orders
+			SET previous_order_id = ?
+			WHERE id = ?
+		`, pending.PreviousOrderID.Int64, orderID)
+
+		if err != nil {
+			http.Error(w, "Unable to link previous order.", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	for _, item := range cart {
+		var price float64
+
+		err = tx.QueryRow(
+			"SELECT price FROM products WHERE id = ?",
+			item.ProductID,
+		).Scan(&price)
+
+		if err != nil {
+			http.Error(w, "Unable to load product.", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = tx.Exec(`
+			INSERT INTO order_items (
+				order_id,
+				product_id,
+				quantity,
+				price
+			)
+			VALUES (?, ?, ?, ?)
+		`,
+			orderID,
+			item.ProductID,
+			item.Quantity,
+			price,
+		)
+
+		if err != nil {
+			http.Error(w, "Unable to save order item.", http.StatusInternalServerError)
+			return
+		}
+
+		result, err = tx.Exec(`
+			UPDATE products
+			SET quantity = quantity - ?
+			WHERE id = ?
+			  AND quantity >= ?
+		`,
+			item.Quantity,
+			item.ProductID,
+			item.Quantity,
+		)
+
+		if err != nil {
+			http.Error(w, "Unable to update product stock.", http.StatusInternalServerError)
+			return
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil || rowsAffected == 0 {
+			http.Error(w, "Product stock is no longer available.", http.StatusBadRequest)
+			return
+		}
+	}
+
+	_, err = tx.Exec(`
+		INSERT INTO payments (
+			order_id,
+			customer_id,
+			amount,
+			payment_type,
+			payment_date,
+			previous_balance,
+			amount_paid,
+			balance_remaining,
+			payment_status,
+			report_id,
+			payment_method,
+			transaction_reference,
+			flutterwave_transaction_id,
+			flutterwave_status
+		)
+		VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, NULL, ?, ?, ?, ?)
+	`,
+		orderID,
+		pending.CustomerID,
+		pending.AmountPaid,
+		"FLUTTERWAVE PAYMENT",
+		pending.PreviousBalance,
+		pending.AmountPaid,
+		0,
+		"PAID",
+		"FLUTTERWAVE",
+		transactionReference,
+		transactionID,
+		"successful",
+	)
+
+	if err != nil {
+		http.Error(w, "Unable to record payment.", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = tx.Exec(`
+		UPDATE flutterwave_pending_payments
+		SET
+			status = 'SUCCESS',
+			flutterwave_transaction_id = ?
+		WHERE id = ?
+	`,
+		transactionID,
+		pending.ID,
+	)
+
+	if err != nil {
+		http.Error(w, "Unable to finalize payment.", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		http.Error(w, "Unable to complete your order.", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(
+		w,
+		r,
+		fmt.Sprintf("/receipt?order=%d", orderID),
+		http.StatusFound,
+	)
+}
 
 func formatNigeriaTime(value string) string {
 	parsed, err := time.Parse("2006-01-02T15:04:05Z", value)
@@ -4063,6 +4690,8 @@ func main() {
 	http.HandleFunc("/shop", shopHandler)
 	http.HandleFunc("/cart", cartHandler)
 	http.HandleFunc("/payment", paymentHandler)
+	http.HandleFunc("/flutterwave/pay", flutterwavePayHandler)
+	http.HandleFunc("/flutterwave/callback", flutterwaveCallbackHandler)
 	http.HandleFunc("/checkout", checkoutHandler)
 	http.HandleFunc("/order", orderHandler)
 	http.HandleFunc("/receipt", receiptHandler)

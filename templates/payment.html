@@ -457,6 +457,48 @@ function validatePayment() {
 
 </script>
 
+
+    <!-- ========================= -->
+    <!-- FLUTTERWAVE PAYMENT -->
+    <!-- ========================= -->
+
+    <div class="product-card" style="margin-top:25px; border:2px solid #c00;">
+
+        <div class="product-info">
+
+            <h2>PAY WITH FLUTTERWAVE</h2>
+
+            <p>
+                Pay securely online using your card, bank transfer,
+                USSD, or other available Flutterwave payment options.
+            </p>
+
+            <form action="/flutterwave/pay" method="POST">
+
+                <input type="hidden" name="name" value="{{.Name}}">
+                <input type="hidden" name="phone" value="{{.Phone}}">
+                <input type="hidden" name="address" value="{{.Address}}">
+                <input type="hidden" name="note" value="{{.Note}}">
+                <input type="hidden" name="cart" value="{{.Cart}}">
+
+                <button
+                    type="submit"
+                    style="display:block; width:100%; margin-top:10px; padding:15px; background:#c00; color:white; border:none; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer;">
+
+                    PAY NOW WITH FLUTTERWAVE
+
+                </button>
+
+            </form>
+
+            <p style="font-size:13px; margin-top:12px;">
+                Your payment will be verified automatically before your order is confirmed.
+            </p>
+
+        </div>
+
+    </div>
+
 </body>
 
 </html>
