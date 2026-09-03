@@ -1,7 +1,5 @@
 ASEBE_FABRICKS
 *.before-*
-asebe_fabrics.db
-uploads/
 
 # Local database backups
 asebe_fabrics_backup_*.db
