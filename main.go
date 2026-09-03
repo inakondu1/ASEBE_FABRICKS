@@ -2916,7 +2916,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		renderTemplate(
 			w,
 			"templates/error.html",
-			"Phone number must contain exactly 11 digits",
+			"Phone number must contain exactly 11 digits. Please enter a valid 11-digit phone number.",
 		)
 
 		return
