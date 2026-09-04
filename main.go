@@ -1619,7 +1619,7 @@ func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -1759,7 +1759,7 @@ func adminConfirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -2150,7 +2150,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -2385,7 +2385,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login?message=Please+enter+your+username+and+password.",
+			"/asebe-control/login?message=Please+enter+your+username+and+password.",
 			http.StatusSeeOther,
 		)
 		return
@@ -2407,7 +2407,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login?message=The+username+or+password+is+incorrect.+Please+try+again.",
+			"/asebe-control/login?message=The+username+or+password+is+incorrect.+Please+try+again.",
 			http.StatusSeeOther,
 		)
 		return
@@ -2476,7 +2476,7 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -2645,7 +2645,7 @@ func deleteFabricHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -2692,7 +2692,7 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -4536,7 +4536,7 @@ func checkPaymentTransactionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -4717,7 +4717,7 @@ func main() {
 	http.HandleFunc("/admin/payment-reports", adminPaymentReportsHandler)
 	http.HandleFunc("/admin/confirm-payment", adminConfirmPaymentHandler)
 	http.HandleFunc("/admin/customers", adminCustomersHandler)
-	http.HandleFunc("/admin/login", adminLoginHandler)
+	http.HandleFunc("/asebe-control/login", adminLoginHandler)
 	http.HandleFunc("/admin/logout", adminLogoutHandler)
 	http.HandleFunc("/admin", adminHandler)
 	http.HandleFunc("/admin/add-fabric", addFabricHandler)
@@ -4749,7 +4749,7 @@ func adminFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -4839,7 +4839,7 @@ func adminFabricRequestAvailableHandler(w http.ResponseWriter, r *http.Request) 
 
 	_, ok := getAdminSession(r)
 	if !ok {
-		http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+		http.Redirect(w, r, "/asebe-control/login", http.StatusSeeOther)
 		return
 	}
 
@@ -4878,7 +4878,7 @@ func adminCustomersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
@@ -4964,7 +4964,7 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(
 			w,
 			r,
-			"/admin/login",
+			"/asebe-control/login",
 			http.StatusSeeOther,
 		)
 		return
