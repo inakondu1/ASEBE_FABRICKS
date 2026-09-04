@@ -123,25 +123,30 @@ body {
 
 .shop-header {
     text-align: center;
-    padding: 70px 20px 50px;
-    background: #eeeeee;
+    padding: 85px 20px 65px;
+    background: #2b1b14;
+    color: #fffaf3;
+    position: relative;
 }
 
 .shop-header p {
-    color: #b30000;
+    color: #d62828;
     font-weight: bold;
-    letter-spacing: 4px;
-    margin-bottom: 12px;
+    letter-spacing: 5px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
 }
 
 .shop-header h1 {
-    font-size: 42px;
-    margin-bottom: 12px;
-    color: #111111;
+    font-size: 48px;
+    margin-bottom: 14px;
+    color: #fffaf3;
+    letter-spacing: 2px;
 }
 
 .shop-header span {
-    color: #555555;
+    color: #e8d8c8;
+    font-size: 17px;
 }
 
 /* =========================
@@ -191,10 +196,16 @@ body {
 
 .product-card {
     background: #fffaf3;
-    border: 1px solid #dddddd;
-    border-radius: 12px;
+    border: 1px solid #e3d6c8;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 5px 18px rgba(59, 36, 24, 0.08);
+    box-shadow: 0 6px 20px rgba(59, 36, 24, 0.10);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(59, 36, 24, 0.16);
 }
 
 .product-card img {
