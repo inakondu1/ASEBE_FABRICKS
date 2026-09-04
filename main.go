@@ -523,6 +523,7 @@ func flutterwavePayHandler(w http.ResponseWriter, r *http.Request) {
 		Quantity int     `json:"quantity"`
 	}
 
+	log.Printf("FLUTTERWAVE CART RECEIVED: %s", cartJSON)
 	if err := json.Unmarshal([]byte(cartJSON), &cart); err != nil {
 		http.Error(w, "Invalid cart data.", http.StatusBadRequest)
 		return
@@ -617,7 +618,7 @@ func flutterwavePayHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		http.Error(w, "Unable to prepare your Flutterwave payment.", http.StatusInternalServerError)
+		http.Error(w, "Unable to prepare your Flutterwave payment: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -3024,6 +3025,8 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	address := r.FormValue("address")
 	note := r.FormValue("note")
 	cartJSON := r.FormValue("cart")
+
+	log.Printf("ORDER CART RECEIVED: %s", cartJSON)
 
 	if name == "" || phone == "" {
 		http.Error(

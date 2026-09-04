@@ -335,7 +335,26 @@ func addDebtColumns() {
 func createAdminTable() {
 
 	_, err := db.Exec(`
-                CREATE TABLE IF NOT EXISTS admins (
+                CREATE TABLE IF NOT EXISTS flutterwave_pending_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        address TEXT,
+        note TEXT,
+        cart_json TEXT NOT NULL,
+        current_order_total REAL NOT NULL,
+        previous_balance REAL NOT NULL DEFAULT 0,
+        previous_balance_order_id INTEGER,
+        total_amount REAL NOT NULL,
+        amount_paid REAL NOT NULL,
+        transaction_reference TEXT NOT NULL UNIQUE,
+        flutterwave_transaction_id TEXT,
+        status TEXT NOT NULL DEFAULT 'PENDING',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS admins (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         username TEXT NOT NULL UNIQUE,
                         password TEXT NOT NULL,

@@ -161,6 +161,7 @@
 
                     <button
                         class="order-button"
+                        data-id="{{.ID}}"
                         data-name="{{.Name}}"
                         data-price="{{.Price}}">
 
@@ -233,6 +234,11 @@ document
             "click",
             function() {
 
+                const id =
+                    parseInt(
+                        this.dataset.id
+                    );
+
                 const name =
                     this.dataset.name;
 
@@ -248,6 +254,10 @@ document
                             "asebeCart"
                         )
                     ) || [];
+
+                cart = cart.filter(function(item) {
+                    return Number.isInteger(item.id) && item.id > 0;
+                });
 
 
                 let existing =
@@ -267,6 +277,8 @@ document
                 } else {
 
                     cart.push({
+
+                        id: id,
 
                         name: name,
 

@@ -348,29 +348,31 @@ form.addEventListener(
         /*
            Continue to payment.
 
-           The payment page will receive
-           the order ID from the URL.
+           Send the customer details and cart
+           to the payment page.
         */
 
-        const orderID =
-            new URLSearchParams(
-                window.location.search
-            ).get("order");
+        const customerID =
+            "{{.CustomerID}}";
 
+        const note = "";
 
-        if (!orderID) {
+        const cartJSON =
+            JSON.stringify(cart);
 
-            alert(
-                "Order number is missing."
-            );
-
-            return;
-        }
-
+        const paymentURL =
+            "/payment?" +
+            new URLSearchParams({
+                customer: customerID,
+                name: name,
+                phone: phone,
+                address: address,
+                note: note,
+                cart: cartJSON
+            }).toString();
 
         window.location.href =
-            "/payment?order=" +
-            encodeURIComponent(orderID);
+            paymentURL;
 
     }
 );
