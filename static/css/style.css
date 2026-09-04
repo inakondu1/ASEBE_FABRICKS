@@ -6,8 +6,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: #f5efe6;
-    color: #3b2418;
+    background: #f5f5f5;
+    color: #111111;
 }
 
 /* =========================
@@ -21,19 +21,19 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 6%;
-    background: #3b2418;
-    border-bottom: 2px solid #6f4e37;
+    background: #111111;
+    border-bottom: 2px solid #b30000;
 }
 
 .logo {
     font-size: 24px;
     font-weight: bold;
     letter-spacing: 2px;
-    color: #f8f1e7;
+    color: #ffffff;
 }
 
 .logo span {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 .navbar nav {
@@ -42,13 +42,13 @@ body {
 }
 
 .navbar nav a {
-    color: #f8f1e7;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
 }
 
 .navbar nav a:hover {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 /* =========================
@@ -75,7 +75,7 @@ body {
 
 .hero-small,
 .small-title {
-    color: #d6b98c;
+    color: #ff3333;
     font-weight: bold;
     letter-spacing: 5px;
     margin-bottom: 15px;
@@ -83,16 +83,16 @@ body {
 
 .hero h1 {
     font-size: 60px;
-    color: #f8f1e7;
+    color: #ffffff;
     margin-bottom: 20px;
 }
 
 .hero h1 span {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 .hero p {
-    color: #eadfce;
+    color: #eeeeee;
     font-size: 18px;
     line-height: 1.7;
     margin-bottom: 30px;
@@ -104,7 +104,7 @@ body {
     padding: 14px 25px;
     border: none;
     border-radius: 6px;
-    background: #6f4e37;
+    background: #b30000;
     color: #fff;
     text-align: center;
     text-decoration: none;
@@ -114,7 +114,7 @@ body {
 
 .hero-button:hover,
 .order-button:hover {
-    background: #4d3224;
+    background: #800000;
 }
 
 /* =========================
@@ -124,11 +124,11 @@ body {
 .shop-header {
     text-align: center;
     padding: 70px 20px 50px;
-    background: #eadfce;
+    background: #eeeeee;
 }
 
 .shop-header p {
-    color: #6f4e37;
+    color: #b30000;
     font-weight: bold;
     letter-spacing: 4px;
     margin-bottom: 12px;
@@ -137,11 +137,11 @@ body {
 .shop-header h1 {
     font-size: 42px;
     margin-bottom: 12px;
-    color: #3b2418;
+    color: #111111;
 }
 
 .shop-header span {
-    color: #725f50;
+    color: #555555;
 }
 
 /* =========================
@@ -151,11 +151,11 @@ body {
 .intro {
     text-align: center;
     padding: 70px 20px;
-    background: #f8f1e7;
+    background: #f5efe6;
 }
 
 .intro p {
-    color: #6f4e37;
+    color: #b30000;
     font-weight: bold;
     letter-spacing: 4px;
     margin-bottom: 15px;
@@ -167,7 +167,12 @@ body {
 }
 
 .intro span {
-    color: #725f50;
+    color: #555555;
+}
+
+.fabric-search {
+    background: #f5efe6;
+    padding: 10px 0;
 }
 
 /* =========================
@@ -181,11 +186,12 @@ body {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 25px;
+    background: #f5efe6;
 }
 
 .product-card {
     background: #fffaf3;
-    border: 1px solid #dfcdb8;
+    border: 1px solid #dddddd;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 5px 18px rgba(59, 36, 24, 0.08);
@@ -204,18 +210,18 @@ body {
 
 .product-info h2 {
     margin-bottom: 10px;
-    color: #3b2418;
+    color: #111111;
 }
 
 .product-info p {
-    color: #725f50;
+    color: #555555;
     line-height: 1.5;
     margin-bottom: 15px;
 }
 
 .product-info strong {
     display: block;
-    color: #6f4e37;
+    color: #b30000;
     font-size: 22px;
     margin-bottom: 18px;
 }
@@ -225,8 +231,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #eadfce;
-    color: #8b7564;
+    background: #eeeeee;
+    color: #666666;
 }
 
 /* =========================
@@ -244,11 +250,11 @@ body {
 .add-fabric-card {
     width: 100%;
     max-width: 900px;
-    background: #fffaf3;
-    color: #3b2418;
+    background: #ffffff;
+    color: #111111;
     padding: 45px;
     border-radius: 18px;
-    border: 1px solid #dfcdb8;
+    border: 1px solid #dddddd;
     box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
 }
 
@@ -263,7 +269,7 @@ body {
 }
 
 .form-heading p {
-    color: #725f50;
+    color: #555555;
 }
 
 /* =========================
@@ -288,18 +294,18 @@ body {
 .form-group textarea {
     width: 100%;
     padding: 14px;
-    border: 1px solid #d8c5af;
+    border: 1px solid #cccccc;
     border-radius: 8px;
     font-size: 16px;
     font-family: inherit;
-    background: #fffdf9;
-    color: #3b2418;
+    background: #ffffff;
+    color: #111111;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #6f4e37;
+    border-color: #b30000;
     box-shadow: 0 0 0 2px rgba(111, 78, 55, 0.12);
 }
 
@@ -323,11 +329,11 @@ body {
 ========================= */
 
 .image-upload {
-    border: 2px dashed #cbb49c;
+    border: 2px dashed #bbbbbb;
     border-radius: 12px;
     padding: 30px;
     text-align: center;
-    background: #f8f1e7;
+    background: #ffffff;
     position: relative;
 }
 
@@ -337,7 +343,7 @@ body {
 }
 
 .upload-text {
-    color: #725f50;
+    color: #555555;
     margin-bottom: 15px;
 }
 
@@ -345,7 +351,7 @@ body {
     margin-top: 20px;
     min-height: 200px;
     border-radius: 10px;
-    background: #eadfce;
+    background: #eeeeee;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -360,7 +366,7 @@ body {
 }
 
 .image-preview p {
-    color: #8b7564;
+    color: #666666;
 }
 
 /* =========================
@@ -385,18 +391,18 @@ body {
 }
 
 .cancel-button {
-    background: #e6d8c8;
-    color: #3b2418;
+    background: #e5e5e5;
+    color: #111111;
 }
 
 .save-button {
     border: none;
-    background: #6f4e37;
+    background: #b30000;
     color: white;
 }
 
 .save-button:hover {
-    background: #4d3224;
+    background: #800000;
 }
 
 /* =========================
@@ -424,12 +430,12 @@ body {
 }
 
 .admin-heading p {
-    color: #6f4e37;
+    color: #b30000;
     letter-spacing: 3px;
 }
 
 .admin-heading span {
-    color: #8b7564;
+    color: #666666;
 }
 
 .admin-actions {
@@ -440,16 +446,16 @@ body {
 
 .admin-card {
     padding: 35px 20px;
-    background: #fffaf3;
-    border: 1px solid #dfcdb8;
+    background: #ffffff;
+    border: 1px solid #dddddd;
     border-radius: 12px;
     text-align: center;
-    color: #3b2418;
+    color: #111111;
     text-decoration: none;
 }
 
 .admin-card:hover {
-    border-color: #6f4e37;
+    border-color: #b30000;
 }
 
 .admin-icon {
@@ -462,7 +468,7 @@ body {
 }
 
 .admin-card p {
-    color: #725f50;
+    color: #555555;
 }
 
 /* =========================
@@ -473,23 +479,23 @@ footer {
     margin-top: 60px;
     padding: 40px 20px;
     text-align: center;
-    background: #3b2418;
-    border-top: 2px solid #6f4e37;
+    background: #111111;
+    border-top: 2px solid #b30000;
 }
 
 .footer-logo {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 10px;
-    color: #f8f1e7;
+    color: #ffffff;
 }
 
 .footer-logo span {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 footer p {
-    color: #d8c5af;
+    color: #cccccc;
 }
 
 /* =========================
@@ -499,15 +505,15 @@ footer p {
 .order-summary {
     margin-top: 35px;
     padding: 25px;
-    background: #f8f1e7;
-    border: 1px solid #dfcdb8;
+    background: #ffffff;
+    border: 1px solid #dddddd;
     border-radius: 14px;
 }
 
 .order-summary h2 {
     margin: 0 0 20px;
     font-size: 22px;
-    color: #3b2418;
+    color: #111111;
 }
 
 .order-item {
@@ -516,16 +522,16 @@ footer p {
     align-items: center;
     gap: 20px;
     padding: 18px 0;
-    border-bottom: 1px solid #dfcdb8;
+    border-bottom: 1px solid #dddddd;
 }
 
 .order-item strong {
-    color: #3b2418;
+    color: #111111;
 }
 
 .order-item p {
     margin: 6px 0 0;
-    color: #725f50;
+    color: #555555;
     font-size: 14px;
 }
 
@@ -540,12 +546,12 @@ footer p {
 .order-total span {
     font-size: 18px;
     font-weight: bold;
-    color: #3b2418;
+    color: #111111;
 }
 
 .order-total strong {
     font-size: 25px;
-    color: #6f4e37;
+    color: #b30000;
 }
 
 /* =========================
@@ -633,8 +639,8 @@ EOFcat > static/css/style.css <<'EOF'
 
 body {
     font-family: Arial, sans-serif;
-    background: #f5efe6;
-    color: #3b2418;
+    background: #f5f5f5;
+    color: #111111;
 }
 
 /* =========================
@@ -648,19 +654,19 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 6%;
-    background: #3b2418;
-    border-bottom: 2px solid #6f4e37;
+    background: #111111;
+    border-bottom: 2px solid #b30000;
 }
 
 .logo {
     font-size: 24px;
     font-weight: bold;
     letter-spacing: 2px;
-    color: #f8f1e7;
+    color: #ffffff;
 }
 
 .logo span {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 .navbar nav {
@@ -669,13 +675,13 @@ body {
 }
 
 .navbar nav a {
-    color: #f8f1e7;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
 }
 
 .navbar nav a:hover {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 /* =========================
@@ -702,7 +708,7 @@ body {
 
 .hero-small,
 .small-title {
-    color: #d6b98c;
+    color: #ff3333;
     font-weight: bold;
     letter-spacing: 5px;
     margin-bottom: 15px;
@@ -710,16 +716,16 @@ body {
 
 .hero h1 {
     font-size: 60px;
-    color: #f8f1e7;
+    color: #ffffff;
     margin-bottom: 20px;
 }
 
 .hero h1 span {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 .hero p {
-    color: #eadfce;
+    color: #eeeeee;
     font-size: 18px;
     line-height: 1.7;
     margin-bottom: 30px;
@@ -731,7 +737,7 @@ body {
     padding: 14px 25px;
     border: none;
     border-radius: 6px;
-    background: #6f4e37;
+    background: #b30000;
     color: #fff;
     text-align: center;
     text-decoration: none;
@@ -741,119 +747,7 @@ body {
 
 .hero-button:hover,
 .order-button:hover {
-    background: #4d3224;
-}
-
-/* =========================
-   PAGE HEADER
-========================= */
-
-.shop-header {
-    text-align: center;
-    padding: 70px 20px 50px;
-    background: #eadfce;
-}
-
-.shop-header p {
-    color: #6f4e37;
-    font-weight: bold;
-    letter-spacing: 4px;
-    margin-bottom: 12px;
-}
-
-.shop-header h1 {
-    font-size: 42px;
-    margin-bottom: 12px;
-    color: #3b2418;
-}
-
-.shop-header span {
-    color: #725f50;
-}
-
-/* =========================
-   INTRO
-========================= */
-
-.intro {
-    text-align: center;
-    padding: 70px 20px;
-    background: #f8f1e7;
-}
-
-.intro p {
-    color: #6f4e37;
-    font-weight: bold;
-    letter-spacing: 4px;
-    margin-bottom: 15px;
-}
-
-.intro h2 {
-    font-size: 36px;
-    margin-bottom: 15px;
-}
-
-.intro span {
-    color: #725f50;
-}
-
-/* =========================
-   PRODUCTS
-========================= */
-
-.products {
-    width: 90%;
-    max-width: 1400px;
-    margin: 50px auto;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
-}
-
-.product-card {
-    background: #fffaf3;
-    border: 1px solid #dfcdb8;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 18px rgba(59, 36, 24, 0.08);
-}
-
-.product-card img {
-    width: 100%;
-    height: 320px;
-    object-fit: cover;
-    display: block;
-}
-
-.product-info {
-    padding: 22px;
-}
-
-.product-info h2 {
-    margin-bottom: 10px;
-    color: #3b2418;
-}
-
-.product-info p {
-    color: #725f50;
-    line-height: 1.5;
-    margin-bottom: 15px;
-}
-
-.product-info strong {
-    display: block;
-    color: #6f4e37;
-    font-size: 22px;
-    margin-bottom: 18px;
-}
-
-.no-image {
-    height: 320px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eadfce;
-    color: #8b7564;
+    background: #800000;
 }
 
 /* =========================
@@ -871,11 +765,11 @@ body {
 .add-fabric-card {
     width: 100%;
     max-width: 900px;
-    background: #fffaf3;
-    color: #3b2418;
+    background: #ffffff;
+    color: #111111;
     padding: 45px;
     border-radius: 18px;
-    border: 1px solid #dfcdb8;
+    border: 1px solid #dddddd;
     box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
 }
 
@@ -890,7 +784,7 @@ body {
 }
 
 .form-heading p {
-    color: #725f50;
+    color: #555555;
 }
 
 /* =========================
@@ -915,18 +809,18 @@ body {
 .form-group textarea {
     width: 100%;
     padding: 14px;
-    border: 1px solid #d8c5af;
+    border: 1px solid #cccccc;
     border-radius: 8px;
     font-size: 16px;
     font-family: inherit;
-    background: #fffdf9;
-    color: #3b2418;
+    background: #ffffff;
+    color: #111111;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #6f4e37;
+    border-color: #b30000;
     box-shadow: 0 0 0 2px rgba(111, 78, 55, 0.12);
 }
 
@@ -950,11 +844,11 @@ body {
 ========================= */
 
 .image-upload {
-    border: 2px dashed #cbb49c;
+    border: 2px dashed #bbbbbb;
     border-radius: 12px;
     padding: 30px;
     text-align: center;
-    background: #f8f1e7;
+    background: #ffffff;
     position: relative;
 }
 
@@ -964,7 +858,7 @@ body {
 }
 
 .upload-text {
-    color: #725f50;
+    color: #555555;
     margin-bottom: 15px;
 }
 
@@ -972,7 +866,7 @@ body {
     margin-top: 20px;
     min-height: 200px;
     border-radius: 10px;
-    background: #eadfce;
+    background: #eeeeee;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -987,7 +881,7 @@ body {
 }
 
 .image-preview p {
-    color: #8b7564;
+    color: #666666;
 }
 
 /* =========================
@@ -1012,18 +906,18 @@ body {
 }
 
 .cancel-button {
-    background: #e6d8c8;
-    color: #3b2418;
+    background: #e5e5e5;
+    color: #111111;
 }
 
 .save-button {
     border: none;
-    background: #6f4e37;
+    background: #b30000;
     color: white;
 }
 
 .save-button:hover {
-    background: #4d3224;
+    background: #800000;
 }
 
 /* =========================
@@ -1051,12 +945,12 @@ body {
 }
 
 .admin-heading p {
-    color: #6f4e37;
+    color: #b30000;
     letter-spacing: 3px;
 }
 
 .admin-heading span {
-    color: #8b7564;
+    color: #666666;
 }
 
 .admin-actions {
@@ -1067,16 +961,16 @@ body {
 
 .admin-card {
     padding: 35px 20px;
-    background: #fffaf3;
-    border: 1px solid #dfcdb8;
+    background: #ffffff;
+    border: 1px solid #dddddd;
     border-radius: 12px;
     text-align: center;
-    color: #3b2418;
+    color: #111111;
     text-decoration: none;
 }
 
 .admin-card:hover {
-    border-color: #6f4e37;
+    border-color: #b30000;
 }
 
 .admin-icon {
@@ -1089,7 +983,7 @@ body {
 }
 
 .admin-card p {
-    color: #725f50;
+    color: #555555;
 }
 
 /* =========================
@@ -1100,23 +994,23 @@ footer {
     margin-top: 60px;
     padding: 40px 20px;
     text-align: center;
-    background: #3b2418;
-    border-top: 2px solid #6f4e37;
+    background: #111111;
+    border-top: 2px solid #b30000;
 }
 
 .footer-logo {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 10px;
-    color: #f8f1e7;
+    color: #ffffff;
 }
 
 .footer-logo span {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 footer p {
-    color: #d8c5af;
+    color: #cccccc;
 }
 
 /* =========================
@@ -1126,15 +1020,15 @@ footer p {
 .order-summary {
     margin-top: 35px;
     padding: 25px;
-    background: #f8f1e7;
-    border: 1px solid #dfcdb8;
+    background: #ffffff;
+    border: 1px solid #dddddd;
     border-radius: 14px;
 }
 
 .order-summary h2 {
     margin: 0 0 20px;
     font-size: 22px;
-    color: #3b2418;
+    color: #111111;
 }
 
 .order-item {
@@ -1143,16 +1037,16 @@ footer p {
     align-items: center;
     gap: 20px;
     padding: 18px 0;
-    border-bottom: 1px solid #dfcdb8;
+    border-bottom: 1px solid #dddddd;
 }
 
 .order-item strong {
-    color: #3b2418;
+    color: #111111;
 }
 
 .order-item p {
     margin: 6px 0 0;
-    color: #725f50;
+    color: #555555;
     font-size: 14px;
 }
 
@@ -1167,12 +1061,12 @@ footer p {
 .order-total span {
     font-size: 18px;
     font-weight: bold;
-    color: #3b2418;
+    color: #111111;
 }
 
 .order-total strong {
     font-size: 25px;
-    color: #6f4e37;
+    color: #b30000;
 }
 
 /* =========================
@@ -1687,17 +1581,17 @@ footer p {
     justify-content: center;
     gap: 35px;
     padding: 25px;
-    background: #3b2418;
+    background: #111111;
 }
 
 .request-navbar a {
-    color: #f8f1e7;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
 }
 
 .request-navbar a:hover {
-    color: #d6b98c;
+    color: #ff3333;
 }
 
 
@@ -1739,7 +1633,7 @@ footer p {
 
 .error-card h2 {
 
-    color: #3b2418;
+    color: #111111;
 
     margin-bottom: 20px;
 
@@ -1765,7 +1659,7 @@ footer p {
 
     margin-top: 20px;
 
-    color: #6f4e37;
+    color: #b30000;
 
 }
 
@@ -1777,7 +1671,7 @@ footer p {
 
     margin-top: 30px;
 
-    background: #3b2418;
+    background: #111111;
 
     color: white;
 
@@ -1795,7 +1689,7 @@ footer p {
 
 .error-button:hover {
 
-    background: #6f4e37;
+    background: #b30000;
 
 }
 
@@ -1825,5 +1719,49 @@ footer p {
 
     }
 
+}
+
+
+/* ================================
+   ASEBE FABRICS CART NOTIFICATION
+   ================================ */
+
+#cart-count {
+    color: #ff3333;
+    font-weight: bold;
+}
+
+#cart-notification {
+    position: fixed;
+    top: 90px;
+    right: 25px;
+    z-index: 9999;
+
+    background: #111111;
+    color: #ffffff;
+
+    border: 2px solid #b30000;
+    border-radius: 10px;
+
+    padding: 14px 20px;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+
+    opacity: 0;
+    transform: translateY(-15px);
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+#cart-notification.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
