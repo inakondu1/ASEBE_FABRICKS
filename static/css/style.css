@@ -247,6 +247,48 @@ body {
 }
 
 /* =========================
+   SHOP PRICE / STOCK / CART
+========================= */
+
+.fabric-price {
+    color: #b30000;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 4px 0 12px;
+}
+
+.stock {
+    margin-bottom: 18px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.available {
+    color: #2f6b3f;
+}
+
+.sold-out {
+    color: #8a2f2f;
+}
+
+.order-button {
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.order-button:hover {
+    background: #8f0000;
+    transform: translateY(-2px);
+}
+
+.order-button:active {
+    transform: translateY(0);
+}
+
+/* =========================
    ADD / EDIT FABRIC
 ========================= */
 
