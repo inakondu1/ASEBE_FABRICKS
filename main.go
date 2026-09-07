@@ -4303,6 +4303,153 @@ func myFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+// CUSTOMER FEEDBACK
+// =========================
+
+func feedbackHandler(w http.ResponseWriter, r *http.Request) {
+
+        customerID, ok := getCustomerSession(r)
+
+        if !ok {
+                http.Redirect(w, r, "/login", http.StatusSeeOther)
+                return
+        }
+
+        var customerName string
+
+        err := db.QueryRow(`
+                SELECT full_name
+                FROM customers
+                WHERE id = ?
+        `, customerID).Scan(&customerName)
+
+        if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+
+        if r.Method == http.MethodPost {
+
+                ratingStr := r.FormValue("rating")
+                comment := strings.TrimSpace(r.FormValue("comment"))
+
+                rating, err := strconv.Atoi(ratingStr)
+
+                if err != nil || rating < 1 || rating > 5 {
+                        http.Error(
+                                w,
+                                "Please select a rating between 1 and 5 stars.",
+                                http.StatusBadRequest,
+                        )
+                        return
+                }
+
+                if comment == "" {
+                        http.Error(
+                                w,
+                                "Please enter your feedback.",
+                                http.StatusBadRequest,
+                        )
+                        return
+                }
+
+                _, err = db.Exec(`
+                        INSERT INTO feedback
+                        (customer_id, customer_name, rating, comment)
+                        VALUES (?, ?, ?, ?)
+                `,
+                        customerID,
+                        customerName,
+                        rating,
+                        comment,
+                )
+
+                if err != nil {
+                        http.Error(
+                                w,
+                                err.Error(),
+                                http.StatusInternalServerError,
+                        )
+                        return
+                }
+
+                http.Redirect(
+                        w,
+                        r,
+                        "/feedback?success=1",
+                        http.StatusSeeOther,
+                )
+                return
+        }
+
+        rows, err := db.Query(`
+                SELECT
+                        id,
+                        customer_id,
+                        customer_name,
+                        rating,
+                        comment,
+                        status,
+                        created_at
+                FROM feedback
+                WHERE status = 'APPROVED'
+                ORDER BY id DESC
+        `)
+
+        if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+
+        defer rows.Close()
+
+        var feedbackList []Feedback
+
+        for rows.Next() {
+
+                var feedback Feedback
+
+                err := rows.Scan(
+                        &feedback.ID,
+                        &feedback.CustomerID,
+                        &feedback.CustomerName,
+                        &feedback.Rating,
+                        &feedback.Comment,
+                        &feedback.Status,
+                        &feedback.CreatedAt,
+                )
+
+                if err != nil {
+                        http.Error(
+                                w,
+                                err.Error(),
+                                http.StatusInternalServerError,
+                        )
+                        return
+                }
+
+                feedbackList = append(feedbackList, feedback)
+        }
+
+        type FeedbackPage struct {
+                CustomerName string
+                Feedback     []Feedback
+                Success      bool
+        }
+
+        page := FeedbackPage{
+                CustomerName: customerName,
+                Feedback:     feedbackList,
+                Success:      r.URL.Query().Get("success") == "1",
+        }
+
+        renderTemplate(
+                w,
+                "templates/feedback.html",
+                page,
+        )
+}
+
 // CUSTOMER ORDER HISTORY
 // =========================
 
@@ -4728,6 +4875,7 @@ func main() {
 	http.HandleFunc("/logout", logoutHandler)
 
 	http.HandleFunc("/customer", customerHandler)
+   http.HandleFunc("/feedback", feedbackHandler)
 	http.HandleFunc("/order-history", orderHistoryHandler)
 	http.HandleFunc("/fabric-request", fabricRequestHandler)
 	http.HandleFunc("/pay-outstanding", outstandingPaymentHandler)

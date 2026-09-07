@@ -24,3 +24,18 @@ type FabricRequest struct {
 	Status       string
 	CreatedAt    string
 }
+
+// =========================
+// CUSTOMER FEEDBACK
+// =========================
+
+type Feedback struct {
+        ID           int
+        CustomerID   int
+        CustomerName string
+        Rating       int
+        Comment      string
+        Status       string
+        CreatedAt    string
+}
+
