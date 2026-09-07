@@ -2586,6 +2586,13 @@ func addFabricHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		err = os.MkdirAll(getUploadDir(), 0755)
+
+		if err != nil {
+			http.Error(w, "Could not create upload folder", http.StatusInternalServerError)
+			return
+		}
+
+		err = os.MkdirAll(getUploadDir(), 0755)
 		if err != nil {
 			http.Error(w, "Could not create upload folder", http.StatusInternalServerError)
 			return
@@ -2847,6 +2854,13 @@ func editFabricHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 
 		defer file.Close()
+
+		err = os.MkdirAll(getUploadDir(), 0755)
+
+		if err != nil {
+			http.Error(w, "Could not create upload folder", http.StatusInternalServerError)
+			return
+		}
 
 		err = os.MkdirAll(
 			getUploadDir(),
@@ -4000,9 +4014,20 @@ func fabricRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 		defer file.Close()
 
-		imagePath = "/uploads/fabrics/" + header.Filename
+		err = os.MkdirAll(getUploadDir(), 0755)
 
-		dst, err := os.Create("." + imagePath)
+		if err != nil {
+			http.Error(w, "Could not create upload folder", http.StatusInternalServerError)
+			return
+		}
+
+		extension := filepath.Ext(header.Filename)
+		filename := strconv.FormatInt(time.Now().UnixNano(), 10) + extension
+		imagePath = "/uploads/fabrics/" + filename
+
+		savePath := filepath.Join(getUploadDir(), filename)
+
+		dst, err := os.Create(savePath)
 
 		if err != nil {
 			http.Error(
