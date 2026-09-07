@@ -92,6 +92,31 @@
                 <h2>{{.Name}}</h2>
                 <p>{{.Description}}</p>
                 <div class="fabric-price">₦{{printf "%.0f" .Price}}</div>
+
+                {{if gt .Quantity 0}}
+
+                    <button
+                        class="order-button"
+                        data-id="{{.ID}}"
+                        data-name="{{.Name}}"
+                        data-price="{{.Price}}">
+
+                        ADD TO CART 🛒
+
+                    </button>
+
+                {{else}}
+
+                    <button
+                        class="order-button"
+                        disabled>
+
+                        OUT OF STOCK
+
+                    </button>
+
+                {{end}}
+
             </div>
 
         </div>
