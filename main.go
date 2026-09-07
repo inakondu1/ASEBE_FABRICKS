@@ -235,16 +235,36 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
 
 	type ShopPage struct {
 		Products     []Product
+		NewArrivals  []Product
 		IsAdmin      bool
 		LoggedIn     bool
 		CustomerName string
 	}
 
+	var newArrivals []Product
+
+	arrivalRows, err := db.Query(`
+                SELECT id, name, description, price, quantity, image
+                FROM products
+                ORDER BY id DESC
+                LIMIT 4
+        `)
+	if err == nil {
+		defer arrivalRows.Close()
+		for arrivalRows.Next() {
+			var product Product
+			if arrivalRows.Scan(&product.ID, &product.Name, &product.Description, &product.Price, &product.Quantity, &product.Image) == nil {
+				newArrivals = append(newArrivals, product)
+			}
+		}
+	}
+
 	_, isAdmin := getAdminSession(r)
 
 	data := ShopPage{
-		Products: products,
-		IsAdmin:  isAdmin,
+		Products:    products,
+		NewArrivals: newArrivals,
+		IsAdmin:     isAdmin,
 	}
 
 	customerID, ok := getCustomerSession(r)
@@ -4308,81 +4328,81 @@ func myFabricRequestsHandler(w http.ResponseWriter, r *http.Request) {
 
 func feedbackHandler(w http.ResponseWriter, r *http.Request) {
 
-        customerID, ok := getCustomerSession(r)
+	customerID, ok := getCustomerSession(r)
 
-        if !ok {
-                http.Redirect(w, r, "/login", http.StatusSeeOther)
-                return
-        }
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-        var customerName string
+	var customerName string
 
-        err := db.QueryRow(`
+	err := db.QueryRow(`
                 SELECT full_name
                 FROM customers
                 WHERE id = ?
         `, customerID).Scan(&customerName)
 
-        if err != nil {
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-        }
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-        if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost {
 
-                ratingStr := r.FormValue("rating")
-                comment := strings.TrimSpace(r.FormValue("comment"))
+		ratingStr := r.FormValue("rating")
+		comment := strings.TrimSpace(r.FormValue("comment"))
 
-                rating, err := strconv.Atoi(ratingStr)
+		rating, err := strconv.Atoi(ratingStr)
 
-                if err != nil || rating < 1 || rating > 5 {
-                        http.Error(
-                                w,
-                                "Please select a rating between 1 and 5 stars.",
-                                http.StatusBadRequest,
-                        )
-                        return
-                }
+		if err != nil || rating < 1 || rating > 5 {
+			http.Error(
+				w,
+				"Please select a rating between 1 and 5 stars.",
+				http.StatusBadRequest,
+			)
+			return
+		}
 
-                if comment == "" {
-                        http.Error(
-                                w,
-                                "Please enter your feedback.",
-                                http.StatusBadRequest,
-                        )
-                        return
-                }
+		if comment == "" {
+			http.Error(
+				w,
+				"Please enter your feedback.",
+				http.StatusBadRequest,
+			)
+			return
+		}
 
-                _, err = db.Exec(`
+		_, err = db.Exec(`
                         INSERT INTO feedback
                         (customer_id, customer_name, rating, comment)
                         VALUES (?, ?, ?, ?)
                 `,
-                        customerID,
-                        customerName,
-                        rating,
-                        comment,
-                )
+			customerID,
+			customerName,
+			rating,
+			comment,
+		)
 
-                if err != nil {
-                        http.Error(
-                                w,
-                                err.Error(),
-                                http.StatusInternalServerError,
-                        )
-                        return
-                }
+		if err != nil {
+			http.Error(
+				w,
+				err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 
-                http.Redirect(
-                        w,
-                        r,
-                        "/feedback?success=1",
-                        http.StatusSeeOther,
-                )
-                return
-        }
+		http.Redirect(
+			w,
+			r,
+			"/feedback?success=1",
+			http.StatusSeeOther,
+		)
+		return
+	}
 
-        rows, err := db.Query(`
+	rows, err := db.Query(`
                 SELECT
                         id,
                         customer_id,
@@ -4396,58 +4416,58 @@ func feedbackHandler(w http.ResponseWriter, r *http.Request) {
                 ORDER BY id DESC
         `)
 
-        if err != nil {
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-        }
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-        defer rows.Close()
+	defer rows.Close()
 
-        var feedbackList []Feedback
+	var feedbackList []Feedback
 
-        for rows.Next() {
+	for rows.Next() {
 
-                var feedback Feedback
+		var feedback Feedback
 
-                err := rows.Scan(
-                        &feedback.ID,
-                        &feedback.CustomerID,
-                        &feedback.CustomerName,
-                        &feedback.Rating,
-                        &feedback.Comment,
-                        &feedback.Status,
-                        &feedback.CreatedAt,
-                )
+		err := rows.Scan(
+			&feedback.ID,
+			&feedback.CustomerID,
+			&feedback.CustomerName,
+			&feedback.Rating,
+			&feedback.Comment,
+			&feedback.Status,
+			&feedback.CreatedAt,
+		)
 
-                if err != nil {
-                        http.Error(
-                                w,
-                                err.Error(),
-                                http.StatusInternalServerError,
-                        )
-                        return
-                }
+		if err != nil {
+			http.Error(
+				w,
+				err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 
-                feedbackList = append(feedbackList, feedback)
-        }
+		feedbackList = append(feedbackList, feedback)
+	}
 
-        type FeedbackPage struct {
-                CustomerName string
-                Feedback     []Feedback
-                Success      bool
-        }
+	type FeedbackPage struct {
+		CustomerName string
+		Feedback     []Feedback
+		Success      bool
+	}
 
-        page := FeedbackPage{
-                CustomerName: customerName,
-                Feedback:     feedbackList,
-                Success:      r.URL.Query().Get("success") == "1",
-        }
+	page := FeedbackPage{
+		CustomerName: customerName,
+		Feedback:     feedbackList,
+		Success:      r.URL.Query().Get("success") == "1",
+	}
 
-        renderTemplate(
-                w,
-                "templates/feedback.html",
-                page,
-        )
+	renderTemplate(
+		w,
+		"templates/feedback.html",
+		page,
+	)
 }
 
 // CUSTOMER ORDER HISTORY
@@ -4875,7 +4895,7 @@ func main() {
 	http.HandleFunc("/logout", logoutHandler)
 
 	http.HandleFunc("/customer", customerHandler)
-   http.HandleFunc("/feedback", feedbackHandler)
+	http.HandleFunc("/feedback", feedbackHandler)
 	http.HandleFunc("/order-history", orderHistoryHandler)
 	http.HandleFunc("/fabric-request", fabricRequestHandler)
 	http.HandleFunc("/pay-outstanding", outstandingPaymentHandler)

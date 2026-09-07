@@ -69,6 +69,39 @@
 </section>
 
 
+<section class="new-arrivals" style="text-align:center;margin:40px 0;">
+
+    <h2>NEW ARRIVALS</h2>
+
+    <div class="products">
+
+        {{range .NewArrivals}}
+
+        <div class="product-card">
+
+            {{if .Image}}
+                <img src="{{.Image}}" alt="{{.Name}}">
+            {{else}}
+                <div class="no-image">
+                    <span>🧵</span>
+                    <p>Fabric Image</p>
+                </div>
+            {{end}}
+
+            <div class="product-info">
+                <h2>{{.Name}}</h2>
+                <p>{{.Description}}</p>
+                <div class="fabric-price">₦{{printf "%.0f" .Price}}</div>
+            </div>
+
+        </div>
+
+        {{end}}
+
+    </div>
+
+</section>
+
 <section class="fabric-search" style="text-align:center;margin:30px 0;">
 
     <form method="GET" action="/shop">
