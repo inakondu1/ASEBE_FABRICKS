@@ -289,6 +289,47 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // =========================
+// PRODUCT DETAILS
+// =========================
+
+func productHandler(w http.ResponseWriter, r *http.Request) {
+
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+
+	if err != nil || id <= 0 {
+		http.Error(w, "Invalid product", http.StatusBadRequest)
+		return
+	}
+
+	var product Product
+
+	err = db.QueryRow(`
+                        SELECT id, name, description, price, quantity, image
+                        FROM products
+                        WHERE id = ?
+                `, id).Scan(
+		&product.ID,
+		&product.Name,
+		&product.Description,
+		&product.Price,
+		&product.Quantity,
+		&product.Image,
+	)
+
+	if err == sql.ErrNoRows {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Unable to load product", http.StatusInternalServerError)
+		return
+	}
+
+	renderTemplate(w, "templates/product.html", product)
+}
+
+// =========================
 // CART
 // =========================
 
@@ -1673,6 +1714,7 @@ func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	fmt.Fprintln(w, "<html><body>")
+	fmt.Fprintln(w, `<div style="text-align:right; margin:20px;"><a href="/admin" style="display:inline-block; padding:12px 20px; background:#b30000; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">← BACK TO DASHBOARD</a></div>`)
 	fmt.Fprintln(w, "<h1>Payment Reports</h1>")
 
 	for rows.Next() {
@@ -4883,6 +4925,7 @@ func main() {
 	// Website pages
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/shop", shopHandler)
+	http.HandleFunc("/product", productHandler)
 	http.HandleFunc("/cart", cartHandler)
 	http.HandleFunc("/payment", paymentHandler)
 	http.HandleFunc("/flutterwave/pay", flutterwavePayHandler)
