@@ -197,8 +197,8 @@ func shopHandler(w http.ResponseWriter, r *http.Request) {
                 SELECT id, name, description, price, quantity, image
                 FROM products
                 WHERE name LIKE ? OR description LIKE ?
-                ORDER BY id DESC
-        `, "%"+search+"%", "%"+search+"%")
+                ORDER BY CASE WHEN name LIKE ? THEN 0 WHEN description LIKE ? THEN 1 ELSE 2 END, id DESC
+        `, "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%")
 	if err != nil {
 		http.Error(w, "Could not load fabrics: "+err.Error(), http.StatusInternalServerError)
 		return
