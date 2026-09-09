@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASEBE AI Assistant</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0d0d0d;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 60px auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            color: #e00000;
+            font-size: 34px;
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 16px;
+        }
+
+        .assistant-box {
+            background: #181818;
+            border: 1px solid #2c2c2c;
+            border-radius: 14px;
+            padding: 25px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 16px;
+            background: #0f0f0f;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #e00000;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: #e00000;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #b00000;
+        }
+
+        .conversation {
+            margin-top: 25px;
+        }
+
+        .question {
+            background: #262626;
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .question strong {
+            color: #e00000;
+        }
+
+        .response {
+            background: #181818;
+            border-left: 4px solid #e00000;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #ddd;
+            line-height: 1.6;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+        }
+
+        .product {
+            background: #181818;
+            border: 1px solid #303030;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .product h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+
+        .product p {
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        .price {
+            color: #e00000;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0 8px;
+        }
+
+        .stock {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .available {
+            color: #4caf50;
+        }
+
+        .unavailable {
+            color: #f44336;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 30px auto;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>ASEBE AI Assistant</h1>
+        <p>Your personal assistant for finding fabrics at ASEBE FABRICS.</p>
+    </div>
+
+    <div class="assistant-box">
+
+        <form method="POST" action="/ai">
+
+            <textarea
+                name="question"
+                placeholder="Ask about our fabrics, prices or availability..."
+                required
+            >{{.Question}}</textarea>
+
+            <button type="submit">Ask ASEBE AI</button>
+
+        </form>
+
+        {{if .Question}}
+        <div class="conversation">
+
+            <div class="question">
+                <strong>You:</strong>
+                {{.Question}}
+            </div>
+
+            <div class="response">
+                <strong>ASEBE AI</strong><br>
+                {{.Response}}
+            </div>
+
+            {{if .Products}}
+            <div class="products">
+
+                {{range .Products}}
+                <div class="product">
+
+                    <h3>{{.Name}}</h3>
+
+                    <p>{{.Description}}</p>
+
+                    <div class="price">
+                        ₦{{printf "%.2f" .Price}}
+                    </div>
+
+                    {{if gt .Quantity 0}}
+                    <div class="stock available">
+                        {{.Quantity}} available
+                    </div>
+                    {{else}}
+                    <div class="stock unavailable">
+                        Currently unavailable
+                    </div>
+                    {{end}}
+
+                </div>
+                {{end}}
+
+            </div>
+            {{end}}
+
+        </div>
+        {{end}}
+
+    </div>
+
+</div>
+
+</body>
+</html>

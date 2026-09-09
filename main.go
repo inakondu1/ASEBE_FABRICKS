@@ -4943,6 +4943,7 @@ func main() {
 	http.HandleFunc("/fabric-request", fabricRequestHandler)
 	http.HandleFunc("/pay-outstanding", outstandingPaymentHandler)
 	http.HandleFunc("/my-fabric-requests", myFabricRequestsHandler)
+	http.HandleFunc("/ai", aiHandler)
 
 	// Admin
 	// Admin
