@@ -260,10 +260,8 @@
 
         </form>
 
-        {{if .Messages}}
+        {{if .Question}}
         <div class="conversation">
-
-            {{range .Messages}}
 
             <div class="question">
                 <strong>You:</strong>
@@ -309,7 +307,6 @@
             </div>
             {{end}}
 
-            {{end}}
         </div>
         {{end}}
 

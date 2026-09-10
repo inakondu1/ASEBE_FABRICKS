@@ -101,6 +101,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 			searchWords = append(searchWords, word)
 		}
 
+		minPrice, maxPrice := extractPriceRange(question)
 		var products []Product
 
 		for _, word := range searchWords {
@@ -152,6 +153,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 			rows.Close()
 		}
 
+		products = filterByPrice(products, minPrice, maxPrice)
 		response := ""
 
 		if len(products) > 0 {
