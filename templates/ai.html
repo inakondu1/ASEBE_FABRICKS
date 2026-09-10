@@ -242,6 +242,11 @@
     </div>
 
     <div class="assistant-box">
+        <div style="text-align:right; margin-bottom:15px;">
+            <a href="/ai?new=1" style="color:#8b623d; font-weight:bold;">
+                NEW CONVERSATION
+            </a>
+        </div>
 
         <form method="POST" action="/ai">
 
@@ -249,14 +254,16 @@
                 name="question"
                 placeholder="Ask about our fabrics, prices or availability..."
                 required
-            >{{.Question}}</textarea>
+            ></textarea>
 
             <button type="submit">Ask ASEBE AI</button>
 
         </form>
 
-        {{if .Question}}
+        {{if .Messages}}
         <div class="conversation">
+
+            {{range .Messages}}
 
             <div class="question">
                 <strong>You:</strong>
@@ -302,6 +309,7 @@
             </div>
             {{end}}
 
+            {{end}}
         </div>
         {{end}}
 

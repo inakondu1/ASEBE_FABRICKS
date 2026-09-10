@@ -194,6 +194,29 @@ body {
     background: #f5efe6;
 }
 
+.customer-dashboard-card {
+    min-height: 220px;
+}
+
+.customer-dashboard-card .product-info {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.customer-dashboard-card h2 {
+    font-size: 20px;
+}
+
+.customer-dashboard-card .order-button {
+    margin-top: 5px;
+}
+
+@media (max-width: 900px) {
+    .customer-dashboard-card {
+        min-height: auto;
+    }
+}
+
 .product-card {
     background: #fffaf3;
     border: 1px solid #e3d6c8;
