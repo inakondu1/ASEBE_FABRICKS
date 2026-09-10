@@ -46,6 +46,17 @@ var aiStopWords = map[string]bool{
 	"available": true,
 }
 
+var aiCategories = map[string][]string{
+	"lace":    {"lace", "tulle", "guipure", "cord"},
+	"ankara":  {"ankara", "wax", "atampa"},
+	"sequins": {"sequin", "sequence"},
+	"brocade": {"brocade", "jacquard"},
+	"velvet":  {"velvet"},
+	"kente":   {"kente"},
+	"organza": {"organza"},
+	"beaded":  {"beaded", "bead"},
+}
+
 func aiHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/ai.html")
 	if err != nil {
@@ -82,6 +93,11 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
+			if categoryWords, ok := aiCategories[word]; ok {
+				searchWords = append(searchWords, categoryWords...)
+				continue
+			}
+
 			searchWords = append(searchWords, word)
 		}
 
@@ -91,7 +107,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 			searchTerm := "%" + word + "%"
 
 			rows, err := db.Query(`
-				SELECT name, description, price, quantity
+				SELECT name, description, price, quantity, image
 				FROM products
 				WHERE LOWER(name) LIKE ?
 				   OR LOWER(description) LIKE ?
@@ -110,6 +126,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 					&product.Description,
 					&product.Price,
 					&product.Quantity,
+					&product.Image,
 				)
 
 				if err != nil {

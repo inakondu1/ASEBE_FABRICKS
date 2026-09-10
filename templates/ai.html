@@ -13,14 +13,14 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #0d0d0d;
-            color: #fff;
+            background: #f5efe6;
+            color: #2b2520;
         }
 
         .container {
-            max-width: 850px;
-            margin: 60px auto;
-            padding: 20px;
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 55px 25px 70px;
         }
 
         .header {
@@ -29,132 +29,204 @@
         }
 
         .header h1 {
-            margin-bottom: 10px;
-            color: #e00000;
-            font-size: 34px;
+            margin: 0 0 12px;
+            color: #211c18;
+            font-size: 38px;
+            letter-spacing: -0.5px;
+        }
+
+        .header h1::before {
+            content: "✦ ";
+            color: #a67c52;
         }
 
         .header p {
-            color: #aaa;
+            margin: 0 auto;
+            max-width: 600px;
+            color: #756b62;
             font-size: 16px;
+            line-height: 1.6;
         }
 
         .assistant-box {
-            background: #181818;
-            border: 1px solid #2c2c2c;
-            border-radius: 14px;
-            padding: 25px;
+            background: #fffdf9;
+            border: 1px solid #e4d8c9;
+            border-radius: 22px;
+            padding: 30px;
+            box-shadow: 0 12px 35px rgba(65, 48, 32, 0.08);
         }
 
         textarea {
             width: 100%;
-            min-height: 110px;
-            padding: 16px;
-            background: #0f0f0f;
-            color: #fff;
-            border: 1px solid #444;
-            border-radius: 8px;
+            min-height: 120px;
+            padding: 18px;
+            background: #faf6f0;
+            color: #302821;
+            border: 1px solid #d9cbb9;
+            border-radius: 14px;
+            font-family: inherit;
             font-size: 16px;
+            line-height: 1.6;
             resize: vertical;
             outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        textarea::placeholder {
+            color: #9a8e82;
         }
 
         textarea:focus {
-            border-color: #e00000;
+            border-color: #a67c52;
+            box-shadow: 0 0 0 3px rgba(166, 124, 82, 0.12);
         }
 
         button {
             width: 100%;
             margin-top: 15px;
-            padding: 15px;
+            padding: 16px;
             border: none;
-            border-radius: 8px;
-            background: #e00000;
+            border-radius: 12px;
+            background: #211c18;
             color: #fff;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
         }
 
         button:hover {
-            background: #b00000;
+            background: #a67c52;
+            transform: translateY(-1px);
         }
 
         .conversation {
-            margin-top: 25px;
+            margin-top: 35px;
         }
 
         .question {
-            background: #262626;
-            padding: 15px 18px;
-            border-radius: 10px;
+            background: #f1e9df;
+            border: 1px solid #e1d4c4;
+            padding: 16px 20px;
+            border-radius: 14px;
             margin-bottom: 15px;
+            color: #51473e;
+            line-height: 1.6;
         }
 
         .question strong {
-            color: #e00000;
+            color: #8b623d;
         }
 
         .response {
-            background: #181818;
-            border-left: 4px solid #e00000;
-            padding: 18px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            color: #ddd;
-            line-height: 1.6;
+            background: #211c18;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: #f7f2eb;
+            line-height: 1.7;
+            box-shadow: 0 8px 22px rgba(40, 29, 20, 0.12);
+        }
+
+        .response strong {
+            color: #d6b38b;
+            font-size: 15px;
+            letter-spacing: 0.3px;
         }
 
         .products {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 22px;
         }
 
         .product {
-            background: #181818;
-            border: 1px solid #303030;
-            border-radius: 12px;
-            padding: 20px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #e4d8c9;
+            border-radius: 18px;
+            padding: 0 0 20px;
+            box-shadow: 0 8px 25px rgba(65, 48, 32, 0.07);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(65, 48, 32, 0.12);
+        }
+
+        .product-image {
+            display: block;
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            background: #eee5da;
         }
 
         .product h3 {
-            margin-top: 0;
-            color: #fff;
+            margin: 20px 20px 8px;
+            color: #29221c;
+            font-size: 20px;
         }
 
         .product p {
-            color: #aaa;
-            line-height: 1.5;
-        }
-
-        .price {
-            color: #e00000;
-            font-size: 20px;
-            font-weight: bold;
-            margin: 15px 0 8px;
-        }
-
-        .stock {
-            color: #aaa;
+            margin: 0 20px;
+            color: #756b62;
+            line-height: 1.6;
             font-size: 14px;
         }
 
+        .price {
+            margin: 18px 20px 8px;
+            color: #8b623d;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .stock {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #f3eee7;
+            color: #756b62;
+            font-size: 13px;
+        }
+
         .available {
-            color: #4caf50;
+            color: #39734a;
+            background: #eaf5ed;
         }
 
         .unavailable {
-            color: #f44336;
+            color: #a33f35;
+            background: #faecea;
         }
 
         @media (max-width: 600px) {
             .container {
-                margin: 30px auto;
+                padding: 30px 15px 50px;
             }
 
             .header h1 {
-                font-size: 28px;
+                font-size: 29px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .assistant-box {
+                padding: 18px;
+                border-radius: 17px;
+            }
+
+            .products {
+                grid-template-columns: 1fr;
+            }
+
+            .product-image {
+                height: 280px;
             }
         }
     </style>
@@ -201,6 +273,10 @@
 
                 {{range .Products}}
                 <div class="product">
+
+                    {{if .Image}}
+                    <img src="{{.Image}}" alt="{{.Name}}" class="product-image">
+                    {{end}}
 
                     <h3>{{.Name}}</h3>
 
