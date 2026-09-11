@@ -3327,7 +3327,7 @@ func receiptHandler(w http.ResponseWriter, r *http.Request) {
 			o.created_at,
 			c.full_name,
 			c.phone,
-			o.total_amount,
+                        o.total_amount,
 			o.amount_paid,
 			o.payment_status,
                         o.previous_balance,
@@ -4551,6 +4551,7 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
                         o.id,
                         o.created_at,
                         o.total_amount,
+                        o.total_amount,
                         o.amount_paid,
                         o.payment_status,
                         COALESCE(o.previous_balance, 0),
@@ -5194,6 +5195,8 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		AmountPaid    float64
 		Balance       float64
 		PaymentStatus string
+		PaymentClass  string
+		OrderStatus   string
 		CreatedAt     string
 	}
 
@@ -5226,6 +5229,7 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                         - o.amount_paid
                                 ),
                                 o.payment_status,
+                                o.order_status,
                                 o.created_at
                         FROM orders o
                         JOIN customers c ON c.id = o.customer_id
@@ -5248,6 +5252,7 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                         - o.amount_paid
                                 ),
                                 o.payment_status,
+                                o.order_status,
                                 o.created_at
                         FROM orders o
                         JOIN customers c ON c.id = o.customer_id
@@ -5284,8 +5289,20 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 			&order.AmountPaid,
 			&order.Balance,
 			&order.PaymentStatus,
+			&order.OrderStatus,
 			&order.CreatedAt,
 		)
+
+		switch order.PaymentStatus {
+		case "PAID":
+			order.PaymentClass = "paid"
+		case "PART PAYMENT", "PARTIAL":
+			order.PaymentClass = "partial"
+		case "UNPAID":
+			order.PaymentClass = "unpaid"
+		default:
+			order.PaymentClass = "pending"
+		}
 
 		if err != nil {
 			http.Error(

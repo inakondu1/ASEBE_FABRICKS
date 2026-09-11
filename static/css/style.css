@@ -3684,6 +3684,34 @@ footer p {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+
+/* PAYMENT STATUS */
+
+.admin-orders-page-body .order-card-header > .order-status {
+    background: #e6f4ea;
+    color: #237a3b;
+}
+
+.admin-orders-page-body .order-status.paid {
+    background: #e6f4ea;
+    color: #237a3b;
+}
+
+.admin-orders-page-body .order-status.partial {
+    background: #fff1d6;
+    color: #a05a00;
+}
+
+.admin-orders-page-body .order-status.unpaid {
+    background: #fde8e8;
+    color: #b30000;
+}
+
+/* ORDER WORK STATUS */
+
+.admin-orders-page-body .order-work-status {
+    background: #e8eef7;
+    color: #315a8a;
 }
 
 /* CUSTOMER */
@@ -3717,6 +3745,20 @@ footer p {
     background: #f8f1e8;
     border: 1px solid #eadfd4;
     border-radius: 10px;
+}
+
+/* FINANCIAL STATUS COLORS */
+
+.admin-orders-page-body .order-financials > div:nth-child(1) strong {
+    color: #8b5a2b;
+}
+
+.admin-orders-page-body .order-financials > div:nth-child(2) strong {
+    color: #237a3b;
+}
+
+.admin-orders-page-body .order-financials > div:nth-child(3) strong {
+    color: #b30000;
 }
 
 .admin-orders-page-body .order-financials span {

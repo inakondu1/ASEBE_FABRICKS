@@ -87,8 +87,12 @@
                         </h2>
                     </div>
 
-                    <div class="order-status">
+                    {{ if .PaymentClass }}<div class="order-status {{.PaymentClass}}">{{else}}<div class="order-status">{{end}}
                         {{.PaymentStatus}}
+                    </div>
+
+                    <div class="order-status order-work-status">
+                        {{.OrderStatus}}
                     </div>
 
                 </div>
