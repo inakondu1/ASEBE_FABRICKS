@@ -2589,3 +2589,279 @@ footer p {
     }
 
 }
+
+/* =========================================
+   ORDER PAGE REDESIGN
+========================================= */
+
+.order-page {
+    background: #f5efe6;
+}
+
+
+/* Order content */
+
+.order-page .add-fabric-page {
+    padding: 45px 20px 70px;
+}
+
+
+/* Main order card */
+
+.order-page .add-fabric-card {
+    width: 92%;
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.09);
+    overflow: hidden;
+}
+
+
+/* Form heading */
+
+.order-page .form-heading {
+    padding: 35px 30px 25px;
+    text-align: center;
+    border-bottom: 1px solid #e3d6c8;
+}
+
+
+.order-page .form-icon {
+    font-size: 35px;
+    margin-bottom: 10px;
+}
+
+
+.order-page .form-heading h1 {
+    color: #3b2418;
+    font-size: 27px;
+    margin-bottom: 10px;
+}
+
+
+.order-page .form-heading p {
+    color: #777;
+    margin: 0;
+}
+
+
+/* Form */
+
+.order-page .fabric-form {
+    padding: 30px;
+}
+
+
+.order-page .form-group {
+    margin-bottom: 22px;
+}
+
+
+.order-page .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #3b2418;
+    font-weight: bold;
+}
+
+
+.order-page .form-group input,
+.order-page .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 15px;
+    border: 1px solid #d8c8b8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #3b2418;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+}
+
+
+.order-page .form-group input:focus,
+.order-page .form-group textarea:focus {
+    border-color: #b30000;
+    box-shadow: 0 0 0 3px rgba(179, 0, 0, 0.08);
+}
+
+
+.order-page .form-group input[readonly] {
+    background: #f4eee7;
+    color: #666;
+}
+
+
+/* Order summary */
+
+.order-page .order-summary {
+    margin-top: 30px;
+    padding: 25px;
+    background: #f7f0e8;
+    border: 1px solid #e3d6c8;
+    border-radius: 12px;
+}
+
+
+.order-page .order-summary h2 {
+    margin-bottom: 20px;
+    color: #3b2418;
+    font-size: 22px;
+}
+
+
+.order-page .order-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid #e3d6c8;
+}
+
+
+.order-page .order-item strong {
+    color: #3b2418;
+}
+
+
+.order-page .order-item p {
+    margin: 6px 0 0;
+    color: #777;
+    font-size: 14px;
+}
+
+
+.order-page .order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-top: 20px;
+    margin-top: 5px;
+}
+
+
+.order-page .order-total span {
+    color: #3b2418;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+
+.order-page .order-total strong {
+    color: #b30000;
+    font-size: 25px;
+}
+
+
+/* Buttons */
+
+.order-page .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+
+.order-page .cancel-button,
+.order-page .save-button {
+    display: inline-block;
+    padding: 14px 22px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+
+.order-page .cancel-button {
+    background: #eadfd3;
+    color: #3b2418;
+}
+
+
+.order-page .save-button {
+    background: #b30000;
+    color: #ffffff;
+}
+
+
+.order-page .cancel-button:hover,
+.order-page .save-button:hover {
+    transform: translateY(-1px);
+}
+
+
+.order-page .save-button:hover {
+    background: #800000;
+}
+
+
+/* Phone layout */
+
+@media (max-width: 700px) {
+
+    .order-page .shop-header {
+        padding: 55px 20px 45px;
+    }
+
+    .order-page .shop-header h1 {
+        font-size: 32px;
+    }
+
+    .order-page .add-fabric-page {
+        padding: 30px 12px 50px;
+    }
+
+    .order-page .add-fabric-card {
+        width: 100%;
+        border-radius: 12px;
+    }
+
+    .order-page .form-heading {
+        padding: 28px 20px 22px;
+    }
+
+    .order-page .form-heading h1 {
+        font-size: 23px;
+    }
+
+    .order-page .fabric-form {
+        padding: 22px 18px;
+    }
+
+    .order-page .order-summary {
+        padding: 18px;
+    }
+
+    .order-page .order-item {
+        gap: 12px;
+    }
+
+    .order-page .order-total strong {
+        font-size: 21px;
+    }
+
+    .order-page .form-actions {
+        flex-direction: column;
+    }
+
+    .order-page .cancel-button,
+    .order-page .save-button {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+}
