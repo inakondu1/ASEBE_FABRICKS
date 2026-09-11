@@ -2446,3 +2446,146 @@ footer p {
     }
 
 }
+
+/* =========================================
+   CART PAGE REDESIGN
+========================================= */
+
+.cart-page {
+    background: #f5efe6;
+}
+
+
+/* Cart container */
+
+.cart-container {
+    width: 92%;
+    max-width: 1100px;
+    margin: 45px auto 70px;
+}
+
+
+/* Cart item */
+
+.cart-page .product-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 14px;
+    margin-bottom: 20px !important;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(59, 36, 24, 0.08);
+}
+
+
+.cart-page .product-info {
+    padding: 25px;
+}
+
+
+.cart-page .product-info h2 {
+    color: #3b2418;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+
+.cart-page .product-info p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+
+.cart-page .product-info strong {
+    color: #3b2418;
+}
+
+
+/* Quantity controls */
+
+.cart-page .product-info button {
+    transition: 0.2s ease;
+}
+
+
+.cart-page .product-info button:hover {
+    transform: translateY(-1px);
+}
+
+
+/* Cart summary */
+
+.cart-page .empty-shop {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(59, 36, 24, 0.08);
+    padding: 40px 25px !important;
+}
+
+
+.cart-page .empty-shop h2 {
+    color: #3b2418;
+    margin-bottom: 12px;
+}
+
+
+.cart-page .empty-shop h1 {
+    color: #b30000;
+    font-size: 32px;
+    margin: 15px 0 25px;
+}
+
+
+.cart-page .empty-shop p {
+    color: #666;
+}
+
+
+/* Cart buttons */
+
+.cart-page .order-button {
+    border-radius: 8px;
+    font-weight: bold;
+    transition: 0.2s ease;
+}
+
+
+.cart-page .order-button:hover {
+    transform: translateY(-1px);
+}
+
+
+/* Phone layout */
+
+@media (max-width: 700px) {
+
+    .cart-container {
+        width: 94%;
+        margin-top: 30px;
+    }
+
+    .cart-page .product-info {
+        padding: 20px;
+    }
+
+    .cart-page .product-info h2 {
+        font-size: 19px;
+    }
+
+    .cart-page .empty-shop {
+        padding: 30px 18px !important;
+    }
+
+    .cart-page .empty-shop h1 {
+        font-size: 25px;
+    }
+
+    .cart-page .empty-shop .order-button {
+        display: block !important;
+        width: 100%;
+        margin: 10px 0 !important;
+        box-sizing: border-box;
+    }
+
+}
