@@ -5268,68 +5268,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 
-		var customerID int64
-
-		err = db.QueryRow(`
-                        SELECT id
-                        FROM customers
-                        WHERE full_name LIKE ?
-                        ORDER BY id DESC
-                        LIMIT 1
-                `,
-			"%"+search+"%",
-		).Scan(&customerID)
-
-		if err == sql.ErrNoRows {
-			page.Message = "Customer not found."
-			renderTemplate(
-				w,
-				"templates/admin_orders.html",
-				page,
-			)
-			return
-		}
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not search customer: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		page.CustomerFound = true
-
-		var orderCount int
-
-		err = db.QueryRow(`
-                        SELECT COUNT(*)
-                        FROM orders
-                        WHERE customer_id = ?
-                `, customerID).Scan(&orderCount)
-
-		if err != nil {
-			http.Error(
-				w,
-				"Could not check customer orders: "+err.Error(),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		if orderCount == 0 {
-			page.Message = "This customer has not placed any orders yet."
-			renderTemplate(
-				w,
-				"templates/admin_orders.html",
-				page,
-			)
-			return
-		}
-
-		page.CustomerHasOrders = true
-
 		rows, err = db.Query(`
                         SELECT
                                 o.id,
@@ -5345,9 +5283,14 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                 o.created_at
                         FROM orders o
                         JOIN customers c ON c.id = o.customer_id
-                        WHERE o.customer_id = ?
+                        WHERE c.full_name LIKE ?
                         ORDER BY o.id DESC
-                `, customerID)
+                `,
+			"%"+search+"%",
+		)
+
+		page.CustomerFound = true
+		page.CustomerHasOrders = true
 	}
 
 	if err != nil {
