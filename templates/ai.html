@@ -254,21 +254,10 @@
             </a>
         </div>
 
-        <form method="POST" action="/ai">
-
-            <textarea
-                name="question"
-                placeholder="Ask about our fabrics, prices or availability..."
-                required
-            ></textarea>
-
-            <button type="submit">Ask ASEBE AI</button>
-
-        </form>
-
-        {{if .Question}}
+        {{if .History}}
         <div class="conversation">
 
+            {{range .History}}
             <div class="question">
                 <strong>You:</strong>
                 {{.Question}}
@@ -312,9 +301,22 @@
 
             </div>
             {{end}}
+            {{end}}
 
         </div>
         {{end}}
+
+        <form method="POST" action="/ai">
+
+            <textarea
+                name="question"
+                placeholder="{{if .History}}Ask ASEBE AI another question...{{else}}Ask about our fabrics, prices or availability...{{end}}"
+                required
+            ></textarea>
+
+            <button type="submit">Ask ASEBE AI</button>
+
+        </form>
 
     </div>
 
