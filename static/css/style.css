@@ -2039,3 +2039,81 @@ footer p {
     }
 }
 
+
+/* =========================
+   CUSTOMER DASHBOARD WELCOME
+========================= */
+
+.dashboard-welcome {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dashboard-welcome strong {
+    color: #3b2418;
+    font-size: 21px;
+}
+
+.dashboard-welcome span {
+    color: #665b52;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+
+/* =========================
+   FEATURED ASEBE AI CARD
+========================= */
+
+.ai-dashboard-card {
+    position: relative;
+    background: linear-gradient(135deg, #fffaf3, #f5efe6);
+    border-color: #cdb9a5;
+}
+
+.ai-dashboard-visual {
+    min-height: 145px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #3b2418;
+    color: #fffaf3;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.ai-avatar {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f5efe6;
+    font-size: 38px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.ai-dashboard-visual span {
+    font-size: 17px;
+}
+
+.ai-dashboard-card .product-info {
+    padding-top: 22px;
+}
+
+.ai-eyebrow {
+    color: #b30000 !important;
+    font-size: 12px !important;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px !important;
+}
+
+.ai-dashboard-card h2 {
+    font-size: 23px;
+}
+
