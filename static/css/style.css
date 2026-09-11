@@ -3268,3 +3268,260 @@ footer p {
     }
 }
 
+
+
+/* =========================================
+   ADMIN DASHBOARD — PROFESSIONAL DESIGN
+   ========================================= */
+
+.admin-page-body {
+    background: #f5efe6;
+    color: #3b2418;
+}
+
+.admin-page-body .admin-page {
+    padding: 60px 5%;
+    min-height: 80vh;
+}
+
+.admin-page-body .admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-page-body .admin-heading {
+    padding: 35px 20px;
+    margin-bottom: 35px;
+    text-align: center;
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+}
+
+.admin-page-body .admin-heading p {
+    margin-bottom: 8px;
+    color: #b30000;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 4px;
+}
+
+.admin-page-body .admin-heading h1 {
+    margin-bottom: 12px;
+    color: #3b2418;
+    font-size: 38px;
+    letter-spacing: 1px;
+}
+
+.admin-page-body .admin-heading span {
+    color: #6b625b;
+    font-size: 15px;
+}
+
+
+/* ADMIN ACTION CARDS */
+
+.admin-page-body .admin-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-top: 30px;
+}
+
+.admin-page-body .admin-card {
+    min-height: 190px;
+    padding: 30px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 16px;
+    color: #3b2418;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.07);
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.admin-page-body .admin-card:hover {
+    transform: translateY(-5px);
+    border-color: #b30000;
+    box-shadow: 0 14px 30px rgba(59, 36, 24, 0.13);
+}
+
+.admin-page-body .admin-icon {
+    width: 58px;
+    height: 58px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1e5d8;
+    border-radius: 50%;
+    color: #b30000;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.admin-page-body .admin-card h2 {
+    margin-bottom: 9px;
+    font-size: 19px;
+    letter-spacing: 1px;
+}
+
+.admin-page-body .admin-card p {
+    color: #6b625b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* ADMIN ALERTS */
+
+.admin-page-body .admin-container > div[style*="ffc107"],
+.admin-page-body .admin-container > div[style*="d1e7dd"] {
+    box-shadow: 0 6px 20px rgba(59, 36, 24, 0.07) !important;
+}
+
+
+/* ADMIN PRODUCTS */
+
+.admin-page-body .admin-products {
+    margin-top: 55px;
+}
+
+.admin-page-body .admin-products-title {
+    margin-bottom: 28px;
+    color: #3b2418;
+    font-size: 28px;
+    letter-spacing: 2px;
+}
+
+.admin-page-body .admin-product-list {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.admin-page-body .admin-product-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+}
+
+.admin-page-body .admin-product-card:hover {
+    border-color: #d2bdaa;
+    box-shadow: 0 14px 30px rgba(59, 36, 24, 0.13);
+}
+
+.admin-page-body .admin-product-info h3 {
+    color: #3b2418;
+}
+
+.admin-page-body .admin-product-info p {
+    color: #6b625b;
+}
+
+.admin-page-body .admin-product-info strong {
+    color: #b30000;
+}
+
+.admin-page-body .admin-product-info span {
+    color: #6b625b;
+}
+
+
+/* ADMIN PRODUCT BUTTONS */
+
+.admin-page-body .edit-button {
+    background: #3b2418;
+}
+
+.admin-page-body .edit-button:hover {
+    background: #5a3828;
+}
+
+.admin-page-body .delete-button {
+    background: #b30000;
+}
+
+.admin-page-body .delete-button:hover {
+    background: #800000;
+}
+
+
+/* ADMIN BACK LINK */
+
+.admin-page-body .admin-back {
+    margin: 45px 0 25px;
+}
+
+.admin-page-body .admin-back a {
+    background: #3b2418;
+}
+
+.admin-page-body .admin-back a:hover {
+    background: #5a3828;
+}
+
+
+/* ADMIN MOBILE */
+
+@media (max-width: 900px) {
+
+    .admin-page-body .admin-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .admin-page-body .admin-page {
+        padding: 35px 15px;
+    }
+
+    .admin-page-body .admin-heading {
+        padding: 28px 18px;
+    }
+
+    .admin-page-body .admin-heading h1 {
+        font-size: 30px;
+    }
+
+    .admin-page-body .admin-heading p {
+        font-size: 11px;
+        letter-spacing: 3px;
+    }
+
+    .admin-page-body .admin-actions {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .admin-page-body .admin-card {
+        min-height: 155px;
+    }
+
+    .admin-page-body .admin-product-list {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-page-body .admin-product-actions {
+        flex-direction: column;
+    }
+
+    .admin-page-body .admin-product-actions form,
+    .admin-page-body .edit-button,
+    .admin-page-body .delete-button {
+        width: 100%;
+    }
+
+}
+
