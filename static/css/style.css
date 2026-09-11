@@ -2117,3 +2117,19 @@ footer p {
     font-size: 23px;
 }
 
+
+/* Homepage fabric market background */
+
+.hero {
+    background-image:
+        linear-gradient(
+            rgba(0,0,0,0.45),
+            rgba(0,0,0,0.55)
+        ),
+        url('/static/images/home-fabric-market.png');
+
+    background-size: cover;
+    background-position: center 35%;
+    background-repeat: no-repeat;
+}
+
