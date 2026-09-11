@@ -2865,3 +2865,214 @@ footer p {
     }
 
 }
+
+/* =========================================================
+   PAYMENT PAGE
+   ========================================================= */
+
+.payment-page {
+    background: #f5efe6;
+    color: #3b2418;
+}
+
+.payment-page .shop-header {
+    margin-bottom: 10px;
+}
+
+.payment-page > section[style*="max-width"] {
+    width: 92%;
+    max-width: 900px !important;
+    margin: 35px auto !important;
+    padding: 10px !important;
+}
+
+.payment-page .product-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+    overflow: hidden;
+}
+
+.payment-page .product-info {
+    padding: 30px;
+}
+
+.payment-page .product-info h2 {
+    color: #3b2418;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.payment-page .product-info h1 {
+    color: #b30000;
+    font-size: 2.2rem;
+}
+
+.payment-page .product-info h3 {
+    color: #3b2418;
+    margin: 8px 0 20px;
+}
+
+.payment-page .product-info hr {
+    border: none;
+    border-top: 1px solid #e3d6c8;
+    margin: 20px 0;
+}
+
+.payment-page .product-info p {
+    line-height: 1.6;
+}
+
+/* Previous balance */
+
+.payment-page .product-info div[style*="border:2px solid"] {
+    background: #fff4f1;
+    border: 1px solid #d9a39b !important;
+    border-left: 5px solid #b30000 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+}
+
+.payment-page .product-info div[style*="border:2px solid"] h2 {
+    color: #b30000;
+}
+
+/* Bank transfer */
+
+.payment-page .product-card:nth-of-type(2) .product-info {
+    position: relative;
+}
+
+.payment-page .product-card:nth-of-type(2) .product-info > p:first-of-type {
+    color: #6d5a4d;
+    margin-bottom: 25px;
+}
+
+.payment-page #account-number {
+    display: inline-block;
+    background: #f5efe6;
+    border: 1px dashed #c8b8a8;
+    border-radius: 10px;
+    padding: 12px 18px;
+    letter-spacing: 2px;
+    font-size: 1.3rem;
+}
+
+/* Payment form */
+
+.payment-page .empty-shop {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+    padding: 30px !important;
+}
+
+.payment-page .empty-shop h2 {
+    color: #3b2418;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+.payment-page form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-page form label {
+    color: #3b2418;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.payment-page form select,
+.payment-page form input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 15px;
+    border: 1px solid #d8c8b8;
+    border-radius: 10px;
+    background: #fff;
+    color: #3b2418;
+    font-size: 1rem;
+    outline: none;
+}
+
+.payment-page form select:focus,
+.payment-page form input[type="number"]:focus {
+    border-color: #b30000;
+    box-shadow: 0 0 0 3px rgba(179, 0, 0, 0.08);
+}
+
+.payment-page form input[readonly] {
+    background: #f1ebe3;
+    cursor: not-allowed;
+}
+
+.payment-page form label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-top: 18px;
+}
+
+.payment-page form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #b30000;
+    flex-shrink: 0;
+}
+
+.payment-page .order-button {
+    margin-top: 15px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.payment-page .order-button:hover {
+    transform: translateY(-2px);
+}
+
+/* Phone */
+
+@media (max-width: 700px) {
+
+    .payment-page > section[style*="max-width"] {
+        width: 94%;
+        margin: 25px auto !important;
+    }
+
+    .payment-page .product-info {
+        padding: 22px 18px;
+    }
+
+    .payment-page .empty-shop {
+        padding: 22px 18px !important;
+    }
+
+    .payment-page .product-info h1 {
+        font-size: 1.8rem;
+    }
+
+    .payment-page .product-info h2 {
+        font-size: 1.3rem;
+    }
+
+    .payment-page #account-number {
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+        box-sizing: border-box;
+        font-size: 1.1rem;
+    }
+
+    .payment-page .order-button {
+        width: 100%;
+    }
+}
+
