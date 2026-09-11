@@ -237,6 +237,12 @@
 <div class="container">
 
     <div class="header">
+        <div style="text-align:left; margin-bottom:18px;">
+            <a href="/customer" style="color:#b30000; font-weight:bold; text-decoration:none;">
+                ← BACK TO DASHBOARD
+            </a>
+        </div>
+
         <h1>ASEBE AI Assistant</h1>
         <p>Your personal assistant for finding fabrics at ASEBE FABRICS.</p>
     </div>
@@ -277,7 +283,7 @@
             <div class="products">
 
                 {{range .Products}}
-                <div class="product">
+                <a href="/shop?search={{.Name}}" class="product" style="text-decoration:none; color:inherit; display:block;">
 
                     {{if .Image}}
                     <img src="{{.Image}}" alt="{{.Name}}" class="product-image">
@@ -301,7 +307,7 @@
                     </div>
                     {{end}}
 
-                </div>
+                </a>
                 {{end}}
 
             </div>

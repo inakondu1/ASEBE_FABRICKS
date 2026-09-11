@@ -108,7 +108,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 			searchTerm := "%" + word + "%"
 
 			rows, err := db.Query(`
-				SELECT name, description, price, quantity, image
+				SELECT id, name, description, price, quantity, image
 				FROM products
 				WHERE LOWER(name) LIKE ?
 				   OR LOWER(description) LIKE ?
@@ -123,6 +123,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 				var product Product
 
 				err := rows.Scan(
+					&product.ID,
 					&product.Name,
 					&product.Description,
 					&product.Price,
