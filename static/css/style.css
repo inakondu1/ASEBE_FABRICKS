@@ -2231,3 +2231,218 @@ footer p {
     font-size: 12px;
 }
 
+
+
+/* =========================================
+   SHOP PAGE REDESIGN
+========================================= */
+
+.shop-page {
+    background: #f5efe6;
+}
+
+
+/* Shop header */
+
+.shop-header {
+    padding: 75px 20px 60px;
+    background:
+        linear-gradient(
+            rgba(43, 27, 20, 0.94),
+            rgba(43, 27, 20, 0.94)
+        );
+}
+
+.shop-header p {
+    margin-bottom: 12px;
+    color: #d62828;
+    font-size: 13px;
+    letter-spacing: 5px;
+}
+
+.shop-header h1 {
+    margin-bottom: 16px;
+    font-size: 48px;
+    letter-spacing: 2px;
+}
+
+.shop-header span {
+    display: block;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+
+/* New arrivals */
+
+.new-arrivals {
+    padding: 45px 20px 10px;
+}
+
+.new-arrivals > h2 {
+    margin-bottom: 30px;
+    color: #3b2418;
+    font-size: 28px;
+    letter-spacing: 2px;
+}
+
+.new-arrivals .products {
+    margin-top: 0;
+}
+
+
+/* Shop search */
+
+.fabric-search {
+    padding: 30px 20px;
+    margin: 20px auto !important;
+    background: #fffaf3;
+    border-top: 1px solid #e3d6c8;
+    border-bottom: 1px solid #e3d6c8;
+}
+
+.fabric-search form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.fabric-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 18px !important;
+    border: 1px solid #d8c8b8 !important;
+    border-radius: 8px !important;
+    background: #ffffff;
+    color: #3b2418;
+    font-size: 15px;
+    outline: none;
+}
+
+.fabric-search input:focus {
+    border-color: #b30000 !important;
+    box-shadow: 0 0 0 3px rgba(179, 0, 0, 0.08);
+}
+
+.fabric-search button {
+    padding: 14px 24px !important;
+    background: #b30000 !important;
+    border-radius: 8px !important;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+
+/* Shop product grid */
+
+.shop-page .products {
+    margin-top: 35px;
+    padding-bottom: 30px;
+}
+
+
+/* Product cards */
+
+.shop-page .product-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(59, 36, 24, 0.10);
+}
+
+.shop-page .product-card img,
+.shop-page .no-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.shop-page .product-info {
+    padding: 22px;
+}
+
+.shop-page .product-info h2 {
+    margin-bottom: 10px;
+    color: #3b2418;
+    font-size: 20px;
+}
+
+.shop-page .product-info p {
+    min-height: 45px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.shop-page .fabric-price {
+    margin: 15px 0 10px;
+    color: #b30000;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+.shop-page .stock {
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+
+/* Empty shop */
+
+.shop-page .empty-shop {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 70px 20px;
+}
+
+
+/* Phone layout */
+
+@media (max-width: 700px) {
+
+    .shop-header {
+        padding: 55px 20px 45px;
+    }
+
+    .shop-header h1 {
+        font-size: 34px;
+    }
+
+    .shop-header span {
+        font-size: 15px;
+    }
+
+    .new-arrivals {
+        padding-top: 35px;
+    }
+
+    .new-arrivals > h2 {
+        font-size: 23px;
+    }
+
+    .fabric-search form {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .fabric-search input,
+    .fabric-search button {
+        width: 100%;
+    }
+
+    .shop-page .products {
+        width: 92%;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .shop-page .product-card img,
+    .shop-page .no-image {
+        height: 280px;
+    }
+
+}
