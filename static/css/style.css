@@ -2133,3 +2133,101 @@ footer p {
     background-repeat: no-repeat;
 }
 
+
+/* Homepage feature cards */
+
+.home-features .product-card {
+    text-align: center;
+    padding: 35px 25px;
+    min-height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-features .product-info {
+    padding: 0;
+}
+
+.home-features h2 {
+    font-size: 21px;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.home-features p {
+    margin-bottom: 0;
+    line-height: 1.7;
+}
+
+
+/* Homepage spacing */
+
+.home-features {
+    margin-bottom: 10px !important;
+}
+
+.home-features + .shop-header {
+    padding-top: 35px;
+    padding-bottom: 55px;
+}
+
+
+/* Homepage social media section */
+
+.home-social {
+    max-width: 1000px;
+    margin: 10px auto 35px;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.home-social > p {
+    color: #b30000;
+    font-weight: bold;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+}
+
+.home-social-links {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.home-social-links a {
+    min-width: 150px;
+    padding: 15px 18px;
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 10px;
+    color: #3b2418;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(59, 36, 24, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-social-links a:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(59, 36, 24, 0.14);
+}
+
+.home-social-links span {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.home-social-links strong {
+    display: block;
+    font-size: 14px;
+}
+
+.home-social-links small {
+    display: block;
+    margin-top: 4px;
+    color: #777;
+    font-size: 12px;
+}
+
