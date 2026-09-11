@@ -3076,3 +3076,195 @@ footer p {
     }
 }
 
+
+/* =========================================================
+   RECEIPT PAGE
+   ========================================================= */
+
+.receipt-page {
+    background: #f5efe6;
+    color: #3b2418;
+}
+
+.receipt-page .shop-header {
+    margin-bottom: 10px;
+}
+
+.receipt-page > section[style*="max-width"] {
+    width: 92%;
+    max-width: 900px !important;
+    margin: 35px auto !important;
+    padding: 10px !important;
+}
+
+.receipt-page .product-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+    overflow: hidden;
+}
+
+.receipt-page .product-info {
+    padding: 35px;
+}
+
+.receipt-page .product-info > h2:first-child {
+    color: #b30000;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+}
+
+.receipt-page .product-info h3 {
+    color: #3b2418;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.receipt-page .product-info hr {
+    border: none;
+    border-top: 1px solid #e3d6c8;
+    margin: 25px 0;
+}
+
+.receipt-page .product-info p {
+    line-height: 1.6;
+}
+
+/* Order information */
+
+.receipt-page .product-info > p:first-of-type,
+.receipt-page .product-info > p:nth-of-type(2) {
+    color: #6d5a4d;
+}
+
+.receipt-page .product-info > p:first-of-type strong,
+.receipt-page .product-info > p:nth-of-type(2) strong {
+    color: #3b2418;
+}
+
+/* Outstanding payment */
+
+.receipt-page .product-info div[style*="background:#f5f5f5"] {
+    background: #fff4f1 !important;
+    border: 1px solid #d9a39b;
+    border-left: 5px solid #b30000;
+    border-radius: 12px !important;
+    padding: 22px !important;
+}
+
+.receipt-page .product-info div[style*="background:#f5f5f5"] p {
+    margin: 10px 0;
+}
+
+/* Order items */
+
+.receipt-page .product-info div[style*="border-bottom:1px solid #ddd"] {
+    padding: 18px 5px !important;
+    border-bottom: 1px solid #e3d6c8 !important;
+}
+
+.receipt-page .product-info div[style*="border-bottom:1px solid #ddd"] strong:first-child {
+    color: #3b2418;
+    font-size: 1.05rem;
+}
+
+.receipt-page .product-info div[style*="border-bottom:1px solid #ddd"] p {
+    color: #6d5a4d;
+    margin: 6px 0;
+}
+
+.receipt-page .product-info div[style*="border-bottom:1px solid #ddd"] strong:last-child {
+    color: #b30000;
+}
+
+/* Total */
+
+.receipt-page .product-info div[style*="display:flex"] {
+    background: #f5efe6;
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 10px;
+}
+
+.receipt-page .product-info div[style*="display:flex"] strong:last-child {
+    color: #b30000;
+}
+
+/* Thank-you message */
+
+.receipt-page .product-info p[style*="text-align:center"] {
+    color: #6d5a4d;
+    padding: 10px;
+}
+
+.receipt-page .product-info p[style*="text-align:center"] strong {
+    color: #b30000;
+}
+
+/* Receipt buttons */
+
+.receipt-page .order-button {
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.receipt-page .order-button:hover {
+    transform: translateY(-2px);
+}
+
+/* WhatsApp return box */
+
+.receipt-page #whatsapp-return {
+    background: #f5efe6 !important;
+    border: 1px solid #e3d6c8;
+    border-radius: 14px !important;
+    box-shadow: 0 5px 15px rgba(59, 36, 24, 0.05);
+}
+
+.receipt-page #whatsapp-return h2 {
+    color: #3b2418;
+}
+
+.receipt-page #whatsapp-return p {
+    color: #6d5a4d;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+    .receipt-page > section[style*="max-width"] {
+        width: 94%;
+        margin: 25px auto !important;
+    }
+
+    .receipt-page .product-info {
+        padding: 24px 18px;
+    }
+
+    .receipt-page .product-info > h2:first-child {
+        font-size: 1.45rem;
+    }
+
+    .receipt-page .product-info h3 {
+        font-size: 1rem;
+    }
+
+    .receipt-page .product-info div[style*="display:flex"] {
+        font-size: 18px !important;
+        gap: 15px;
+    }
+
+    .receipt-page .order-button {
+        width: 100%;
+        margin: 8px 0 !important;
+    }
+
+    .receipt-page #whatsapp-return {
+        padding: 20px !important;
+    }
+}
+
