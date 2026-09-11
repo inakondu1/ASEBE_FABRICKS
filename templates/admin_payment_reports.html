@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Reports - ASEBE FABRICS</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="admin-payment-reports-page-body">
+
+    <nav class="admin-payment-reports-nav">
+        <a href="/admin">ADMIN</a>
+        <a href="/shop">SHOP</a>
+        <a href="/">HOME</a>
+    </nav>
+
+    <main class="admin-payment-reports-container">
+
+        <div class="admin-payment-reports-heading">
+            <p class="admin-payment-reports-label">ASEBE FABRICS</p>
+            <h1>PAYMENT REPORTS</h1>
+            <p>Review customer payment notifications and confirm received payments.</p>
+        </div>
+
+        {{if .}}
+            {{range .}}
+
+                <section class="admin-payment-report-card">
+
+                    <div class="admin-payment-report-top">
+                        <div>
+                            <span class="admin-payment-report-small-label">PAYMENT REPORT</span>
+                            <h2>#{{.ID}}</h2>
+                        </div>
+
+                        <span class="admin-payment-report-status {{if eq .Status "PENDING"}}pending{{else}}confirmed{{end}}">
+                            {{.Status}}
+                        </span>
+                    </div>
+
+                    <div class="admin-payment-report-customer">
+                        <h3>Customer Information</h3>
+
+                        <p>
+                            <strong>Name</strong>
+                            <span>{{.CustomerName}}</span>
+                        </p>
+
+                        <p>
+                            <strong>Phone</strong>
+                            <span>{{.Phone}}</span>
+                        </p>
+
+                        <p>
+                            <strong>Order</strong>
+                            <span>#{{.OrderID}}</span>
+                        </p>
+                    </div>
+
+                    <div class="admin-payment-report-amount">
+                        <span>AMOUNT REPORTED</span>
+                        <strong>₦{{printf "%.2f" .Amount}}</strong>
+                    </div>
+
+                    <div class="admin-payment-report-note">
+                        <h3>Customer Note</h3>
+                        <p>
+                            {{if .Note}}
+                                {{.Note}}
+                            {{else}}
+                                No note provided.
+                            {{end}}
+                        </p>
+                    </div>
+
+                    <div class="admin-payment-report-date">
+                        Reported: {{.CreatedAt}}
+                    </div>
+
+                    {{if eq .Status "PENDING"}}
+                        <form method="POST" action="/admin/confirm-payment">
+                            <input type="hidden" name="report_id" value="{{.ID}}">
+
+                            <button type="submit" class="admin-payment-confirm-button">
+                                ✓ CONFIRM PAYMENT
+                            </button>
+                        </form>
+                    {{else}}
+                        <div class="admin-payment-confirmed-message">
+                            ✓ PAYMENT CONFIRMED
+                        </div>
+                    {{end}}
+
+                </section>
+
+            {{end}}
+        {{else}}
+
+            <section class="admin-payment-empty">
+                <div class="admin-payment-empty-icon">✓</div>
+                <h2>No Payment Reports</h2>
+                <p>There are currently no customer payment reports to review.</p>
+            </section>
+
+        {{end}}
+
+        <a href="/admin" class="admin-payment-back-link">
+            ← BACK TO ADMIN DASHBOARD
+        </a>
+
+    </main>
+
+    <footer class="admin-payment-reports-footer">
+        <p>© 2026 ASEBE FABRICS. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

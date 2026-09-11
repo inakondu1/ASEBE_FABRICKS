@@ -1686,21 +1686,35 @@ func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type AdminPaymentReport struct {
+		ID           int64
+		OrderID      int64
+		CustomerID   int64
+		CustomerName string
+		Phone        string
+		Amount       float64
+		Status       string
+		Note         string
+		CreatedAt    string
+	}
+
+	var reports []AdminPaymentReport
+
 	rows, err := db.Query(`
-		SELECT
-			pr.id,
-			pr.order_id,
-			pr.customer_id,
-			c.full_name,
-			c.phone,
-			pr.amount,
-			pr.status,
-			pr.customer_note,
-			pr.created_at
-		FROM payment_reports pr
-		JOIN customers c ON c.id = pr.customer_id
-		ORDER BY pr.id DESC
-	`)
+                SELECT
+                        pr.id,
+                        pr.order_id,
+                        pr.customer_id,
+                        c.full_name,
+                        c.phone,
+                        pr.amount,
+                        pr.status,
+                        pr.customer_note,
+                        pr.created_at
+                FROM payment_reports pr
+                JOIN customers c ON c.id = pr.customer_id
+                ORDER BY pr.id DESC
+        `)
 
 	if err != nil {
 		http.Error(
@@ -1713,34 +1727,23 @@ func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	fmt.Fprintln(w, "<html><body>")
-	fmt.Fprintln(w, `<div style="text-align:right; margin:20px;"><a href="/admin" style="display:inline-block; padding:12px 20px; background:#b30000; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">← BACK TO DASHBOARD</a></div>`)
-	fmt.Fprintln(w, "<h1>Payment Reports</h1>")
-
 	for rows.Next() {
 
 		var (
-			id           int64
-			orderID      int64
-			customerID   int64
-			customerName string
-			phone        string
-			amount       float64
-			status       string
-			note         sql.NullString
-			createdAt    string
+			report AdminPaymentReport
+			note   sql.NullString
 		)
 
 		err := rows.Scan(
-			&id,
-			&orderID,
-			&customerID,
-			&customerName,
-			&phone,
-			&amount,
-			&status,
+			&report.ID,
+			&report.OrderID,
+			&report.CustomerID,
+			&report.CustomerName,
+			&report.Phone,
+			&report.Amount,
+			&report.Status,
 			&note,
-			&createdAt,
+			&report.CreatedAt,
 		)
 
 		if err != nil {
@@ -1752,49 +1755,10 @@ func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Fprintln(w, "<hr>")
+		report.Note = note.String
+		report.CreatedAt = formatNigeriaTime(report.CreatedAt)
 
-		fmt.Fprintf(
-			w,
-			"<h2>🔔 Payment Report #%d</h2>"+
-				"<p><strong>Customer:</strong> %s</p>"+
-				"<p><strong>Phone:</strong> %s</p>"+
-				"<p><strong>Order:</strong> #%d</p>"+
-				"<p><strong>Amount:</strong> ₦%.2f</p>"+
-				"<p><strong>Status:</strong> %s</p>"+
-				"<p><strong>Note:</strong> %s</p>"+
-				"<p><strong>Reported:</strong> %s</p>",
-			id,
-			customerName,
-			phone,
-			orderID,
-			amount,
-			status,
-			note.String,
-			formatNigeriaTime(createdAt),
-		)
-
-		if status == "PENDING" {
-
-			fmt.Fprintf(
-				w,
-				`<form method="POST" action="/admin/confirm-payment" style="margin:20px 0;">
-					<input type="hidden" name="report_id" value="%d">
-					<button type="submit"
-						style="padding:12px 20px; background:#198754; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
-						✅ CONFIRM PAYMENT
-					</button>
-				</form>`,
-				id,
-			)
-
-		} else if status == "CONFIRMED" {
-
-			fmt.Fprintln(
-				w,
-				`<p style="color:green; font-weight:bold;">✅ PAYMENT CONFIRMED</p>`,
-			)
-		}
+		reports = append(reports, report)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -1806,7 +1770,11 @@ func adminPaymentReportsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, "</body></html>")
+	renderTemplate(
+		w,
+		"templates/admin_payment_reports.html",
+		reports,
+	)
 }
 
 // =========================
