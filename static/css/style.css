@@ -4210,3 +4210,799 @@ footer p {
         text-align: center;
     }
 }
+
+
+/* =========================================================
+   ADMIN FABRIC REQUESTS
+   ========================================================= */
+
+.admin-fabric-requests-page-body {
+    background: #f5efe6;
+    color: #3b2418;
+    min-height: 100vh;
+}
+
+
+/* Page Header */
+
+.admin-fabric-requests-header {
+    text-align: center;
+    padding: 55px 20px 35px;
+}
+
+.admin-fabric-requests-header p {
+    margin: 0 0 8px;
+    color: #b30000;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.admin-fabric-requests-header h1 {
+    margin: 0;
+    font-size: 32px;
+    color: #3b2418;
+    letter-spacing: 1px;
+}
+
+.admin-fabric-requests-header span {
+    display: block;
+    margin-top: 12px;
+    color: #765f50;
+    font-size: 15px;
+}
+
+
+/* Main Container */
+
+.admin-fabric-requests-container {
+    width: 92%;
+    max-width: 1100px;
+    margin: 0 auto 60px;
+}
+
+
+/* Request Card */
+
+.admin-fabric-request-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-fabric-request-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(59, 36, 24, 0.12);
+}
+
+
+/* Card Top */
+
+.admin-fabric-request-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 28px;
+    border-bottom: 1px solid #e3d6c8;
+    background: #fff7ee;
+}
+
+.admin-fabric-request-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #b30000;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.admin-fabric-request-top h2 {
+    margin: 0;
+    color: #3b2418;
+    font-size: 22px;
+}
+
+
+/* Status */
+
+.admin-fabric-status {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.admin-fabric-status-pending {
+    background: #fff0d6;
+    color: #8a5700;
+    border: 1px solid #efd39c;
+}
+
+.admin-fabric-status-available {
+    background: #e6f5e9;
+    color: #21733a;
+    border: 1px solid #b9dfc3;
+}
+
+
+/* Request Content */
+
+.admin-fabric-request-content {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    gap: 30px;
+    padding: 28px;
+}
+
+
+/* Fabric Image */
+
+.admin-fabric-request-image {
+    width: 100%;
+    height: 280px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #eee4d8;
+}
+
+.admin-fabric-request-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+/* Details */
+
+.admin-fabric-request-details {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.admin-fabric-customer,
+.admin-fabric-description {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eadfd4;
+}
+
+.admin-fabric-customer h3,
+.admin-fabric-description h3 {
+    margin: 0 0 15px;
+    color: #3b2418;
+    font-size: 17px;
+}
+
+.admin-fabric-customer p,
+.admin-fabric-description p {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 15px;
+    margin: 10px 0;
+    color: #654f40;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.admin-fabric-customer strong,
+.admin-fabric-description strong {
+    color: #3b2418;
+}
+
+.admin-fabric-customer span,
+.admin-fabric-description span {
+    overflow-wrap: anywhere;
+}
+
+
+/* Actions */
+
+.admin-fabric-request-actions {
+    margin-top: auto;
+}
+
+.admin-fabric-request-actions form {
+    margin: 0;
+}
+
+.admin-fabric-request-actions button {
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #b30000;
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-fabric-request-actions button:hover {
+    background: #800000;
+    transform: translateY(-1px);
+}
+
+
+/* Available Message */
+
+.admin-fabric-available-message {
+    margin: 0 0 12px;
+    padding: 12px 15px;
+    border-radius: 9px;
+    background: #e6f5e9;
+    color: #21733a;
+    border: 1px solid #b9dfc3;
+    font-weight: 700;
+    text-align: center;
+}
+
+
+/* WhatsApp Button */
+
+.admin-fabric-whatsapp-button {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: #25d366;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-fabric-whatsapp-button:hover {
+    background: #1da851;
+    transform: translateY(-1px);
+}
+
+
+/* Empty State */
+
+.admin-fabric-empty-state {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    padding: 70px 25px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.06);
+}
+
+.admin-fabric-empty-icon {
+    font-size: 45px;
+    margin-bottom: 15px;
+}
+
+.admin-fabric-empty-state h2 {
+    margin: 0 0 10px;
+    color: #3b2418;
+}
+
+.admin-fabric-empty-state p {
+    margin: 0;
+    color: #765f50;
+    line-height: 1.6;
+}
+
+
+/* Footer */
+
+.admin-fabric-requests-footer {
+    padding: 25px 20px;
+    text-align: center;
+    color: #806b5b;
+    font-size: 13px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+    .admin-fabric-requests-header {
+        padding: 40px 18px 25px;
+    }
+
+    .admin-fabric-requests-header h1 {
+        font-size: 24px;
+        line-height: 1.3;
+    }
+
+    .admin-fabric-requests-header span {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .admin-fabric-requests-container {
+        width: 94%;
+    }
+
+    .admin-fabric-request-top {
+        padding: 20px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-fabric-request-top h2 {
+        font-size: 20px;
+    }
+
+    .admin-fabric-request-content {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 22px;
+    }
+
+    .admin-fabric-request-image {
+        height: 240px;
+    }
+
+    .admin-fabric-customer p,
+    .admin-fabric-description p {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .admin-fabric-customer strong,
+    .admin-fabric-description strong {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #806b5b;
+    }
+
+    .admin-fabric-status {
+        align-self: flex-start;
+    }
+
+    .admin-fabric-request-actions button,
+    .admin-fabric-whatsapp-button {
+        font-size: 12px;
+    }
+}
+
+
+@media (max-width: 430px) {
+
+    .admin-fabric-requests-header h1 {
+        font-size: 21px;
+    }
+
+    .admin-fabric-request-card {
+        border-radius: 14px;
+    }
+
+    .admin-fabric-request-content {
+        padding: 16px;
+    }
+
+    .admin-fabric-request-image {
+        height: 210px;
+    }
+
+}
+
+
+/* =========================================================
+   MY FABRIC REQUESTS
+   ========================================================= */
+
+.my-fabric-requests-page-body {
+    background: #f5efe6;
+    color: #3b2418;
+    min-height: 100vh;
+}
+
+
+/* Page Header */
+
+.my-fabric-requests-header {
+    text-align: center;
+    padding: 55px 20px 35px;
+}
+
+.my-fabric-requests-header p {
+    margin: 0 0 8px;
+    color: #b30000;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.my-fabric-requests-header h1 {
+    margin: 0;
+    color: #3b2418;
+    font-size: 32px;
+    letter-spacing: 1px;
+}
+
+.my-fabric-requests-header span {
+    display: block;
+    margin-top: 12px;
+    color: #765f50;
+    font-size: 15px;
+}
+
+
+/* Main Container */
+
+.my-fabric-requests-container {
+    width: 92%;
+    max-width: 1100px;
+    margin: 0 auto 60px;
+}
+
+
+/* Request Card */
+
+.my-fabric-request-card {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.my-fabric-request-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(59, 36, 24, 0.12);
+}
+
+
+/* Card Top */
+
+.my-fabric-request-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 28px;
+    border-bottom: 1px solid #e3d6c8;
+    background: #fff7ee;
+}
+
+.my-fabric-request-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #b30000;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.my-fabric-request-top h2 {
+    margin: 0;
+    color: #3b2418;
+    font-size: 22px;
+}
+
+
+/* Status */
+
+.my-fabric-status {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.my-fabric-status-pending {
+    background: #fff0d6;
+    color: #8a5700;
+    border: 1px solid #efd39c;
+}
+
+.my-fabric-status-available {
+    background: #e6f5e9;
+    color: #21733a;
+    border: 1px solid #b9dfc3;
+}
+
+
+/* Request Content */
+
+.my-fabric-request-content {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    gap: 30px;
+    padding: 28px;
+}
+
+
+/* Fabric Image */
+
+.my-fabric-request-image {
+    width: 100%;
+    height: 280px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #eee4d8;
+}
+
+.my-fabric-request-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+/* Details */
+
+.my-fabric-request-details {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.my-fabric-request-info {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eadfd4;
+}
+
+.my-fabric-request-info h3 {
+    margin: 0 0 15px;
+    color: #3b2418;
+    font-size: 17px;
+}
+
+.my-fabric-request-info p {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 15px;
+    margin: 10px 0;
+    color: #654f40;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.my-fabric-request-info strong {
+    color: #3b2418;
+}
+
+.my-fabric-request-info span {
+    overflow-wrap: anywhere;
+}
+
+
+/* Waiting */
+
+.my-fabric-waiting-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 18px;
+    border-radius: 12px;
+    background: #fff5df;
+    border: 1px solid #ead4a7;
+}
+
+.my-fabric-waiting-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.my-fabric-waiting-box h3 {
+    margin: 0 0 6px;
+    color: #795000;
+    font-size: 14px;
+}
+
+.my-fabric-waiting-box p {
+    margin: 0;
+    color: #765f50;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* AVAILABLE Notification */
+
+.my-fabric-available-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 22px;
+    border-radius: 14px;
+    background: #eaf7ed;
+    border: 2px solid #8fc89b;
+}
+
+.my-fabric-available-icon {
+    font-size: 34px;
+    line-height: 1;
+}
+
+.my-fabric-available-content {
+    flex: 1;
+}
+
+.my-fabric-available-content h3 {
+    margin: 0 0 7px;
+    color: #21733a;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+}
+
+.my-fabric-available-content p {
+    margin: 6px 0;
+    color: #48644f;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.my-fabric-available-name {
+    color: #3b2418 !important;
+    font-size: 15px !important;
+}
+
+
+/* Shop Button */
+
+.my-fabric-shop-button {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 13px 22px;
+    border-radius: 9px;
+    background: #b30000;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.my-fabric-shop-button:hover {
+    background: #800000;
+    transform: translateY(-1px);
+}
+
+
+/* Empty State */
+
+.my-fabric-empty-state {
+    background: #fffaf3;
+    border: 1px solid #e3d6c8;
+    border-radius: 18px;
+    padding: 70px 25px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(59, 36, 24, 0.06);
+}
+
+.my-fabric-empty-icon {
+    font-size: 45px;
+    margin-bottom: 15px;
+}
+
+.my-fabric-empty-state h2 {
+    margin: 0 0 10px;
+    color: #3b2418;
+}
+
+.my-fabric-empty-state p {
+    margin: 0 0 10px;
+    color: #765f50;
+    line-height: 1.6;
+}
+
+
+/* Footer */
+
+.my-fabric-requests-footer {
+    padding: 25px 20px;
+    text-align: center;
+    color: #806b5b;
+    font-size: 13px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+    .my-fabric-requests-header {
+        padding: 40px 18px 25px;
+    }
+
+    .my-fabric-requests-header h1 {
+        font-size: 24px;
+        line-height: 1.3;
+    }
+
+    .my-fabric-requests-header span {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .my-fabric-requests-container {
+        width: 94%;
+    }
+
+    .my-fabric-request-top {
+        padding: 20px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .my-fabric-request-top h2 {
+        font-size: 20px;
+    }
+
+    .my-fabric-request-content {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 22px;
+    }
+
+    .my-fabric-request-image {
+        height: 240px;
+    }
+
+    .my-fabric-request-info p {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .my-fabric-request-info strong {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #806b5b;
+    }
+
+    .my-fabric-available-box,
+    .my-fabric-waiting-box {
+        padding: 18px;
+    }
+
+    .my-fabric-shop-button {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+}
+
+
+@media (max-width: 430px) {
+
+    .my-fabric-requests-header h1 {
+        font-size: 21px;
+    }
+
+    .my-fabric-request-card {
+        border-radius: 14px;
+    }
+
+    .my-fabric-request-content {
+        padding: 16px;
+    }
+
+    .my-fabric-request-image {
+        height: 210px;
+    }
+
+    .my-fabric-available-box {
+        flex-direction: column;
+    }
+
+}

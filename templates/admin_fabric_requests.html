@@ -3,12 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASEBE FABRICS | Fabric Requests</title>
 
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
-<body>
+<body class="admin-fabric-requests-page-body">
 
 <header class="navbar">
 
@@ -24,81 +25,154 @@
 </header>
 
 
-<section class="shop-header">
+<section class="admin-fabric-requests-header">
 
     <p>ASEBE FABRICS</p>
 
     <h1>🧵 CUSTOMER FABRIC REQUESTS</h1>
 
+    <span>
+        Review fabrics requested by customers and notify them when available.
+    </span>
+
 </section>
 
 
-<section style="max-width:1000px;margin:40px auto;padding:20px;">
-
+<section class="admin-fabric-requests-container">
 
 {{if .}}
 
     {{range .}}
 
-    <div class="product-card">
+    <div class="admin-fabric-request-card">
 
-        <div class="product-info">
+        <div class="admin-fabric-request-top">
 
-            <h2>
-                Request #{{.ID}}
-            </h2>
+            <div>
+                <span class="admin-fabric-request-label">
+                    FABRIC REQUEST
+                </span>
 
-            <p>
-                <strong>Customer:</strong>
-                {{.CustomerName}}
-            </p>
+                <h2>
+                    Request #{{.ID}}
+                </h2>
+            </div>
 
-            <p>
-                <strong>Phone:</strong>
-                {{.Phone}}
-            </p>
+            {{if eq .Status "PENDING"}}
 
-            <p>
-                <strong>Description:</strong>
-                {{.Description}}
-            </p>
+            <span class="admin-fabric-status admin-fabric-status-pending">
+                PENDING
+            </span>
 
-            <p>
-                <strong>Quantity:</strong>
-                {{.Quantity}}
-            </p>
+            {{else if eq .Status "AVAILABLE"}}
 
-            <p>
-                <strong>Status:</strong>
-                {{.Status}}
-            </p>
+            <span class="admin-fabric-status admin-fabric-status-available">
+                AVAILABLE
+            </span>
 
-            <p>
-                <strong>Date:</strong>
-                {{.Date}}
-            </p>
+            {{end}}
 
+        </div>
+
+
+        <div class="admin-fabric-request-content">
 
             {{if .Image}}
 
-            <img
-              src="{{.Image}}"
-              style="max-width:250px;border-radius:10px;"
-            >
+            <div class="admin-fabric-request-image">
+
+                <img
+                    src="{{.Image}}"
+                    alt="Requested fabric"
+                >
+
+            </div>
 
             {{end}}
 
-            {{if eq .Status "PENDING"}}
-            <form method="POST" action="/admin/fabric-request-available" style="margin-top:20px;">
-                <input type="hidden" name="request_id" value="{{.ID}}">
-                <button type="submit" style="background:#b30000;color:white;padding:12px 20px;border:none;border-radius:8px;cursor:pointer;">
-                    🧵 MARK FABRIC AS AVAILABLE
-                </button>
-            </form>
-            {{else if eq .Status "AVAILABLE"}}
-            <p style="color:green;font-weight:bold;margin-top:20px;">✅ FABRIC AVAILABLE</p>
-            <a href="{{.WhatsAppURL}}" target="_blank" style="display:inline-block;margin-top:15px;background:#25D366;color:white;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">📱 NOTIFY CUSTOMER ON WHATSAPP</a>
-            {{end}}
+
+            <div class="admin-fabric-request-details">
+
+                <div class="admin-fabric-customer">
+
+                    <h3>Customer Information</h3>
+
+                    <p>
+                        <strong>Customer</strong>
+                        <span>{{.CustomerName}}</span>
+                    </p>
+
+                    <p>
+                        <strong>Phone</strong>
+                        <span>{{.Phone}}</span>
+                    </p>
+
+                </div>
+
+
+                <div class="admin-fabric-description">
+
+                    <h3>Fabric Request</h3>
+
+                    <p>
+                        <strong>Description</strong>
+                        <span>{{.Description}}</span>
+                    </p>
+
+                    <p>
+                        <strong>Quantity</strong>
+                        <span>{{.Quantity}}</span>
+                    </p>
+
+                    <p>
+                        <strong>Date Requested</strong>
+                        <span>{{.Date}}</span>
+                    </p>
+
+                </div>
+
+
+                <div class="admin-fabric-request-actions">
+
+                    {{if eq .Status "PENDING"}}
+
+                    <form
+                        method="POST"
+                        action="/admin/fabric-request-available"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="request_id"
+                            value="{{.ID}}"
+                        >
+
+                        <button type="submit">
+                            🧵 MARK FABRIC AS AVAILABLE
+                        </button>
+
+                    </form>
+
+                    {{else if eq .Status "AVAILABLE"}}
+
+                    <p class="admin-fabric-available-message">
+                        ✅ FABRIC IS AVAILABLE
+                    </p>
+
+                    <a
+                        href="{{.WhatsAppURL}}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="admin-fabric-whatsapp-button"
+                    >
+                        📱 NOTIFY CUSTOMER ON WHATSAPP
+                    </a>
+
+                    {{end}}
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -106,17 +180,34 @@
 
     {{end}}
 
-
 {{else}}
 
-<h2>
-    No fabric requests yet.
-</h2>
+    <div class="admin-fabric-empty-state">
+
+        <div class="admin-fabric-empty-icon">
+            🧵
+        </div>
+
+        <h2>No Fabric Requests Yet</h2>
+
+        <p>
+            Customer fabric requests will appear here when customers submit them.
+        </p>
+
+    </div>
 
 {{end}}
 
-
 </section>
+
+
+<footer class="admin-fabric-requests-footer">
+
+    <p>
+        © 2026 ASEBE FABRICS. All rights reserved.
+    </p>
+
+</footer>
 
 
 </body>
