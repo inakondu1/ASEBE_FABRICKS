@@ -333,7 +333,36 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 		products = filterByPrice(products, minPrice, maxPrice)
 
 		if response == "" && len(products) > 0 {
-			response = "I found these fabrics that match your request."
+			if strings.Contains(lowerQuestion, "wedding") ||
+				strings.Contains(lowerQuestion, "bride") ||
+				strings.Contains(lowerQuestion, "bridal") {
+				response = "For a wedding, these are some beautiful options from our collection."
+			} else if strings.Contains(lowerQuestion, "party") ||
+				strings.Contains(lowerQuestion, "birthday") ||
+				strings.Contains(lowerQuestion, "celebration") {
+				response = "For a party or celebration, these are some stylish options from our collection."
+			} else if strings.Contains(lowerQuestion, "office") ||
+				strings.Contains(lowerQuestion, "work") {
+				response = "For office wear, these are some elegant options from our collection."
+			} else if strings.Contains(lowerQuestion, "casual") ||
+				strings.Contains(lowerQuestion, "everyday") {
+				response = "For casual or everyday wear, these are some lovely options from our collection."
+			} else if strings.Contains(lowerQuestion, "traditional") ||
+				strings.Contains(lowerQuestion, "native") {
+				response = "For traditional wear, these are some beautiful options from our collection."
+			} else {
+				response = "I found these fabrics that match your request."
+			}
+		} else if response == "" &&
+			(strings.Contains(lowerQuestion, "wedding") ||
+				strings.Contains(lowerQuestion, "bride") ||
+				strings.Contains(lowerQuestion, "bridal")) {
+			response = "For a wedding, I can help you find something elegant and beautiful. Try asking for a fabric type such as lace, guipure, tulle, beaded fabric or velvet, and I can show you what is available."
+		} else if response == "" &&
+			(strings.Contains(lowerQuestion, "party") ||
+				strings.Contains(lowerQuestion, "birthday") ||
+				strings.Contains(lowerQuestion, "celebration")) {
+			response = "For a party or celebration, I can help you find something stylish and eye-catching. Try asking for Ankara, lace, sequins or another fabric you like."
 		} else if response == "" {
 			response = "I couldn't find that fabric in our current collection. You can try another fabric name or ask me about the fabrics currently available."
 		}
