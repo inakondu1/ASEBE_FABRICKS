@@ -146,6 +146,54 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 		previousHistory := append([]AIConversation(nil), aiConversations[conversationID]...)
 		aiConversationMutex.Unlock()
 
+		lowerQuestion := strings.ToLower(strings.TrimSpace(question))
+
+		var response string
+
+		switch lowerQuestion {
+
+		case "hi", "hello", "hey", "good morning", "good afternoon", "good evening":
+			response = "Hello 👋 Welcome to ASEBE FABRICS. I am here to help you find fabrics, check prices, and choose the right material for your style."
+
+		case "thanks", "thank you", "thank you so much":
+			response = "You are welcome 😊. I am always happy to help you find the perfect fabric."
+
+		case "bye", "goodbye":
+			response = "Thank you for visiting ASEBE FABRICS. I hope to help you again soon."
+
+		case "who are you", "what are you":
+			response = "I am ASEBE AI Assistant 🤖, your fabric shopping assistant. I can help you discover fabrics, compare options, and answer questions about our collection."
+
+		case "help", "help me":
+			response = "I can help you find fabrics like lace, Ankara, velvet, brocade, sequin and more. You can also ask things like show me lace below ₦50000."
+
+		}
+
+		if response != "" {
+
+			conversation := AIConversation{
+				Question: question,
+				Response: response,
+			}
+
+			aiConversationMutex.Lock()
+			aiConversations[conversationID] = append(aiConversations[conversationID], conversation)
+			history := append([]AIConversation(nil), aiConversations[conversationID]...)
+
+			for i, j := 0, len(history)-1; i < j; i, j = i+1, j-1 {
+				history[i], history[j] = history[j], history[i]
+			}
+
+			aiConversationMutex.Unlock()
+
+			tmpl.Execute(w, AIPageData{
+				Question: question,
+				Response: response,
+				History:  history,
+			})
+
+			return
+		}
 		words := strings.Fields(strings.ToLower(question))
 		var searchWords []string
 
@@ -231,9 +279,6 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 
 			rows.Close()
 		}
-
-		response := ""
-		lowerQuestion := strings.ToLower(question)
 
 		isCheapestQuestion :=
 			strings.Contains(lowerQuestion, "cheaper") ||
