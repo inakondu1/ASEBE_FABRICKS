@@ -3684,6 +3684,7 @@ footer p {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
 
 /* PAYMENT STATUS */
 
@@ -5048,3 +5049,1247 @@ footer p {
     }
 
 }
+
+/* =========================================================
+   ADMIN BUSINESS OVERVIEW
+   ========================================================= */
+
+.admin-page-body .business-overview {
+    margin: 35px 0 45px;
+}
+
+.admin-page-body .business-overview-heading {
+    margin-bottom: 22px;
+}
+
+.admin-page-body .business-overview-heading p {
+    margin: 0 0 6px;
+    color: #a05a2c;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.admin-page-body .business-overview-heading h2 {
+    margin: 0 0 8px;
+    color: #3d2b1f;
+    font-size: 28px;
+}
+
+.admin-page-body .business-overview-heading span {
+    color: #75675d;
+    font-size: 15px;
+}
+
+.admin-page-body .business-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.admin-page-body .business-overview-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 135px;
+    padding: 24px;
+    background: #fffaf4;
+    border: 1px solid #e7d8c8;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(75, 52, 35, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-page-body .business-overview-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(75, 52, 35, 0.13);
+}
+
+.admin-page-body .business-overview-icon {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0e2d2;
+    border-radius: 14px;
+    font-size: 24px;
+}
+
+.admin-page-body .business-overview-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #806c5d;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.admin-page-body .business-overview-card strong {
+    display: block;
+    color: #3d2b1f;
+    font-size: 25px;
+    line-height: 1.2;
+}
+
+.admin-page-body .business-overview-card p {
+    margin: 7px 0 0;
+    color: #8a7a6d;
+    font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+    .admin-page-body .business-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-page-body .business-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-page-body .business-overview-heading h2 {
+        font-size: 23px;
+    }
+
+    .admin-page-body .business-overview-card {
+        padding: 20px;
+    }
+}
+
+
+
+/* =====================================================
+   ADMIN DAILY SALES RECORDS
+   ===================================================== */
+
+.admin-daily-sales-page-body .daily-sales-table {
+    width: 100%;
+    margin-top: 35px;
+    background: #fffaf4;
+    border: 1px solid #e5d7c8;
+    border-radius: 16px;
+    overflow-x: auto;
+    box-shadow: 0 8px 24px rgba(75, 52, 35, 0.08);
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header,
+.admin-daily-sales-page-body .daily-sales-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    width: 100%;
+    min-width: 850px;
+    box-sizing: border-box;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header {
+    min-height: 58px;
+    padding: 0 25px;
+    background: #f0e2d2;
+    border-bottom: 1px solid #dfcdbb;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div {
+    color: #6f5949;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div:nth-child(1),
+.admin-daily-sales-page-body .daily-sales-row .daily-sales-date {
+    flex: 2 0 190px;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div:nth-child(2),
+.admin-daily-sales-page-body .daily-sales-row .daily-sales-value:nth-child(2) {
+    flex: 1 0 100px;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div:nth-child(3),
+.admin-daily-sales-page-body .daily-sales-row .daily-sales-value:nth-child(3) {
+    flex: 1.5 0 150px;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div:nth-child(4),
+.admin-daily-sales-page-body .daily-sales-row .daily-sales-value:nth-child(4) {
+    flex: 1.7 0 180px;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div:nth-child(5),
+.admin-daily-sales-page-body .daily-sales-row .daily-sales-action {
+    flex: 0 0 100px;
+}
+
+.admin-daily-sales-page-body .daily-sales-row {
+    min-height: 78px;
+    padding: 0 25px;
+    border-bottom: 1px solid #eee2d6;
+    transition: background 0.2s ease;
+}
+
+.admin-daily-sales-page-body .daily-sales-row:last-child {
+    border-bottom: none;
+}
+
+.admin-daily-sales-page-body .daily-sales-row:hover {
+    background: #fff5eb;
+}
+
+.admin-daily-sales-page-body .daily-sales-date,
+.admin-daily-sales-page-body .daily-sales-value,
+.admin-daily-sales-page-body .daily-sales-action {
+    flex-shrink: 0;
+}
+
+.admin-daily-sales-page-body .daily-sales-date strong,
+.admin-daily-sales-page-body .daily-sales-value strong {
+    display: block;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-page-body .daily-sales-date strong {
+    color: #3d2b1f;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.admin-daily-sales-page-body .daily-sales-value strong {
+    color: #3d2b1f;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.admin-daily-sales-page-body .outstanding-value strong {
+    color: #b30000;
+}
+
+.admin-daily-sales-page-body .daily-sales-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.admin-daily-sales-page-body .daily-sales-action a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    padding: 10px 15px;
+    background: #3d2b1f;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-daily-sales-page-body .daily-sales-action a:hover {
+    background: #a05a2c;
+    transform: translateY(-1px);
+}
+
+.admin-daily-sales-page-body .mobile-label {
+    display: none !important;
+}
+
+/* Keep each record on one horizontal line on smaller screens. */
+
+@media (max-width: 800px) {
+
+    .admin-daily-sales-page-body .daily-sales-table {
+        overflow-x: auto;
+    }
+
+    .admin-daily-sales-page-body .daily-sales-table-header,
+    .admin-daily-sales-page-body .daily-sales-row {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: 100%;
+        min-width: 850px;
+    }
+}
+
+
+/* =====================================================
+   FINAL DAILY SALES HORIZONTAL TABLE FIX
+   ===================================================== */
+
+.admin-daily-sales-page-body .daily-sales-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header,
+.admin-daily-sales-page-body .daily-sales-row {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1.5fr 1.7fr 100px !important;
+    align-items: center;
+    width: 100%;
+    min-width: 850px;
+    box-sizing: border-box;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header {
+    min-height: 58px;
+    padding: 0 25px;
+}
+
+.admin-daily-sales-page-body .daily-sales-row {
+    min-height: 78px;
+    padding: 0 25px;
+}
+
+.admin-daily-sales-page-body .daily-sales-table-header div,
+.admin-daily-sales-page-body .daily-sales-row > div {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.admin-daily-sales-page-body .daily-sales-action {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.admin-daily-sales-page-body .daily-sales-date strong,
+.admin-daily-sales-page-body .daily-sales-value strong {
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   DAILY SALES - REAL HORIZONTAL TABLE
+   ===================================================== */
+
+.admin-daily-sales-page-body .daily-sales-table-wrapper {
+    width: 100%;
+    margin-top: 35px;
+    overflow-x: auto;
+    background: #fffaf4;
+    border: 1px solid #e5d7c8;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(75, 52, 35, 0.08);
+}
+
+.admin-daily-sales-page-body table.daily-sales-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th,
+.admin-daily-sales-page-body table.daily-sales-table td {
+    box-sizing: border-box;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th {
+    height: 58px;
+    padding: 0 25px;
+    background: #f0e2d2;
+    border-bottom: 1px solid #dfcdbb;
+    color: #6f5949;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table td {
+    height: 78px;
+    padding: 0 25px;
+    border-bottom: 1px solid #eee2d6;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table tbody tr:hover {
+    background: #fff5eb;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th:nth-child(1),
+.admin-daily-sales-page-body table.daily-sales-table td:nth-child(1) {
+    width: 24%;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th:nth-child(2),
+.admin-daily-sales-page-body table.daily-sales-table td:nth-child(2) {
+    width: 12%;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th:nth-child(3),
+.admin-daily-sales-page-body table.daily-sales-table td:nth-child(3) {
+    width: 22%;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th:nth-child(4),
+.admin-daily-sales-page-body table.daily-sales-table td:nth-child(4) {
+    width: 27%;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table th:nth-child(5),
+.admin-daily-sales-page-body table.daily-sales-table td:nth-child(5) {
+    width: 15%;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table td strong {
+    color: #3d2b1f;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table td.daily-sales-date strong {
+    font-weight: 700;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table td.outstanding-value strong {
+    color: #b30000;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table td.daily-sales-action a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    padding: 10px 15px;
+    background: #3d2b1f;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-daily-sales-page-body table.daily-sales-table td.daily-sales-action a:hover {
+    background: #a05a2c;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 800px) {
+    .admin-daily-sales-page-body .daily-sales-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .admin-daily-sales-page-body table.daily-sales-table {
+        min-width: 850px;
+    }
+}
+
+
+/* =====================================================
+
+/* =====================================================
+   ASEBE FABRICS
+   ADMIN DAILY SALES VIEW / PREMIUM DAILY ACTIVITY
+   ===================================================== */
+
+.admin-daily-sales-view-page-body {
+    background: #f4efe8;
+    color: #30261f;
+    min-height: 100vh;
+}
+
+/* ---------- PAGE INTRO ---------- */
+
+.admin-daily-sales-view-page-body .daily-activity-section:first-of-type {
+    margin-top: 28px;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-section-heading {
+    margin-bottom: 18px;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-section-heading h2 {
+    margin: 0;
+    color: #3b2c24;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-section-heading p {
+    margin: 5px 0 0;
+    color: #897b70;
+    font-size: 0.9rem;
+}
+
+/* ---------- SUMMARY / SALES REPORT HERO ---------- */
+
+.admin-daily-sales-view-page-body .daily-activity-summary {
+    width: min(1180px, 94%);
+    margin: 28px auto 38px;
+    padding: 30px 32px;
+    background: linear-gradient(135deg, #3b2d25 0%, #514035 100%);
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: 1.25fr 1fr 1fr 1fr;
+    gap: 0;
+    overflow: hidden;
+    box-shadow: 0 18px 45px rgba(58, 43, 34, 0.18);
+    position: relative;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary::before {
+    content: "SALES REPORT";
+    position: absolute;
+    top: 22px;
+    left: 32px;
+    color: #d8c2a9;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: -70px;
+    top: -90px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary-card {
+    min-height: 105px;
+    padding: 34px 24px 4px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary-card + .daily-activity-summary-card {
+    border-left: 1px solid rgba(255,255,255,0.14);
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary-card h3,
+.admin-daily-sales-view-page-body .daily-activity-summary-card .label {
+    color: #cdbba9;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 9px;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary-card strong,
+.admin-daily-sales-view-page-body .daily-activity-summary-card .value {
+    color: #fffaf4;
+    font-size: 1.8rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-summary-card p {
+    margin: 7px 0 0;
+    color: #b8a99d;
+    font-size: 0.78rem;
+}
+
+/* ---------- MAIN CONTENT WIDTH ---------- */
+
+.admin-daily-sales-view-page-body .daily-activity-section,
+.admin-daily-sales-view-page-body .daily-activity-actions {
+    width: min(1180px, 94%);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ---------- ORDER ACTIVITY ---------- */
+
+.admin-daily-sales-view-page-body .daily-order-card {
+    background: #fffdf9;
+    border: 1px solid #e4dbd1;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(67, 49, 38, 0.07);
+}
+
+.admin-daily-sales-view-page-body .daily-order-header {
+    background: #3b2d25;
+    color: #fffaf4;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-daily-sales-view-page-body .daily-order-label {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.admin-daily-sales-view-page-body .daily-order-label::first-letter {
+    color: #d8b68d;
+}
+
+.admin-daily-sales-view-page-body .daily-order-time {
+    color: #d8c9bc;
+    font-size: 0.78rem;
+}
+
+/* ---------- CUSTOMER ---------- */
+
+.admin-daily-sales-view-page-body .daily-customer-details {
+    padding: 19px 24px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    border-bottom: 1px solid #eee5dc;
+}
+
+.admin-daily-sales-view-page-body .daily-customer-details > div {
+    min-width: 0;
+}
+
+.admin-daily-sales-view-page-body .daily-customer-details strong {
+    display: block;
+    color: #3b2d25;
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.admin-daily-sales-view-page-body .daily-customer-details span,
+.admin-daily-sales-view-page-body .daily-customer-details p {
+    color: #8a7b70;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+/* ---------- ITEMS ---------- */
+
+.admin-daily-sales-view-page-body .daily-order-items {
+    padding: 18px 24px 0;
+}
+
+.admin-daily-sales-view-page-body .daily-order-items h3 {
+    margin: 0 0 12px;
+    color: #5a4639;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.admin-daily-sales-view-page-body .daily-items-table-wrapper {
+    overflow-x: auto;
+}
+
+.admin-daily-sales-view-page-body .daily-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-daily-sales-view-page-body .daily-items-table th {
+    padding: 10px 12px;
+    background: #f3ece4;
+    color: #76675c;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-view-page-body .daily-items-table td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #eee7df;
+    color: #40342c;
+    font-size: 0.84rem;
+}
+
+.admin-daily-sales-view-page-body .daily-items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-daily-sales-view-page-body .daily-items-table td:first-child {
+    font-weight: 700;
+}
+
+/* ---------- FINANCIAL SUMMARY ---------- */
+
+.admin-daily-sales-view-page-body .daily-order-financials {
+    margin: 18px 24px 0;
+    background: #f4eee7;
+    border: 1px solid #e6ddd4;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    overflow: hidden;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials > div {
+    padding: 14px 16px;
+    border-right: 1px solid #dfd5cc;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials > div:last-child {
+    border-right: none;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials span {
+    display: block;
+    color: #897a6e;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials strong {
+    color: #3b2d25;
+    font-size: 0.98rem;
+    font-weight: 800;
+}
+
+/* ---------- PAYMENT STATUS ---------- */
+
+.admin-daily-sales-view-page-body .daily-order-status {
+    padding: 15px 24px 21px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-daily-sales-view-page-body .daily-order-status strong {
+    color: #76675c;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-daily-sales-view-page-body .daily-order-status span {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: #efe2d4;
+    color: #7b4e2d;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+/* ---------- PAYMENT ACTIVITY ---------- */
+
+.admin-daily-sales-view-page-body .daily-payments-table-wrapper {
+    overflow-x: auto;
+    background: #fffdf9;
+    border: 1px solid #e2d9d0;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(67, 49, 38, 0.06);
+}
+
+.admin-daily-sales-view-page-body .daily-payments-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+.admin-daily-sales-view-page-body .daily-payments-table th {
+    padding: 13px 14px;
+    background: #3b2d25;
+    color: #fffaf4;
+    text-align: left;
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-view-page-body .daily-payments-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #eee7df;
+    color: #4b3c32;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-view-page-body .daily-payments-table tbody tr:hover {
+    background: #faf5ef;
+}
+
+.admin-daily-sales-view-page-body .daily-payments-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---------- EMPTY STATES ---------- */
+
+.admin-daily-sales-view-page-body .daily-empty-state,
+.admin-daily-sales-view-page-body .daily-no-items {
+    padding: 32px 24px;
+    text-align: center;
+    color: #8a7b70;
+    background: #fffdf9;
+    border: 1px dashed #d9cec3;
+    border-radius: 14px;
+}
+
+.admin-daily-sales-view-page-body .daily-empty-state strong {
+    display: block;
+    color: #4a392f;
+    margin-bottom: 5px;
+}
+
+/* ---------- ACTIONS ---------- */
+
+.admin-daily-sales-view-page-body .daily-activity-actions {
+    margin-top: 32px;
+    margin-bottom: 45px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 190px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    background: #3b2d25;
+    color: #fffaf4;
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.admin-daily-sales-view-page-body .daily-activity-actions a:hover {
+    background: #59463a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(59, 45, 37, 0.16);
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 900px) {
+
+    .admin-daily-sales-view-page-body .daily-activity-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-summary-card:first-child {
+        grid-column: 1 / -1;
+        min-height: 80px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-summary-card + .daily-activity-summary-card {
+        border-left: none;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div:nth-child(2) {
+        border-right: none;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div:nth-child(-n+2) {
+        border-bottom: 1px solid #dfd5cc;
+    }
+}
+
+@media (max-width: 650px) {
+
+    .admin-daily-sales-view-page-body .daily-activity-summary {
+        width: 92%;
+        padding: 25px 20px;
+        grid-template-columns: 1fr 1fr;
+        border-radius: 16px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-summary::before {
+        left: 20px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-summary-card:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-summary-card {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-summary-card strong,
+    .admin-daily-sales-view-page-body .daily-activity-summary-card .value {
+        font-size: 1.35rem;
+    }
+
+    .admin-daily-sales-view-page-body .daily-customer-details {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-header {
+        padding: 16px 18px;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-items {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials {
+        margin-left: 18px;
+        margin-right: 18px;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div {
+        border-right: none;
+        border-bottom: 1px solid #dfd5cc;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div:last-child {
+        border-bottom: none;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-status {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-actions {
+        flex-direction: column;
+    }
+
+    .admin-daily-sales-view-page-body .daily-activity-actions a {
+        width: 100%;
+    }
+}
+
+
+/* =====================================================
+   COMPACT PREMIUM DAILY ORDER RECORD
+   ===================================================== */
+
+.admin-daily-sales-view-page-body .daily-orders-section {
+    margin-top: 34px;
+}
+
+.admin-daily-sales-view-page-body .daily-section-kicker {
+    display: block;
+    margin-bottom: 5px;
+    color: #9a7657;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.admin-daily-sales-view-page-body .daily-orders-section
+.daily-activity-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.admin-daily-sales-view-page-body .daily-orders-section
+.daily-activity-section-heading h2 {
+    margin: 0;
+}
+
+.admin-daily-sales-view-page-body .daily-orders-section
+.daily-activity-section-heading p {
+    margin-top: 5px;
+}
+
+/* ORDER CARD */
+
+.admin-daily-sales-view-page-body .daily-order-card {
+    margin-bottom: 22px;
+    background: #fffdf9;
+    border: 1px solid #e2d8ce;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 7px 22px rgba(62, 45, 35, 0.06);
+}
+
+/* HEADER */
+
+.admin-daily-sales-view-page-body .daily-order-header {
+    min-height: 58px;
+    padding: 13px 22px;
+    background: #3b2d25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-daily-sales-view-page-body .daily-order-number {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+}
+
+.admin-daily-sales-view-page-body .daily-order-number span {
+    color: #cdb8a5;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.admin-daily-sales-view-page-body .daily-order-number strong {
+    color: #fffaf4;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.admin-daily-sales-view-page-body .daily-order-time {
+    color: #d5c6b9;
+    font-size: 0.76rem;
+}
+
+/* CUSTOMER */
+
+.admin-daily-sales-view-page-body .daily-customer-details {
+    display: block;
+    padding: 17px 22px 13px;
+    border-bottom: none;
+}
+
+.admin-daily-sales-view-page-body .daily-customer-main {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.admin-daily-sales-view-page-body .daily-customer-main strong {
+    color: #382b23;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.admin-daily-sales-view-page-body .daily-customer-main span {
+    color: #8d7d70;
+    font-size: 0.78rem;
+}
+
+/* FABRIC ITEMS */
+
+.admin-daily-sales-view-page-body .daily-order-items {
+    padding: 0 22px;
+}
+
+.admin-daily-sales-view-page-body .daily-items-list {
+    border-top: 1px solid #eee6de;
+}
+
+.admin-daily-sales-view-page-body .daily-item-row {
+    min-height: 54px;
+    padding: 11px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 130px 130px;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid #eee6de;
+}
+
+.admin-daily-sales-view-page-body .daily-item-name strong {
+    color: #4a382e;
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+.admin-daily-sales-view-page-body .daily-item-quantity {
+    color: #89786b;
+    font-size: 0.77rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.admin-daily-sales-view-page-body .daily-item-subtotal {
+    color: #392c24;
+    font-size: 0.88rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* FINANCIAL STRIP */
+
+.admin-daily-sales-view-page-body .daily-order-financials {
+    margin: 0 22px;
+    margin-top: 15px;
+    background: #f6f0e9;
+    border: 1px solid #e7ddd4;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    overflow: hidden;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials > div {
+    padding: 11px 14px;
+    border-right: 1px solid #e1d7ce;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials > div:last-child {
+    border-right: none;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials span {
+    display: block;
+    margin-bottom: 4px;
+    color: #8b7b6e;
+    font-size: 0.61rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-daily-sales-view-page-body .daily-order-financials strong {
+    color: #3b2d25;
+    font-size: 0.91rem;
+    font-weight: 800;
+}
+
+.admin-daily-sales-view-page-body .daily-balance-cell {
+    background: #f1e6dc;
+}
+
+.admin-daily-sales-view-page-body .daily-balance-cell .activity-outstanding {
+    color: #9a4f38;
+}
+
+/* STATUS */
+
+.admin-daily-sales-view-page-body .daily-order-status {
+    padding: 12px 22px 17px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.admin-daily-sales-view-page-body .daily-status-label {
+    color: #9a8a7d;
+    font-size: 0.61rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.admin-daily-sales-view-page-body .daily-order-status strong {
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #eadbc9;
+    color: #775033;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .admin-daily-sales-view-page-body .daily-order-header {
+        padding: 13px 17px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-customer-details {
+        padding-left: 17px;
+        padding-right: 17px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-items {
+        padding-left: 17px;
+        padding-right: 17px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-item-row {
+        grid-template-columns: 1fr auto;
+        gap: 5px 12px;
+    }
+
+    .admin-daily-sales-view-page-body .daily-item-name {
+        grid-column: 1 / -1;
+    }
+
+    .admin-daily-sales-view-page-body .daily-item-quantity {
+        text-align: left;
+    }
+
+    .admin-daily-sales-view-page-body .daily-item-subtotal {
+        text-align: right;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials {
+        margin-left: 17px;
+        margin-right: 17px;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div:nth-child(2) {
+        border-right: none;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div:nth-child(-n+2) {
+        border-bottom: 1px solid #e1d7ce;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-status {
+        padding-left: 17px;
+        padding-right: 17px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .admin-daily-sales-view-page-body .daily-order-financials {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div {
+        border-right: none;
+        border-bottom: 1px solid #e1d7ce;
+    }
+
+    .admin-daily-sales-view-page-body .daily-order-financials > div:last-child {
+        border-bottom: none;
+    }
+}
+
