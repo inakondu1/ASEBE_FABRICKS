@@ -2280,6 +2280,65 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// =========================================================
+	// BUSINESS OVERVIEW
+	// =========================================================
+
+	var totalSales float64
+	var totalOrders int
+	var totalCustomers int
+	var outstandingBalance float64
+
+	err = db.QueryRow(`
+                SELECT COALESCE(SUM(amount_paid), 0)
+                FROM orders
+        `).Scan(&totalSales)
+
+	if err != nil {
+		http.Error(w, "Could not calculate total sales: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = db.QueryRow(`
+                SELECT COUNT(*)
+                FROM orders
+        `).Scan(&totalOrders)
+
+	if err != nil {
+		http.Error(w, "Could not count orders: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = db.QueryRow(`
+                SELECT COUNT(*)
+                FROM customers
+        `).Scan(&totalCustomers)
+
+	if err != nil {
+		http.Error(w, "Could not count customers: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = db.QueryRow(`
+                SELECT COALESCE(SUM(balance), 0)
+                FROM (
+                        SELECT
+                                o.total_amount - o.amount_paid AS balance
+                        FROM orders o
+                        INNER JOIN (
+                                SELECT customer_id, MAX(id) AS latest_order_id
+                                FROM orders
+                                GROUP BY customer_id
+                        ) latest
+                        ON o.id = latest.latest_order_id
+                )
+        `).Scan(&outstandingBalance)
+
+	if err != nil {
+		http.Error(w, "Could not calculate outstanding balance: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// ADMIN DASHBOARD DATA
 	// =========================================================
 
@@ -2287,10 +2346,18 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		Products              []Product
 		PendingPayments       int
 		PendingFabricRequests int
+		TotalSales            float64
+		TotalOrders           int
+		TotalCustomers        int
+		OutstandingBalance    float64
 	}{
 		Products:              products,
 		PendingPayments:       pendingPayments,
 		PendingFabricRequests: pendingFabricRequests,
+		TotalSales:            totalSales,
+		TotalOrders:           totalOrders,
+		TotalCustomers:        totalCustomers,
+		OutstandingBalance:    outstandingBalance,
 	}
 
 	// =========================================================
@@ -4918,6 +4985,8 @@ func main() {
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
+	http.HandleFunc("/admin/daily-sales", adminDailySalesHandler)
+	http.HandleFunc("/admin/daily-sales/view", adminDailySalesViewHandler)
 	http.HandleFunc("/admin/fabric-requests", adminFabricRequestsHandler)
 	http.HandleFunc("/admin/fabric-request-available", adminFabricRequestAvailableHandler)
 	http.HandleFunc("/admin/payment-reports", adminPaymentReportsHandler)
@@ -5162,6 +5231,426 @@ func adminCustomersHandler(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+func adminDailySalesHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/asebe-control/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	type DailyRecord struct {
+		Date        string
+		MoneyPaid   float64
+		Orders      int
+		Outstanding float64
+	}
+
+	rows, err := db.Query(`
+                SELECT
+                        DATE(created_at) AS sale_date,
+                        COALESCE(SUM(amount_paid), 0),
+                        COUNT(*),
+                        COALESCE(SUM(total_amount - amount_paid), 0)
+                FROM orders
+                GROUP BY DATE(created_at)
+                ORDER BY sale_date DESC
+        `)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Unable to load daily sales records.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+	defer rows.Close()
+
+	var records []DailyRecord
+
+	for rows.Next() {
+		var record DailyRecord
+
+		err := rows.Scan(
+			&record.Date,
+			&record.MoneyPaid,
+			&record.Orders,
+			&record.Outstanding,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Unable to read daily sales records.",
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		records = append(records, record)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Unable to read daily sales records.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	data := struct {
+		Records []DailyRecord
+	}{
+		Records: records,
+	}
+
+	renderTemplate(
+		w,
+		"templates/admin_daily_sales.html",
+		data,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Unable to load daily sales page.",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+}
+
+func adminDailySalesViewHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/asebe-control/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	date := strings.TrimSpace(r.URL.Query().Get("date"))
+
+	if date == "" {
+		http.Error(
+			w,
+			"A date is required.",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	type DailyItem struct {
+		ProductName string
+		Price       float64
+		Quantity    int
+		Subtotal    float64
+	}
+
+	type DailyOrder struct {
+		ID              int64
+		CustomerName    string
+		Phone           string
+		Total           float64
+		AmountPaid      float64
+		Balance         float64
+		PreviousBalance float64
+		PaymentStatus   string
+		CreatedAt       string
+		Items           []DailyItem
+	}
+
+	type DailyPayment struct {
+		ID               int64
+		OrderID          int64
+		CustomerName     string
+		Phone            string
+		PaymentType      string
+		PreviousBalance  float64
+		AmountPaid       float64
+		BalanceRemaining float64
+		PaymentStatus    string
+		CreatedAt        string
+	}
+
+	rows, err := db.Query(`
+                SELECT
+                        o.id,
+                        c.full_name,
+                        c.phone,
+                        o.total_amount,
+                        o.amount_paid,
+                        (o.total_amount - o.amount_paid),
+                        o.previous_balance,
+                        o.payment_status,
+                        o.created_at
+                FROM orders o
+                JOIN customers c ON c.id = o.customer_id
+                WHERE DATE(o.created_at) = ?
+                ORDER BY o.created_at ASC, o.id ASC
+        `, date)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load daily orders: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer rows.Close()
+
+	var orders []DailyOrder
+
+	for rows.Next() {
+
+		var order DailyOrder
+
+		err := rows.Scan(
+			&order.ID,
+			&order.CustomerName,
+			&order.Phone,
+			&order.Total,
+			&order.AmountPaid,
+			&order.Balance,
+			&order.PreviousBalance,
+			&order.PaymentStatus,
+			&order.CreatedAt,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read daily order: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		itemRows, err := db.Query(`
+                        SELECT
+                                product_name,
+                                price,
+                                quantity,
+                                subtotal
+                        FROM order_items
+                        WHERE order_id = ?
+                        ORDER BY id ASC
+                `, order.ID)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not load order items: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		for itemRows.Next() {
+
+			var item DailyItem
+
+			err := itemRows.Scan(
+				&item.ProductName,
+				&item.Price,
+				&item.Quantity,
+				&item.Subtotal,
+			)
+
+			if err != nil {
+				itemRows.Close()
+
+				http.Error(
+					w,
+					"Could not read order item: "+err.Error(),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+
+			order.Items = append(order.Items, item)
+		}
+
+		if err := itemRows.Err(); err != nil {
+			itemRows.Close()
+
+			http.Error(
+				w,
+				"Could not read order items: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		itemRows.Close()
+
+		parsedTime, parseErr := time.Parse(
+			"2006-01-02T15:04:05Z",
+			order.CreatedAt,
+		)
+
+		if parseErr == nil {
+			order.CreatedAt = parsedTime.Format(
+				"02 January 2006, 3:04 PM",
+			)
+		}
+
+		orders = append(orders, order)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read daily orders: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	paymentRows, err := db.Query(`
+                SELECT
+                        p.id,
+                        p.order_id,
+                        c.full_name,
+                        c.phone,
+                        p.payment_type,
+                        p.previous_balance,
+                        p.amount_paid,
+                        p.balance_remaining,
+                        p.payment_status,
+                        p.created_at
+                FROM payments p
+                JOIN customers c ON c.id = p.customer_id
+                WHERE DATE(p.created_at) = ?
+                ORDER BY p.created_at ASC, p.id ASC
+        `, date)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load daily payments: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer paymentRows.Close()
+
+	var payments []DailyPayment
+
+	for paymentRows.Next() {
+
+		var payment DailyPayment
+
+		err := paymentRows.Scan(
+			&payment.ID,
+			&payment.OrderID,
+			&payment.CustomerName,
+			&payment.Phone,
+			&payment.PaymentType,
+			&payment.PreviousBalance,
+			&payment.AmountPaid,
+			&payment.BalanceRemaining,
+			&payment.PaymentStatus,
+			&payment.CreatedAt,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read daily payment: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		parsedTime, parseErr := time.Parse(
+			"2006-01-02T15:04:05Z",
+			payment.CreatedAt,
+		)
+
+		if parseErr == nil {
+			payment.CreatedAt = parsedTime.Format(
+				"02 January 2006, 3:04 PM",
+			)
+		}
+
+		payments = append(payments, payment)
+	}
+
+	if err := paymentRows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read daily payments: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	var totalMoneyPaid float64
+	var totalOutstanding float64
+
+	for _, order := range orders {
+		totalMoneyPaid += order.AmountPaid
+		totalOutstanding += order.Balance
+	}
+
+	data := struct {
+		Date             string
+		Orders           []DailyOrder
+		Payments         []DailyPayment
+		TotalOrders      int
+		TotalMoneyPaid   float64
+		TotalOutstanding float64
+	}{
+		Date:             date,
+		Orders:           orders,
+		Payments:         payments,
+		TotalOrders:      len(orders),
+		TotalMoneyPaid:   totalMoneyPaid,
+		TotalOutstanding: totalOutstanding,
+	}
+
+	renderTemplate(
+		w,
+		"templates/admin_daily_sales_view.html",
+		data,
+	)
+}
+
 func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, loggedIn := getAdminSession(r)
@@ -5196,7 +5685,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		Balance       float64
 		PaymentStatus string
 		PaymentClass  string
-		OrderStatus   string
 		CreatedAt     string
 	}
 
@@ -5229,7 +5717,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                         - o.amount_paid
                                 ),
                                 o.payment_status,
-                                o.order_status,
                                 o.created_at
                         FROM orders o
                         JOIN customers c ON c.id = o.customer_id
@@ -5252,7 +5739,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
                                         - o.amount_paid
                                 ),
                                 o.payment_status,
-                                o.order_status,
                                 o.created_at
                         FROM orders o
                         JOIN customers c ON c.id = o.customer_id
@@ -5289,7 +5775,6 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 			&order.AmountPaid,
 			&order.Balance,
 			&order.PaymentStatus,
-			&order.OrderStatus,
 			&order.CreatedAt,
 		)
 

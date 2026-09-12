@@ -161,6 +161,110 @@
 
 
         <!-- =====================================================
+             BUSINESS OVERVIEW
+             ===================================================== -->
+
+        <section class="business-overview">
+
+            <div class="business-overview-heading">
+                <p>BUSINESS OVERVIEW</p>
+                <h2>ASEBE FABRICS AT A GLANCE</h2>
+                <span>
+                    A quick view of your sales, orders, customers and outstanding payments.
+                </span>
+            </div>
+
+            <div class="business-overview-grid">
+
+                <div class="business-overview-card">
+                    <div class="business-overview-icon">
+                        💰
+                    </div>
+
+                    <div>
+                        <span class="business-overview-label">
+                            TOTAL SALES
+                        </span>
+
+                        <strong>
+                            ₦{{printf "%.2f" .TotalSales}}
+                        </strong>
+
+                        <p>
+                            Payments received
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="business-overview-card">
+                    <div class="business-overview-icon">
+                        📦
+                    </div>
+
+                    <div>
+                        <span class="business-overview-label">
+                            TOTAL ORDERS
+                        </span>
+
+                        <strong>
+                            {{.TotalOrders}}
+                        </strong>
+
+                        <p>
+                            Orders placed
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="business-overview-card">
+                    <div class="business-overview-icon">
+                        👥
+                    </div>
+
+                    <div>
+                        <span class="business-overview-label">
+                            CUSTOMERS
+                        </span>
+
+                        <strong>
+                            {{.TotalCustomers}}
+                        </strong>
+
+                        <p>
+                            Registered customers
+                        </p>
+                    </div>
+                </div>
+
+
+                <div class="business-overview-card">
+                    <div class="business-overview-icon">
+                        ⚠️
+                    </div>
+
+                    <div>
+                        <span class="business-overview-label">
+                            OUTSTANDING BALANCE
+                        </span>
+
+                        <strong>
+                            ₦{{printf "%.2f" .OutstandingBalance}}
+                        </strong>
+
+                        <p>
+                            Customer balances
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
              ADMIN ACTIONS
              ===================================================== -->
 
@@ -219,6 +323,24 @@
 
             </a>
 
+
+
+            <a href="/admin/daily-sales"
+               class="admin-card">
+
+                <div class="admin-icon">
+                    📊
+                </div>
+
+                <h2>
+                    DAILY SALES RECORDS
+                </h2>
+
+                <p>
+                    Track daily orders, payments and outstanding balances.
+                </p>
+
+            </a>
 
 
             <a href="/admin/fabric-requests"

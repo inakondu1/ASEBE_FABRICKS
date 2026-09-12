@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ASEBE FABRICS | Daily Sales Records</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+</head>
+
+<body class="admin-daily-sales-page-body">
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>ASEBE</span> FABRICS
+    </div>
+
+    <nav>
+        <a href="/admin">ADMIN</a>
+        <a href="/shop">SHOP</a>
+        <a href="/">HOME</a>
+    </nav>
+
+</header>
+
+
+<section class="admin-page">
+
+    <div class="admin-container">
+
+        <div class="admin-heading">
+
+            <p>ASEBE FABRICS</p>
+
+            <h1>DAILY SALES RECORDS</h1>
+
+            <span>
+                View your daily business activity, payments and outstanding balances.
+            </span>
+
+        </div>
+
+
+        {{if .Records}}
+
+        <div class="daily-sales-table-wrapper">
+
+            <table class="daily-sales-table">
+
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>ORDERS</th>
+                        <th>MONEY PAID</th>
+                        <th>OUTSTANDING</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {{range .Records}}
+
+                    <tr>
+
+                        <td class="daily-sales-date">
+                            <strong>{{.Date}}</strong>
+                        </td>
+
+                        <td class="daily-sales-value">
+                            <strong>{{.Orders}}</strong>
+                        </td>
+
+                        <td class="daily-sales-value">
+                            <strong>₦{{printf "%.0f" .MoneyPaid}}</strong>
+                        </td>
+
+                        <td class="daily-sales-value outstanding-value">
+                            <strong>₦{{printf "%.0f" .Outstanding}}</strong>
+                        </td>
+
+                        <td class="daily-sales-action">
+                            <a href="/admin/daily-sales/view?date={{.Date}}">
+                                VIEW
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {{end}}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {{else}}
+
+        <div class="no-fabrics">
+
+            <p>
+                No daily sales records are available yet.
+            </p>
+
+        </div>
+
+        {{end}}
+
+
+        <div class="admin-back">
+
+            <a href="/admin">
+                ← BACK TO ADMIN DASHBOARD
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<footer>
+
+    <div class="footer-logo">
+        ASEBE <span>FABRICS</span>
+    </div>
+
+    <p>
+        Admin Area • Daily Sales Records
+    </p>
+
+</footer>
+
+</body>
+
+</html>

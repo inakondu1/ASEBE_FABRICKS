@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Daily Activity - ASEBE FABRICS</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body class="admin-daily-sales-view-page-body">
+
+    <header class="admin-header">
+
+        <div class="admin-header-inner">
+
+            <div class="admin-logo">
+                ASEBE FABRICS
+            </div>
+
+            <nav class="admin-nav">
+
+                <a href="/admin">ADMIN</a>
+
+                <a href="/shop">SHOP</a>
+
+                <a href="/">HOME</a>
+
+            </nav>
+
+        </div>
+
+    </header>
+
+
+    <main class="admin-page">
+
+        <div class="admin-container">
+
+            <div class="admin-heading">
+
+                <h1>DAILY ACTIVITY</h1>
+
+                <p>
+                    Complete business activity for {{.Date}}
+                </p>
+
+            </div>
+
+
+            <div class="daily-activity-summary">
+
+                <div class="daily-activity-summary-card">
+
+                    <span>ORDERS</span>
+
+                    <strong>
+                        {{.TotalOrders}}
+                    </strong>
+
+                </div>
+
+
+                <div class="daily-activity-summary-card">
+
+                    <span>MONEY PAID</span>
+
+                    <strong>
+                        ₦{{printf "%.0f" .TotalMoneyPaid}}
+                    </strong>
+
+                </div>
+
+
+                <div class="daily-activity-summary-card">
+
+                    <span>OUTSTANDING</span>
+
+                    <strong class="activity-outstanding">
+                        ₦{{printf "%.0f" .TotalOutstanding}}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <section class="daily-activity-section">
+
+                <div class="daily-activity-section-heading">
+
+
+            <section class="daily-activity-section daily-orders-section">
+
+                <div class="daily-activity-section-heading">
+
+                    <div>
+                        <span class="daily-section-kicker">SALES RECORD</span>
+
+                        <h2>ORDER ACTIVITY</h2>
+
+                        <p>
+                            Every order created on {{.Date}}
+                        </p>
+                    </div>
+
+                </div>
+
+
+                {{if .Orders}}
+
+                    {{range .Orders}}
+
+                    <article class="daily-order-card">
+
+                        <!-- ORDER HEADER -->
+
+                        <div class="daily-order-header">
+
+                            <div class="daily-order-number">
+
+                                <span>ORDER</span>
+
+                                <strong>#{{.ID}}</strong>
+
+                            </div>
+
+                            <div class="daily-order-time">
+                                {{.CreatedAt}}
+                            </div>
+
+                        </div>
+
+
+                        <!-- CUSTOMER -->
+
+                        <div class="daily-customer-details">
+
+                            <div class="daily-customer-main">
+
+                                <strong>
+                                    {{.CustomerName}}
+                                </strong>
+
+                                <span>
+                                    {{.Phone}}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- FABRICS -->
+
+                        <div class="daily-order-items">
+
+                            {{if .Items}}
+
+                            <div class="daily-items-list">
+
+                                {{range .Items}}
+
+                                <div class="daily-item-row">
+
+                                    <div class="daily-item-name">
+                                        <strong>
+                                            {{.ProductName}}
+                                        </strong>
+                                    </div>
+
+                                    <div class="daily-item-quantity">
+                                        {{.Quantity}} × ₦{{printf "%.0f" .Price}}
+                                    </div>
+
+                                    <div class="daily-item-subtotal">
+                                        <strong>
+                                            ₦{{printf "%.0f" .Subtotal}}
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                                {{end}}
+
+                            </div>
+
+                            {{else}}
+
+                            <p class="daily-no-items">
+                                No fabric items were recorded for this order.
+                            </p>
+
+                            {{end}}
+
+                        </div>
+
+
+                        <!-- FINANCIAL SUMMARY -->
+
+                        <div class="daily-order-financials">
+
+                            <div>
+
+                                <span>ORDER TOTAL</span>
+
+                                <strong>
+                                    ₦{{printf "%.0f" .Total}}
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>PREVIOUS BALANCE</span>
+
+                                <strong>
+                                    ₦{{printf "%.0f" .PreviousBalance}}
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>PAID</span>
+
+                                <strong>
+                                    ₦{{printf "%.0f" .AmountPaid}}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="daily-balance-cell">
+
+                                <span>BALANCE</span>
+
+                                <strong class="activity-outstanding">
+                                    ₦{{printf "%.0f" .Balance}}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PAYMENT STATUS -->
+
+                        <div class="daily-order-status">
+
+                            <span class="daily-status-label">
+                                PAYMENT
+                            </span>
+
+                            <strong>
+                                {{.PaymentStatus}}
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+                    {{end}}
+
+                {{else}}
+
+                    <div class="daily-empty-state">
+
+                        <p>
+                            No orders were created on this date.
+                        </p>
+
+                    </div>
+
+                {{end}}
+
+            </section>
+
+
+                    <h2>PAYMENT ACTIVITY</h2>
+
+                    <p>
+                        Every separate payment recorded on {{.Date}}
+                    </p>
+
+                </div>
+
+
+                {{if .Payments}}
+
+                <div class="daily-payments-table-wrapper">
+
+                    <table class="daily-payments-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>TIME</th>
+
+                                <th>CUSTOMER</th>
+
+                                <th>ORDER</th>
+
+                                <th>PAYMENT TYPE</th>
+
+                                <th>PREVIOUS BALANCE</th>
+
+                                <th>AMOUNT PAID</th>
+
+                                <th>BALANCE REMAINING</th>
+
+                                <th>STATUS</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {{range .Payments}}
+
+                            <tr>
+
+                                <td>
+                                    {{.CreatedAt}}
+                                </td>
+
+                                <td>
+
+                                    <strong>
+                                        {{.CustomerName}}
+                                    </strong>
+
+                                    <small>
+                                        {{.Phone}}
+                                    </small>
+
+                                </td>
+
+                                <td>
+                                    #{{.OrderID}}
+                                </td>
+
+                                <td>
+                                    {{.PaymentType}}
+                                </td>
+
+                                <td>
+                                    ₦{{printf "%.0f" .PreviousBalance}}
+                                </td>
+
+                                <td>
+
+                                    <strong>
+                                        ₦{{printf "%.0f" .AmountPaid}}
+                                    </strong>
+
+                                </td>
+
+                                <td>
+
+                                    <strong class="activity-outstanding">
+                                        ₦{{printf "%.0f" .BalanceRemaining}}
+                                    </strong>
+
+                                </td>
+
+                                <td>
+                                    {{.PaymentStatus}}
+                                </td>
+
+                            </tr>
+
+                            {{end}}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {{else}}
+
+                <div class="daily-empty-state">
+
+                    <p>
+                        No separate payment transactions were recorded on this date.
+                    </p>
+
+                </div>
+
+                {{end}}
+
+            </section>
+
+
+            <div class="daily-activity-actions">
+
+                <a href="/admin/daily-sales">
+                    ← BACK TO DAILY SALES
+                </a>
+
+                <a href="/admin">
+                    BACK TO ADMIN DASHBOARD
+                </a>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <footer class="admin-footer">
+
+        <p>
+            ASEBE FABRICS
+        </p>
+
+        <span>
+            Admin Area • Daily Activity
+        </span>
+
+    </footer>
+
+</body>
+
+</html>
