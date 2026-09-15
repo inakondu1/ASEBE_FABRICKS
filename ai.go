@@ -17,16 +17,34 @@ type AIConversation struct {
 }
 
 type AIPageData struct {
-	Question string
-	Response string
-	Products []Product
-	History  []AIConversation
+	Question     string
+	Response     string
+	Products     []Product
+	History      []AIConversation
+	CustomerName string
 }
 
 var aiConversations = make(map[string][]AIConversation)
 var aiConversationMutex sync.Mutex
 
 const aiConversationCookie = "asebe_ai_session"
+
+const asebeAISystemRules = `
+You are ASEBE AI, a friendly fabric shopping assistant for ASEBE FABRICS.
+
+Your job is to help customers discover fabrics, understand the ASEBE website,
+choose suitable fabrics, check prices, and make better fabric decisions.
+
+Always be friendly and helpful.
+
+Give useful suggestions based on what the customer is looking for.
+
+Use real ASEBE products and prices from the database.
+Never invent products or prices.
+
+If a customer asks something unrelated to ASEBE FABRICS,
+politely guide the conversation back to ASEBE FABRICS.
+`
 
 var aiStopWords = map[string]bool{
 	"i":         true,
@@ -97,6 +115,9 @@ func getAIConversationID(w http.ResponseWriter, r *http.Request) string {
 func aiHandler(w http.ResponseWriter, r *http.Request) {
 	conversationID := getAIConversationID(w, r)
 
+	navData := getNavData(r)
+	customerName := navData.CustomerName
+
 	if r.Method == http.MethodGet && r.URL.Query().Get("new") == "1" {
 		aiConversationMutex.Lock()
 		delete(aiConversations, conversationID)
@@ -148,12 +169,23 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 
 		lowerQuestion := strings.ToLower(strings.TrimSpace(question))
 
+		isGreeting := strings.HasPrefix(lowerQuestion, "hello") ||
+			strings.HasPrefix(lowerQuestion, "hi ") ||
+			strings.HasPrefix(lowerQuestion, "hey ") ||
+			strings.HasPrefix(lowerQuestion, "good morning") ||
+			strings.HasPrefix(lowerQuestion, "good afternoon") ||
+			strings.HasPrefix(lowerQuestion, "good evening")
+
 		var response string
 
 		switch lowerQuestion {
 
 		case "hi", "hello", "hey", "good morning", "good afternoon", "good evening":
-			response = "Hello 👋 Welcome to ASEBE FABRICS. I am here to help you find fabrics, check prices, and choose the right material for your style."
+			if customerName != "" {
+				response = "Hello " + customerName + "! Welcome to ASEBE FABRICS. I am here to help you find fabrics, check prices, and choose the right material for your style."
+			} else {
+				response = "Hello! Welcome to ASEBE FABRICS. I am here to help you find fabrics, check prices, and choose the right material for your style."
+			}
 
 		case "thanks", "thank you", "thank you so much":
 			response = "You are welcome 😊. I am always happy to help you find the perfect fabric."
@@ -167,6 +199,26 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 		case "help", "help me":
 			response = "I can help you find fabrics like lace, Ankara, velvet, brocade, sequin and more. You can also ask things like show me lace below ₦50000."
 
+		}
+
+		if response == "" && isGreeting {
+			if customerName != "" {
+				response = "Hello " + customerName + "! It is lovely to have you here. How can I help you with your fabric search today?"
+			} else {
+				response = "Hello! It is lovely to have you here. How can I help you with your fabric search today?"
+			}
+		}
+
+		if response == "" &&
+			(strings.Contains(lowerQuestion, "don't know") ||
+				strings.Contains(lowerQuestion, "do not know") ||
+				strings.Contains(lowerQuestion, "which fabric should") ||
+				strings.Contains(lowerQuestion, "what fabric should") ||
+				strings.Contains(lowerQuestion, "help me choose") ||
+				strings.Contains(lowerQuestion, "help me pick") ||
+				strings.Contains(lowerQuestion, "recommend a fabric") ||
+				strings.Contains(lowerQuestion, "recommend something")) {
+			response = "No problem 😊 I can help you choose. Tell me what the fabric is for, such as a wedding, birthday, office, traditional wear, or everyday use, and I will suggest some beautiful options from our collection."
 		}
 
 		if response != "" {
@@ -336,11 +388,11 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 			if strings.Contains(lowerQuestion, "wedding") ||
 				strings.Contains(lowerQuestion, "bride") ||
 				strings.Contains(lowerQuestion, "bridal") {
-				response = "For a wedding, these are some beautiful options from our collection."
+				response = "That is beautiful, and you are at the right place! 😊 I found some lovely fabric options for your wedding. Explore the fabrics below, and if you are not sure which one to choose, I can help you find the perfect one."
 			} else if strings.Contains(lowerQuestion, "party") ||
 				strings.Contains(lowerQuestion, "birthday") ||
 				strings.Contains(lowerQuestion, "celebration") {
-				response = "For a party or celebration, these are some stylish options from our collection."
+				response = "Awesome! 🎉 You are in the right place. I found some stylish fabric options for your celebration. If you want something unique, admirable, and comfortable, I can help you choose the perfect one."
 			} else if strings.Contains(lowerQuestion, "office") ||
 				strings.Contains(lowerQuestion, "work") {
 				response = "For office wear, these are some elegant options from our collection."
@@ -351,7 +403,7 @@ func aiHandler(w http.ResponseWriter, r *http.Request) {
 				strings.Contains(lowerQuestion, "native") {
 				response = "For traditional wear, these are some beautiful options from our collection."
 			} else {
-				response = "I found these fabrics that match your request."
+				response = "Great choice! 😊 I found these beautiful fabrics that match what you are looking for. Take a look below, and if you are not sure which one to choose, I can help you compare them."
 			}
 		} else if response == "" &&
 			(strings.Contains(lowerQuestion, "wedding") ||

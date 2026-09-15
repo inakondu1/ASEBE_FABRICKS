@@ -4618,7 +4618,6 @@ func orderHistoryHandler(w http.ResponseWriter, r *http.Request) {
                         o.id,
                         o.created_at,
                         o.total_amount,
-                        o.total_amount,
                         o.amount_paid,
                         o.payment_status,
                         COALESCE(o.previous_balance, 0),
@@ -4984,6 +4983,7 @@ func main() {
 	// Admin
 	// Admin
 	http.HandleFunc("/payment-transactions", checkPaymentTransactionsHandler)
+	http.HandleFunc("/admin/feedback", adminFeedbackHandler)
 	http.HandleFunc("/admin/orders", adminOrdersHandler)
 	http.HandleFunc("/admin/daily-sales", adminDailySalesHandler)
 	http.HandleFunc("/admin/daily-sales/view", adminDailySalesViewHandler)
@@ -5136,6 +5136,156 @@ func adminFabricRequestAvailableHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	http.Redirect(w, r, "/admin/fabric-requests", http.StatusSeeOther)
+}
+
+// ADMIN CUSTOMER FEEDBACK
+// =========================
+
+func adminFeedbackHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, loggedIn := getAdminSession(r)
+
+	if !loggedIn {
+		http.Redirect(
+			w,
+			r,
+			"/asebe-control/login",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+
+		feedbackID := r.FormValue("feedback_id")
+		action := r.FormValue("action")
+
+		if feedbackID == "" {
+			http.Error(w, "Missing feedback ID", http.StatusBadRequest)
+			return
+		}
+
+		var status string
+
+		switch action {
+		case "approve":
+			status = "APPROVED"
+
+		case "reject":
+			status = "REJECTED"
+
+		default:
+			http.Error(w, "Invalid feedback action", http.StatusBadRequest)
+			return
+		}
+
+		_, err := db.Exec(
+			`UPDATE feedback SET status = ? WHERE id = ?`,
+			status,
+			feedbackID,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not update feedback: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		http.Redirect(
+			w,
+			r,
+			"/admin/feedback",
+			http.StatusSeeOther,
+		)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+
+	rows, err := db.Query(`
+                SELECT
+                        id,
+                        customer_id,
+                        customer_name,
+                        rating,
+                        comment,
+                        status,
+                        created_at
+                FROM feedback
+                ORDER BY id DESC
+        `)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Could not load feedback: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	defer rows.Close()
+
+	var feedbackList []Feedback
+
+	for rows.Next() {
+
+		var feedback Feedback
+
+		err := rows.Scan(
+			&feedback.ID,
+			&feedback.CustomerID,
+			&feedback.CustomerName,
+			&feedback.Rating,
+			&feedback.Comment,
+			&feedback.Status,
+			&feedback.CreatedAt,
+		)
+
+		if err != nil {
+			http.Error(
+				w,
+				"Could not read feedback: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		feedbackList = append(feedbackList, feedback)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(
+			w,
+			"Could not read feedback: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	type AdminFeedbackPage struct {
+		Feedback []Feedback
+	}
+
+	page := AdminFeedbackPage{
+		Feedback: feedbackList,
+	}
+
+	renderTemplate(
+		w,
+		"templates/admin_feedback.html",
+		page,
+	)
 }
 
 // ADMIN ORDERS
